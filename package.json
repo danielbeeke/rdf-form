@@ -9,7 +9,11 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@comunica/actor-http-proxy": "^1.14.0",
+    "@comunica/actor-init-sparql": "^1.14.0",
+    "@vue/web-component-wrapper": "^1.2.0",
     "core-js": "^3.6.5",
+    "setimmediate": "^1.0.5",
     "vue": "^2.6.11",
     "vue-class-component": "^7.2.3",
     "vue-property-decorator": "^8.4.2"
