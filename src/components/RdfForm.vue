@@ -68,7 +68,7 @@ export default class RdfForm extends Vue {
    * @param quad
    */
   enhanceQuad (quad: Quad) {
-    quad.fieldType = this.fieldResolver.resolve(quad)
+    this.fieldResolver.resolve(quad)
     return quad
   }
 

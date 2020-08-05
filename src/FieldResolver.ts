@@ -1,15 +1,17 @@
-import { ProxyHandlerStatic } from '@comunica/actor-http-proxy'
-import { newEngine } from '@comunica/actor-init-sparql'
-import { IActorQueryOperationOutput } from '@comunica/bus-query-operation'
 import { OpenGraph } from './resolvers/OpenGraph'
 import { W3 } from './resolvers/w3'
 import { SchemaOrg } from './resolvers/schema.org'
 import { FieldTypes } from './FieldTypes'
 import { Quad } from './Quad'
 
+export interface FieldInfo {
+  fieldType: FieldTypes;
+  fieldResolver: FieldResolverInterface;
+}
+
 export interface FieldResolverFields {
-  predicate: Map<string, string>;
-  dataType: Map<string, string>;
+  predicate: Map<string, FieldInfo>;
+  dataType: Map<string, FieldInfo>;
 }
 
 type FieldResolverTypes = keyof FieldResolverFields;
@@ -28,72 +30,39 @@ export class FieldResolver {
     }
   }
 
-  set (what: FieldResolverTypes, key: string, fieldType: FieldTypes) {
-    this.fields[what].set(key, fieldType)
+  set (what: FieldResolverTypes, key: string, fieldType: FieldTypes, fieldResolver: FieldResolverInterface) {
+    this.fields[what].set(key, {
+      fieldType: fieldType,
+      fieldResolver: fieldResolver
+    })
   }
 
-  resolve (quad: Quad): FieldTypes | undefined {
-    let resolvedFieldType: FieldTypes | undefined
+  resolve (quad: Quad) {
+    let resolvedFieldInfo: FieldInfo | undefined
 
-    const resolvedPredicateFieldType = this.fields.predicate.get(quad.predicate.value)
+    const resolvedPredicateFieldInfo = this.fields.predicate.get(quad.predicate.value)
 
     for (const fieldType of Object.values(FieldTypes)) {
-      if (fieldType === resolvedPredicateFieldType) resolvedFieldType = fieldType
+      if (resolvedPredicateFieldInfo && fieldType === resolvedPredicateFieldInfo.fieldType) resolvedFieldInfo = resolvedPredicateFieldInfo
     }
 
-    const resolvedDataTypeFieldType = this.fields.dataType.get(quad.object.termType)
+    const resolvedDataTypeFieldInfo = this.fields.dataType.get(quad.object.termType)
     for (const fieldType of Object.values(FieldTypes)) {
-      if (fieldType === resolvedDataTypeFieldType) resolvedFieldType = fieldType
+      if (resolvedDataTypeFieldInfo && fieldType === resolvedDataTypeFieldInfo.fieldType) resolvedFieldInfo = resolvedPredicateFieldInfo
     }
 
-    quad.fieldLabel = ''
+    if (resolvedFieldInfo) {
+      quad.fieldLabel = ''
+      quad.fieldType = resolvedFieldInfo ? resolvedFieldInfo.fieldType : undefined
 
-    if (resolvedFieldType) {
-      this.getLabel(quad).then((description: string) => {
+      resolvedFieldInfo.fieldResolver.getLabel(quad).then((description: string | undefined) => {
         quad.fieldLabel = description
       })
     }
-
-    return resolvedFieldType
-  }
-
-  getLabel (quad: Quad): Promise<string> {
-    return new Promise((resolve, reject) => {
-      try {
-        newEngine().query('CONSTRUCT WHERE { ?s <http://www.w3.org/2000/01/rdf-schema#comment> ?o }',
-          {
-            sources: [quad.predicate.value],
-            httpProxyHandler: new ProxyHandlerStatic('https://thingproxy.freeboard.io/fetch/')
-          })
-          .then((result: IActorQueryOperationOutput) => {
-            if ('quadStream' in result) {
-              result.quadStream.on('data', (quad: Quad) => {
-                if (quad.object && quad.object.id) {
-                  const description = quad.object.id.match(/(?:"[^"]*"|^[^"]*$)/)[0].replace(/"/g, '')
-                  console.log(description)
-                  resolve(description)
-                }
-              })
-
-              result.quadStream.on('error', (error) => {
-                console.log(error, quad)
-                error = null
-              })
-            }
-
-            result.metadata().then(metadata => {
-              if (metadata.totalItems !== Infinity) {
-                reject(new Error('Reached end'))
-              }
-            }).catch((error) => {
-              error = null
-            })
-          })
-      } catch (e) {}
-    })
   }
 }
 
 export interface FieldResolverInterface {
   addDefinitions(fieldResolver: FieldResolver): void;
+  getLabel(quad: Quad): Promise<string | undefined>;
 }

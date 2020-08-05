@@ -3,6 +3,8 @@
     v-model="value"
     auto-grow
     :label="quad.fieldLabel"
+    :hint="quad.fieldDescription"
+    persistent-hint
   ></v-textarea>
 </template>
 
