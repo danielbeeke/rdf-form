@@ -15,11 +15,17 @@ export class RdfManager extends EventTarget {
   }
 
   fetchQuery () {
+    const context = {
+      sources: [this.rdf],
+      httpProxyHandler: null
+    }
+
+    if (this.rdf.toString().substr(0, 16) !== 'http://localhost') {
+      context.httpProxyHandler = new ProxyHandlerStatic('https://thingproxy.freeboard.io/fetch/')
+    }
+
     newEngine().query('CONSTRUCT WHERE { ?s ?p ?o }',
-      {
-        sources: [this.rdf],
-        httpProxyHandler: new ProxyHandlerStatic('https://thingproxy.freeboard.io/fetch/')
-      })
+      context)
       .then((result: IActorQueryOperationOutput) => {
         if ('quadStream' in result) {
           result.quadStream.on('data', (quad: Quad) => {

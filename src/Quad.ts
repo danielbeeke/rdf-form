@@ -4,7 +4,11 @@ export interface Quad {
   object: {
     termType: string,
     value: string,
-    id: string
+    id: string,
+    datatype: {
+      termType: string,
+      value: string
+    }
   },
   subject: object,
   predicate: {

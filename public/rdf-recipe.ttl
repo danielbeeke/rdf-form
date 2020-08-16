@@ -1,0 +1,11 @@
+@prefix fo: <https://www.bbc.co.uk/ontologies/fo/1.1.ttl> .
+@prefix dcterms:    <http://purl.org/dc/terms/> .
+
+<http://www.bbc.co.uk/food/menus/pork_belly_comfort_food_menu#menu> a fo:Menu ;
+   dcterms:description "We've put together a menu of easy, comforting recipes for a chilly winter's day."@en ;
+   dcterms:title "Pork belly comfort food menu"@en ;
+   fo:dessert <http://www.bbc.co.uk/food/recipes/banoffeepiewithpecan_86926#recipe> ;
+   fo:ingredients <http://www.bbc.co.uk/food/menus/pork_belly_comfort_food_menu#ingredients> ;
+   fo:main_course <http://www.bbc.co.uk/food/recipes/roastbellyofporkwith_73882#recipe> ;
+   fo:serves "6"@en ;
+   fo:side_dish <http://www.bbc.co.uk/food/recipes/champ_67444#recipe>, <http://www.bbc.co.uk/food/recipes/devilishredcabbage_8076#recipe> .

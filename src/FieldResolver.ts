@@ -14,7 +14,7 @@ export interface FieldResolverFields {
   dataType: Map<string, FieldInfo>;
 }
 
-type FieldResolverTypes = keyof FieldResolverFields;
+export type FieldResolverTypes = keyof FieldResolverFields;
 
 export class FieldResolver {
   private resolvers: Array<FieldResolverInterface> = [new SchemaOrg(), new W3(), new OpenGraph()]
@@ -46,9 +46,12 @@ export class FieldResolver {
       if (resolvedPredicateFieldInfo && fieldType === resolvedPredicateFieldInfo.fieldType) resolvedFieldInfo = resolvedPredicateFieldInfo
     }
 
-    const resolvedDataTypeFieldInfo = this.fields.dataType.get(quad.object.termType)
-    for (const fieldType of Object.values(FieldTypes)) {
-      if (resolvedDataTypeFieldInfo && fieldType === resolvedDataTypeFieldInfo.fieldType) resolvedFieldInfo = resolvedPredicateFieldInfo
+    if (quad.object?.datatype?.value) {
+      const resolvedDataTypeFieldInfo = this.fields.dataType.get(quad.object.datatype.value)
+
+      for (const fieldType of Object.values(FieldTypes)) {
+        if (resolvedDataTypeFieldInfo && fieldType === resolvedDataTypeFieldInfo.fieldType) resolvedFieldInfo = resolvedPredicateFieldInfo
+      }
     }
 
     if (resolvedFieldInfo) {
@@ -58,6 +61,8 @@ export class FieldResolver {
       resolvedFieldInfo.fieldResolver.getLabel(quad).then((description: string | undefined) => {
         quad.fieldLabel = description
       })
+
+      console.log(JSON.stringify(quad))
     }
   }
 }
