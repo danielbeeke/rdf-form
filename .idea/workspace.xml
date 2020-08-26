@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="ebed28e4-f264-414c-a78f-9269d48b5d59" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/public/js/RdfUi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/babel.config.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/rdf-recipe.ttl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/FieldResolver.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/FieldResolver.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/FieldTypes.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/FieldTypes.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Quad.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/Quad.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/RdfManager.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/RdfManager.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/assets/logo.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/RdfFieldWrapper.vue" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/components/RdfFieldWrapper.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/RdfForm.vue" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/components/RdfForm.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/RdfInspector.vue" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/components/RdfInspector.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/fields/RdfFieldDate.vue" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/components/fields/RdfFieldDate.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/fields/RdfFieldString.vue" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/components/fields/RdfFieldString.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/fields/RdfFieldTags.vue" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/components/fields/RdfFieldTags.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/fields/RdfFieldText.vue" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/components/fields/RdfFieldText.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/main.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/resolvers/BaseFieldResolver.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/resolvers/BaseFieldResolver.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/resolvers/OpenGraph.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/resolvers/OpenGraph.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/resolvers/schema.org.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/resolvers/schema.org.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/resolvers/w3.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/resolvers/w3.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/shims-tsx.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/shims-tsx.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/shims-vue.d.ts" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/shims-vue.d.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/unit/example.spec.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/vue.config.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1gdgrw1vlk74yfUwkFwfPTcYZc4" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="yarn" />
+    <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/public" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ebed28e4-f264-414c-a78f-9269d48b5d59" name="Default Changelist" comment="" />
+      <created>1598450085339</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1598450085339</updated>
+      <workItem from="1598450086382" duration="548000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="2891" y="417" width="618" height="580" key="find.popup" timestamp="1598450517901">
+      <screen x="1920" y="0" width="2560" height="1440" />
+    </state>
+    <state x="2891" y="417" width="618" height="580" key="find.popup/1920.0.2560.1440/0.167.1920.1080@1920.0.2560.1440" timestamp="1598450517901" />
+  </component>
+</project>
