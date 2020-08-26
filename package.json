@@ -1,20 +1,32 @@
 {
   "scripts": {
-    "start": "snowpack dev",
-    "build": "snowpack build",
-    "test": "echo \"This template does not include a test runner by default.\" && exit 1",
-    "format": "prettier --write \"src/**/*.{ts,js}\"",
-    "lint": "prettier --check \"src/**/*.{ts,js}\""
+    "start": "webpack-dev-server --mode development --open --hot",
+    "build": "webpack --mode production"
   },
   "dependencies": {
-    "canvas-confetti": "^1.2.0"
+    "@comunica/actor-http-proxy": "^1.16.0",
+    "@comunica/actor-init-sparql": "^1.16.2",
+    "@purtuga/esm-webpack-plugin": "^1.2.1",
+    "copy-webpack-plugin": "^6.0.3",
+    "install": "^0.13.0",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
   },
+  "types": "dist/types/index.d.ts",
   "devDependencies": {
-    "@snowpack/plugin-run-script": "^2.1.1",
-    "@types/canvas-confetti": "^1.0.0",
-    "@types/snowpack-env": "^2.3.0",
-    "prettier": "^2.0.5",
-    "snowpack": "^2.9.0",
-    "typescript": "^3.9.7"
+    "@babel/core": "7.10.2",
+    "@babel/plugin-proposal-class-properties": "7.10.1",
+    "@babel/plugin-proposal-object-rest-spread": "7.10.1",
+    "@babel/preset-env": "7.10.2",
+    "@babel/preset-typescript": "7.10.1",
+    "@rollup/plugin-babel": "5.0.3",
+    "@rollup/plugin-commonjs": "13.0.0",
+    "@rollup/plugin-node-resolve": "8.0.1",
+    "awesome-typescript-loader": "^5.2.1",
+    "html-webpack-plugin": "^4.3.0",
+    "rollup": "2.15.0",
+    "source-map-loader": "^1.0.0",
+    "typescript": "^4.0.2"
   }
 }
