@@ -2,23 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ebed28e4-f264-414c-a78f-9269d48b5d59" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/RdfForm.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/webpack.config.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/FieldMetaResolver.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/RdfForm.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.prettierrc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/bundle.min.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/dist/index.html" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/index.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/logo.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/robots.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/snowpack.config.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/types/static.d.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/RdfForm.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webpack.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/webpack.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,8 +44,8 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/public" />
       <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$/public" />
     </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -62,7 +56,8 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1598450085339</updated>
-      <workItem from="1598450086382" duration="8818000" />
+      <workItem from="1598450086382" duration="17620000" />
+      <workItem from="1599132478836" duration="20297000" />
     </task>
     <servers />
   </component>
@@ -70,9 +65,23 @@
     <option name="version" value="3" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="2891" y="417" width="618" height="580" key="find.popup" timestamp="1598450517901">
+    <state x="2885" y="509" width="620" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1598461707167">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
+    <state x="2885" y="509" width="620" height="390" key="#com.intellij.fileTypes.FileTypeChooser/1920.0.2560.1440/0.167.1920.1080@1920.0.2560.1440" timestamp="1598461707167" />
+    <state x="728" y="480" width="588" height="522" key="find.popup" timestamp="1599141448948">
+      <screen x="0" y="167" width="1920" height="1080" />
+    </state>
+    <state x="728" y="480" width="588" height="522" key="find.popup/1920.0.2560.1440/0.167.1920.1080@0.167.1920.1080" timestamp="1599141448948" />
     <state x="2891" y="417" width="618" height="580" key="find.popup/1920.0.2560.1440/0.167.1920.1080@1920.0.2560.1440" timestamp="1598450517901" />
+    <state x="708" y="416" key="run.anything.popup" timestamp="1599151963873">
+      <screen x="0" y="167" width="1920" height="1080" />
+    </state>
+    <state x="708" y="416" key="run.anything.popup/1920.0.2560.1440/0.167.1920.1080@0.167.1920.1080" timestamp="1599151963873" />
+    <state x="2864" y="332" key="run.anything.popup/1920.0.2560.1440/0.167.1920.1080@1920.0.2560.1440" timestamp="1598466806203" />
+    <state x="624" y="330" width="672" height="676" key="search.everywhere.popup" timestamp="1599151513951">
+      <screen x="0" y="167" width="1920" height="1080" />
+    </state>
+    <state x="624" y="330" width="672" height="676" key="search.everywhere.popup/1920.0.2560.1440/0.167.1920.1080@0.167.1920.1080" timestamp="1599151513951" />
   </component>
 </project>

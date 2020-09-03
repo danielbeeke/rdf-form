@@ -4,11 +4,18 @@
     "build": "webpack --mode production"
   },
   "dependencies": {
+    "@babel/polyfill": "^7.10.4",
     "@comunica/actor-http-proxy": "^1.16.0",
     "@comunica/actor-init-sparql": "^1.16.2",
+    "@comunica/mediatortype-time": "^1.15.0",
     "@purtuga/esm-webpack-plugin": "^1.2.1",
     "copy-webpack-plugin": "^6.0.3",
     "install": "^0.13.0",
+    "rdf-dereference": "^1.5.0",
+    "rdf-parse": "^1.4.0",
+    "rdf-store-stream": "^1.0.1",
+    "streamify-string": "^1.0.1",
+    "uhtml": "^2.1.1",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0"

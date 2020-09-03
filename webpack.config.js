@@ -4,7 +4,7 @@ const { SourceMapDevToolPlugin } = require("webpack");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-  entry: './src/RdfForm.js',
+  entry: './src/RdfForm.ts',
   resolve: {
     extensions: ['.ts', '.tsx', '.js']
   },
