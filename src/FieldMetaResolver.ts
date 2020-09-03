@@ -36,11 +36,7 @@ export class FieldMetaResolver {
 
     if (predicateUri) {
       const matches = this.ontologies.get(ontologyUri).quads.filter(
-        metaQuad => metaQuad?.subject?.value === predicateUri &&
-          [
-            'http://www.w3.org/2000/01/rdf-schema#label',
-            'http://www.w3.org/2000/01/rdf-schema#comment',
-          ].includes(metaQuad.predicate.value)
+        metaQuad => metaQuad?.subject?.value === predicateUri
       )
 
       if (matches.length) {
