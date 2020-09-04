@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RDF UI</title>
+</head>
+<body>
+
+<rdf-form
+        rdf='
+  @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+  @prefix v:  <http://www.w3.org/2006/vcard/ns#> .
+
+  <http://example.com/me/corky> a v:VCard ;
+     v:fn "Corky Crystal" ;
+     v:nickname "Corks" ;
+     v:tel
+         [ a v:Home, v:Voice ;
+             rdf:value "+61 7 5555 5555"
+         ] ;
+     v:email  <mailto:corky@example.com> ;
+     v:adr
+         [ a v:Home ;
+             v:country-name "Australia" ;
+             v:locality "WonderCity" ;
+             v:postal-code "5555" ;
+             v:street-address "111 Lake Drive"
+         ] . '
+        type="text/turtle"
+        proxy="https://cors-anywhere.herokuapp.com/"></rdf-form>
+
+</body>
+</html>

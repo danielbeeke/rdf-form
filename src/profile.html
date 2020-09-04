@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RDF UI</title>
+  </head>
+  <body>
+
+<rdf-form
+  rdf='
+
+@prefix : <https://ruben.verborgh.org/profile/#>.
+@prefix p: <https://data.verborgh.org/people/>.
+@prefix bibo: <http://purl.org/ontology/bibo/>.
+@prefix cc: <http://creativecommons.org/ns#>.
+@prefix con: <http://www.w3.org/2000/10/swap/pim/contact#>.
+@prefix dbo: <http://dbpedia.org/ontology/>.
+@prefix dbp: <http://dbpedia.org/resource/>.
+@prefix dc: <http://purl.org/dc/terms/>.
+@prefix dcat: <http://www.w3.org/ns/dcat#>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix ldp: <http://www.w3.org/ns/ldp#>.
+@prefix org: <http://www.w3.org/ns/org#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix pim: <http://www.w3.org/ns/pim/space#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix schema: <http://schema.org/>.
+@prefix solid: <http://www.w3.org/ns/solid/terms#>.
+@prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
+@prefix wikipedia: <http://en.wikipedia.org/wiki/>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+
+
+# Profile document
+
+<https://ruben.verborgh.org/profile/>
+    a foaf:Document, foaf:PersonalProfileDocument;
+    rdfs:label "Ruben Verborgh’s FOAF profile"@en;
+    foaf:maker :me;
+    foaf:primaryTopic :me.
+
+
+# Personal details
+
+:me a foaf:Person;
+    foaf:name  "Ruben Verborgh"@en, "Ruben Verborgh"@nl;
+    rdfs:label "Ruben Verborgh"@en, "Ruben Verborgh"@nl;
+    vcard:fn   "Ruben Verborgh"@en, "Ruben Verborgh"@nl;
+    con:preferredURI "https://ruben.verborgh.org/profile/#me";
+    foaf:givenName "Ruben"@en, "Ruben"@nl;
+    foaf:familyName "Verborgh"@en, "Verborgh"@nl;
+    foaf:title "Prof. Dr."@en, "prof. dr. ir."@nl;
+    vcard:title "Professor of Decentralized Web technology"@en;
+    dbo:birthPlace dbp:Ostend;
+    dbo:birthDate "1987-02-28"^^xsd:date;
+    foaf:birthday "02-28";
+    foaf:age 33;
+    foaf:gender "male"@en;
+    dbo:location dbp:Ghent;
+    foaf:based_near dbp:Ghent;
+    foaf:img <https://ruben.verborgh.org/images/ruben.jpg>;
+    foaf:mbox <mailto:ruben.verborgh@ugent.be>;
+    ldp:inbox <https://drive.verborgh.org/inbox/>;
+    pim:storage <https://drive.verborgh.org/>;
+    pim:preferencesFile <https://drive.verborgh.org/settings/prefs.ttl>;
+    solid:oidcIssuer <https://drive.verborgh.org>;
+    solid:publicTypeIndex <https://drive.verborgh.org/settings/publicTypeIndex.ttl>;
+    solid:privateTypeIndex <https://drive.verborgh.org/settings/privateTypeIndex.ttl>;
+    foaf:homepage <https://ruben.verborgh.org/>;
+    foaf:weblog <https://ruben.verborgh.org/blog/>;
+    foaf:publications <https://ruben.verborgh.org/publications/>;
+    foaf:account <https://github.com/RubenVerborgh>,
+                 <https://twitter.com/RubenVerborgh>,
+                 <https://www.linkedin.com/in/rubenverborgh/>;
+    dbo:orcidId "0000-0002-8596-222X";
+    foaf:workplaceHomepage <http://idlab.ugent.be/>,
+                           <http://idlab.technology/>,
+                           <http://www.ugent.be/>,
+                           <https://www.imec-int.com/>;
+    org:memberOf <http://idlab.technology/#organization>,
+                 dbp:Ghent_University,
+                 dbp:IMEC.
+
+<https://drive.verborgh.org/> a pim:ControlledStorage.
+
+<https://data.verborgh.org/ruben#dataset> a dcat:Dataset, schema:Dataset;
+    dc:title    "Ruben Verborgh’s data";
+    schema:name "Ruben Verborgh’s data";
+    dc:publisher :me;
+    foaf:homepage   <https://data.verborgh.org/ruben>;
+    dc:distribution <https://data.verborgh.org/ruben>.
+<https://data.verborgh.org/ruben> a dcat:Distribution;
+    dc:title "Triple Pattern Fragments of Ruben Verborgh’s data";
+    dcat:accessURL <https://data.verborgh.org/ruben>;
+    cc:license <https://creativecommons.org/publicdomain/zero/1.0/>;
+    cc:attributionName "Ruben Verborgh"@en;
+    cc:attributionURL <https://ruben.verborgh.org/>.
+
+'
+  type="text/turtle"
+  proxy="https://cors-anywhere.herokuapp.com/"
+></rdf-form>
+
+  </body>
+</html>

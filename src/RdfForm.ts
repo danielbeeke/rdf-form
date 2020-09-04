@@ -52,22 +52,23 @@ export class RdfForm extends HTMLElement {
       console.log(this.formStructure)
       this.render()
     })
-    quadStream.on('error', () => {})
+    quadStream.on('error', error => {
+      console.error(error)
+    })
   }
 
   async syncFormStructure () {
     for (const quad of this.quads) {
       let reference = this.references.get(quad?.subject?.id)
+      if (!reference) reference = await this.createSubject(quad?.subject?.id)
 
-      if (!reference) {
-        reference = await this.createSubject(quad?.subject?.id)
-      }
+      if (reference) {
+        // We check if we have a reference, if no reference is found the RDF was incomplete.
+        let child = reference.children.find(child => child.quad === quad)
 
-      // We check if we have a reference, if no reference is found the RDF was incomplete.
-      let child = reference.children.find(child => child.quad === quad)
-
-      if (reference && !this.references.has(quad.object?.id) && !child) {
-        reference.children.push(await this.createField(quad))
+        if (reference && !this.references.has(quad.object?.id) && !child) {
+          reference.children.push(await this.createField(quad))
+        }
       }
     }
   }
@@ -83,10 +84,14 @@ export class RdfForm extends HTMLElement {
 
       // These template functions may be overwritten.
       templates: {
-        label: field => html`<label>${field.fieldMeta.label}</label>`,
+        label: field => html`<label>${field.fieldMeta?.label}</label>`,
         item: field => !field.children.length ? html`<input type="text" value="${field.quad.object.id}">` : '',
-        description: field => html`<small>${field.fieldMeta.comment}</small>`,
-        wrapper: field => html`<div class="${'field ' + (field.children && field.children.length ? 'group' : '')}">
+        description: field => html`<small>${field.fieldMeta?.comment}</small>`,
+        group: field => html`<details open>
+          <summary>${field.fieldMeta?.label}</summary>
+          ${html`<div class="children">${field.children.map(child => child.templates[child.children.length ? 'wrapper' : 'wrapper'](child))}</div>`}
+        </details>`,
+        wrapper: field => html`<div class="field">
           ${field.templates.label(field)}
           ${field.templates.item(field)}
           ${field.templates.description(field)}
@@ -133,7 +138,7 @@ export class RdfForm extends HTMLElement {
   }
 
   render () {
-    render(this, html`${this.formStructure.children.map(child => child.templates.wrapper(child))}`)
+    render(this, html`${this.formStructure.children.map(child => child.templates[child.children.length ? 'group' : 'wrapper'](child))}`)
   }
 }
 

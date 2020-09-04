@@ -9,11 +9,13 @@ export class FieldMetaResolver {
 
   readonly proxy: any;
   private ontologies: Map<string, OntoLogyMeta>;
+  private ontologyAliases: Map<string, string>;
   private fieldMetas: Map<string, object>;
 
   constructor(proxy: any) {
     this.proxy = proxy
     this.ontologies = new Map<string, OntoLogyMeta>()
+    this.ontologyAliases = new Map<string, string>()
     this.fieldMetas = new Map<string, object>()
   }
 
@@ -35,6 +37,8 @@ export class FieldMetaResolver {
     await this.ensureOntologyMeta(ontologyUri)
 
     if (predicateUri) {
+      console.log(ontologyUri)
+
       const matches = this.ontologies.get(ontologyUri).quads.filter(
         metaQuad => metaQuad?.subject?.value === predicateUri
       )
@@ -59,6 +63,10 @@ export class FieldMetaResolver {
    * @param ontologyUri
    */
   async ensureOntologyMeta (ontologyUri) {
+    let splitUrl = ontologyUri.split('/');
+    splitUrl.pop()
+    const ontologyUrlOneLevelLower = splitUrl.join('/')
+
     if (!this.ontologies.get(ontologyUri)) {
       const ontologyMeta: OntoLogyMeta = {
         quads: [],
@@ -75,9 +83,10 @@ export class FieldMetaResolver {
             config['@comunica/actor-http-proxy:httpProxyHandler'] = this.proxy
           }
 
-          let { quads } = await rdfDereferencer.dereference(ontologyUri.toString(), config);
+          let { quads, headers } = await rdfDereferencer.dereference(ontologyUri, config);
+
           quads
-            .on('error', (error) => {
+            .on('error', () => {
               // On error we simply leave this one empty.
               // It may be a hiccup or something unknown.
               this.ontologies.delete(ontologyUri)
@@ -85,6 +94,7 @@ export class FieldMetaResolver {
             .on('data', (quad) => {
               ontologyMeta.quads.push(quad)
               this.ontologies.set(ontologyUri, ontologyMeta)
+              this.ontologyAliases.set(ontologyUrlOneLevelLower, ontologyUri)
             })
             .on('end', () => {
               resolve()
