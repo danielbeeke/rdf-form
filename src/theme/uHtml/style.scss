@@ -1,0 +1,17 @@
+rdf-form {
+  .field {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .field-label {
+    font-weight: bold;
+    text-transform: capitalize;
+  }
+
+  .country-flag {
+    max-width: 22px;
+  }
+}
+

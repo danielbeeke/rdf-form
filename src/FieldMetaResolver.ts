@@ -1,3 +1,9 @@
+/**
+ * Fix for https://github.com/schemaorg/schemaorg/issues/2578
+ * @see JsonLdParser:109
+ * chunk = chunk.replace('"@context": "http://schema.org"','"@context": "https://schema.org/docs/jsonldcontext.jsonld"' )
+ */
+
 import rdfDereferencer from 'rdf-dereference'
 
 interface OntoLogyMeta {
@@ -8,14 +14,18 @@ interface OntoLogyMeta {
 export class FieldMetaResolver {
 
   readonly proxy: any;
+  readonly language: string;
   private ontologies: Map<string, OntoLogyMeta>;
   private ontologyAliases: Map<string, string>;
   private fieldMetas: Map<string, object>;
 
-  constructor(proxy: any) {
+  constructor(proxy: any, language: string) {
     this.proxy = proxy
+    this.language = language
+
     this.ontologies = new Map<string, OntoLogyMeta>()
-    this.ontologyAliases = new Map<string, string>()
+    const ontologyAliasesCache = localStorage.ontologyAliases ? JSON.parse(localStorage.ontologyAliases) : null
+    this.ontologyAliases = new Map<string, string>(ontologyAliasesCache)
     this.fieldMetas = new Map<string, object>()
   }
 
@@ -34,12 +44,10 @@ export class FieldMetaResolver {
 
     const ontologyUri = url.toString()
 
-    await this.ensureOntologyMeta(ontologyUri)
+    const deReferencedUrl = await this.ensureOntologyMeta(ontologyUri)
 
-    if (predicateUri) {
-      console.log(ontologyUri)
-
-      const matches = this.ontologies.get(ontologyUri).quads.filter(
+    if (predicateUri && this.ontologies.get(deReferencedUrl)) {
+      const matches = this.ontologies.get(deReferencedUrl).quads.filter(
         metaQuad => metaQuad?.subject?.value === predicateUri
       )
 
@@ -48,7 +56,8 @@ export class FieldMetaResolver {
 
         matches.forEach(match => {
           const type = match.predicate.value.split('#')[1]
-          fieldMeta[type] = match.object.value
+          if (!fieldMeta[type]) fieldMeta[type] = {}
+          fieldMeta[type][match.object?.language ? match.object?.language : 'default'] = match.object.value
         })
 
         this.fieldMetas.set(predicateUri, fieldMeta)
@@ -60,12 +69,13 @@ export class FieldMetaResolver {
 
   /**
    * Fetches and statically caches the OWL ontology
+   * It caches de-referenced urls for the ontologies.
    * @param ontologyUri
    */
   async ensureOntologyMeta (ontologyUri) {
-    let splitUrl = ontologyUri.split('/');
-    splitUrl.pop()
-    const ontologyUrlOneLevelLower = splitUrl.join('/')
+    const deReferencedUrl = this.ontologyAliases.get(ontologyUri)
+
+    if (deReferencedUrl) ontologyUri = deReferencedUrl
 
     if (!this.ontologies.get(ontologyUri)) {
       const ontologyMeta: OntoLogyMeta = {
@@ -83,7 +93,7 @@ export class FieldMetaResolver {
             config['@comunica/actor-http-proxy:httpProxyHandler'] = this.proxy
           }
 
-          let { quads, headers } = await rdfDereferencer.dereference(ontologyUri, config);
+          let { quads, url } = await rdfDereferencer.dereference(ontologyUri, config);
 
           quads
             .on('error', () => {
@@ -93,15 +103,16 @@ export class FieldMetaResolver {
             })
             .on('data', (quad) => {
               ontologyMeta.quads.push(quad)
-              this.ontologies.set(ontologyUri, ontologyMeta)
-              this.ontologyAliases.set(ontologyUrlOneLevelLower, ontologyUri)
+              this.ontologies.set(url, ontologyMeta)
+              if (url !== ontologyUri) this.ontologyAliases.set(ontologyUri, url)
+              localStorage.ontologyAliases = JSON.stringify(Array.from(this.ontologyAliases.entries()));
             })
             .on('end', () => {
-              resolve()
+              resolve(url)
             })
         }
         catch (exception) {
-          resolve()
+          resolve(deReferencedUrl)
         }
       })
 
