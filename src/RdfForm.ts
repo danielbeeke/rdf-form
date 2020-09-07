@@ -34,7 +34,7 @@ export class RdfForm extends HTMLElement {
   async connectedCallback () {
     const proxyUrl = this.getAttribute('proxy')
     this.proxy = proxyUrl ? new (<any> ActorHttpProxy).ProxyHandlerStatic(proxyUrl) : null;
-    this.language = this.getAttribute('lang')
+    this.language = this.getAttribute('lang') ?? 'en'
     this.fieldMetaResolver = new FieldMetaResolver(this.proxy, this.language)
     this.renderer = new RendererUhtml()
 
@@ -122,7 +122,7 @@ export class RdfForm extends HTMLElement {
       },
 
       get description () {
-        return this.fieldMeta?.comment?.[this.fieldMeta?.comment?.[this.language] ? this.comment : 'default']
+        return this.fieldMeta?.comment?.[this.fieldMeta?.comment?.[this.language] ? this.language : 'default']
       },
     }
 
@@ -136,15 +136,36 @@ export class RdfForm extends HTMLElement {
 
     // Assign the main subject.
     if (!subjectQuad) {
-      this.formStructure.id = subject
-      this.references.set(subject, this.formStructure)
-      return this.formStructure
+      const standAloneSubject = {
+        children: [],
+        quads: [],
+        id: subject,
+        fieldMeta: null,
+        language: this.language,
+        templates: this.renderer.getTemplates(),
+        get label () {
+          return subject
+        },
+
+        get description () {
+          return subject
+        },
+      }
+
+      this.formStructure.children.push(standAloneSubject)
+
+      this.references.set(subject, standAloneSubject)
+      return standAloneSubject
     }
 
     const subjectValue = subjectQuad?.subject?.id ?? subjectQuad?.subject?.value
 
     if (subjectQuad && subjectValue) {
-      const reference = this.references.get(subjectValue)
+      let reference = this.references.get(subjectValue)
+
+      if (!reference) {
+        reference = this.formStructure
+      }
 
       if (reference) {
         let child = reference.children.find(child => child.quad === subjectQuad)

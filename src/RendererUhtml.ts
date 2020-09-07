@@ -18,7 +18,7 @@ export class RendererUhtml implements Renderer {
       item: function (field, quad) {
         // TODO toJSON does not always exist
         const jsonQuad = quad.toJSON ? quad.toJSON() : quad
-        const flagCode = jsonQuad.object?.language !== 'en' ? jsonQuad.object?.language : 'gb'
+        const flagCode = jsonQuad.object?.language && jsonQuad.object?.language !== 'en' ? jsonQuad.object?.language : 'gb'
 
         return html`
           <div class="field-item">
