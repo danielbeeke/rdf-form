@@ -90,6 +90,7 @@ export class RdfForm extends HTMLElement {
 
         if (reference && !this.references.has(object) && !child) {
           const newField = await this.createField(quad)
+          // TODO create a named form tree as references or restructure to object based formReference.
           if (newField) reference.children.push(newField)
         }
       }
@@ -152,6 +153,7 @@ export class RdfForm extends HTMLElement {
         },
       }
 
+      // TODO create a named form tree as references or restructure to object based formReference.
       this.formStructure.children.push(standAloneSubject)
 
       this.references.set(subject, standAloneSubject)
@@ -175,6 +177,7 @@ export class RdfForm extends HTMLElement {
 
           if (child) {
             this.references.set(subject, child)
+            // TODO create a named form tree as references or restructure to object based formReference.
             reference.children.push(child)
           }
         }
