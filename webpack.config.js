@@ -8,7 +8,7 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 let htmlPageNames = ['profile', 'vcard']
 let multipleHtmlPlugins = htmlPageNames.map(name => {
   return new HtmlWebpackPlugin({
-    template: `./src/${name}.html`,
+    template: `./html/${name}.html`,
     filename: `${name}.html`,
   })
 })
@@ -86,7 +86,7 @@ module.exports = {
       filename: '[file].map'
     }),
     new HtmlWebpackPlugin({
-      template: './src/index.html',
+      template: './html/index.html',
       chunks: ['main']
     })
   ].concat(multipleHtmlPlugins)

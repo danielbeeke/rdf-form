@@ -11,7 +11,7 @@ interface OntoLogyMeta {
   quads: Array<any>
 }
 
-export class FieldMetaResolver {
+export class PredicateMetaResolver {
 
   readonly proxy: any;
   readonly language: string;

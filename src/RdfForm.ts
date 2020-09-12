@@ -1,42 +1,35 @@
-import * as Streamify from 'streamify-string'
-import { FieldMetaResolver } from './FieldMetaResolver'
-import * as ActorHttpProxy from '@comunica/actor-http-proxy'
-import { RendererUhtml, Renderer } from './RendererUhtml'
-import rdfDereferencer from 'rdf-dereference'
+import { QuadNester } from './QuadNester'
+import { PredicateMetaResolver } from './PredicateMetaResolver'
+import { FormElementResolverRegistry } from './FormElementResolverRegistry'
+import { FormElementRegistry } from './FormElementRegistry'
+import { DataTypes } from './FormElementResolvers/DataTypes'
+import { Text } from './FormElements/Text'
+import { render, html } from 'uhtml'
+import '../scss/style.scss'
 
+import * as Streamify from 'streamify-string'
+import * as ActorHttpProxy from '@comunica/actor-http-proxy'
+
+import rdfDereferencer from 'rdf-dereference'
 import rdfParser from 'rdf-parse'
 
-interface FormStructure {
-  id: string,
-  children: Array<any>
-}
+FormElementResolverRegistry.register(DataTypes)
+FormElementRegistry.register(Text)
 
 export class RdfForm extends HTMLElement {
 
+  private predicateMetaResolver: PredicateMetaResolver
+  private quadNester: QuadNester
   private quads = []
-  private processedQuads = []
-  private subject: string
-  private renderer: Renderer
-  private fieldMetaResolver: FieldMetaResolver
+
   private proxy: string
   private language: string
-  readonly formStructure: FormStructure
-  private references = new Map()
-
-  constructor() {
-    super();
-    this.formStructure = {
-      children: [],
-      id: null
-    }
-  }
 
   async connectedCallback () {
     const proxyUrl = this.getAttribute('proxy')
     this.proxy = proxyUrl ? new (<any> ActorHttpProxy).ProxyHandlerStatic(proxyUrl) : null;
     this.language = this.getAttribute('lang') ?? 'en'
-    this.fieldMetaResolver = new FieldMetaResolver(this.proxy, this.language)
-    this.renderer = new RendererUhtml()
+    this.predicateMetaResolver = new PredicateMetaResolver(this.proxy, this.language)
 
     const url = this.getAttribute('url') ? this.getAttribute('url').trim() : null
     const rdf = this.getAttribute('rdf') ? this.getAttribute('rdf').trim() : null
@@ -49,23 +42,45 @@ export class RdfForm extends HTMLElement {
       this.quads.push(quad)
     })
     quadStream.on('end', async () => {
-      await this.syncFormStructure()
-      console.log(this.formStructure)
-      this.renderer.render(this, this.formStructure)
+      this.quadNester = new QuadNester(this.quads)
+      const promises = []
+      for (const [quad, formElementData] of this.quadNester.quadReferences.entries()) {
+        const predicate = quad.predicate?.id ?? quad.predicate?.value
+        const promise = this.predicateMetaResolver.getFieldMeta(predicate).then(predicateMeta => {
+          if (predicateMeta) {
+            formElementData.predicateMeta = predicateMeta
+            formElementData.type = FormElementResolverRegistry.resolve(quad, formElementData.predicateMeta)
+            formElementData.formElement = FormElementRegistry.get(formElementData.type)
+          }
+        })
+        promises.push(promise)
+      }
+      Promise.all(promises).then(() => {
+        this.render()
+        console.log(this.quadNester.quadReferences.size)
+        console.log(this.quadNester.quads.length)
+        const mainSubject = this.quadNester.nestedQuads.children[0].quads[0]
+        const mainFormElementData = this.quadNester.quadReferences.get(mainSubject)
+        console.log(this.quadNester.nestedQuads)
+      })
     })
     quadStream.on('error', error => {
       console.error(error)
     })
   }
 
+  render () {
+    render(this, html`${this.quadNester.nestedQuads.children.map(
+      child => {
+        return child.formElement ? child.formElement[child.children.length ? 'group' : 'wrapper'](child) : ''
+      })
+    }`)
+  }
+
   async dereferenceUrl (url) {
     const config = {}
-
-    if (this.proxy) {
-      config['@comunica/actor-http-proxy:httpProxyHandler'] = this.proxy
-    }
-
-    let {quads} = await rdfDereferencer.dereference(url, config);
+    if (this.proxy) config['@comunica/actor-http-proxy:httpProxyHandler'] = this.proxy
+    let { quads } = await rdfDereferencer.dereference(url, config)
     return quads
   }
 
@@ -76,116 +91,6 @@ export class RdfForm extends HTMLElement {
     return rdfParser.parse(Streamify(rdf), { contentType: type });
   }
 
-  async syncFormStructure () {
-    for (let quad of this.quads) {
-      const subject = quad?.subject?.id ?? quad?.subject?.value
-      const object = quad?.object?.id ?? quad?.object?.value
-
-      let reference = this.references.get(subject)
-      if (!reference) reference = await this.createSubject(subject)
-
-      if (reference) {
-        // We check if we have a reference, if no reference is found the RDF was incomplete.
-        let child = reference.children.find(child => child.quad === quad)
-
-        if (reference && !this.references.has(object) && !child) {
-          const newField = await this.createField(quad)
-          // TODO create a named form tree as references or restructure to object based formReference.
-          if (newField) reference.children.push(newField)
-        }
-      }
-    }
-  }
-
-  async createField (quad, id = null) {
-    if (this.processedQuads.includes(quad) && id === null) return false
-    const predicate = quad?.predicate?.id ?? quad?.predicate?.value
-
-    const fieldMeta = await this.fieldMetaResolver.getFieldMeta(predicate)
-
-    if (!fieldMeta) return false
-
-    const quads = this.quads.filter(innerQuad =>
-      innerQuad.predicate.equals(quad.predicate) &&
-      innerQuad.subject.equals(quad.subject)
-    )
-    this.processedQuads.push(...quads)
-
-    const item = {
-      children: [],
-      quads: quads,
-      id: null,
-      fieldMeta: fieldMeta,
-      language: this.language,
-      templates: this.renderer.getTemplates(),
-      get label () {
-        return this.fieldMeta?.label?.[this.fieldMeta?.label?.[this.language] ? this.language : 'default']
-      },
-
-      get description () {
-        return this.fieldMeta?.comment?.[this.fieldMeta?.comment?.[this.language] ? this.language : 'default']
-      },
-    }
-
-    if (id) item.id = id
-
-    return item
-  }
-
-  async createSubject (subject) {
-    const subjectQuad = this.quads.find(quad => quad?.object?.id ?? quad?.object?.value === subject)
-
-    // Assign the main subject.
-    if (!subjectQuad) {
-      const standAloneSubject = {
-        children: [],
-        quads: [],
-        id: subject,
-        fieldMeta: null,
-        language: this.language,
-        templates: this.renderer.getTemplates(),
-        get label () {
-          return subject
-        },
-
-        get description () {
-          return subject
-        },
-      }
-
-      // TODO create a named form tree as references or restructure to object based formReference.
-      this.formStructure.children.push(standAloneSubject)
-
-      this.references.set(subject, standAloneSubject)
-      return standAloneSubject
-    }
-
-    const subjectValue = subjectQuad?.subject?.id ?? subjectQuad?.subject?.value
-
-    if (subjectQuad && subjectValue) {
-      let reference = this.references.get(subjectValue)
-
-      if (!reference) {
-        reference = this.formStructure
-      }
-
-      if (reference) {
-        let child = reference.children.find(child => child.quad === subjectQuad)
-
-        if (!child) {
-          child = await this.createField(subjectQuad, subject)
-
-          if (child) {
-            this.references.set(subject, child)
-            // TODO create a named form tree as references or restructure to object based formReference.
-            reference.children.push(child)
-          }
-        }
-
-        return child
-      }
-    }
-  }
 }
 
 customElements.define('rdf-form', RdfForm);
