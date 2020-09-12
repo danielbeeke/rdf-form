@@ -1,5 +1,5 @@
 import {render, html} from 'uhtml'
-import './theme/uHtml/style.scss'
+import '../scss/style.scss'
 
 export interface Renderer {
   render(element, formStructure)
