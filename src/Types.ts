@@ -23,8 +23,11 @@ export type FormElementData = {
   subject: string | void
 }
 
-export interface FormElement {
+export interface FormElement {}
 
+export interface OntoLogyMeta {
+  promise: Promise<any>,
+  quads: Array<any>
 }
 
 export type Newable<T> = { new (...args: any[]): T };

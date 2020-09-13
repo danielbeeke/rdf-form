@@ -104,14 +104,17 @@ export class RdfForm extends HTMLElement {
         formElementData.formElement = FormElementRegistry.get(formElementData.type, formElementData, this)
       }
 
-      render(this, html`${this.quadNester.structure.map(
-        child => {
-          return child.formElement ? child.formElement.templateWrapper(child) : ''
-        })
-      }`)
+      this.render()
     })
   }
 
+  render () {
+    render(this, html`${this.quadNester.structure.map(
+      child => {
+        return child.formElement ? child.formElement.templateWrapper(child) : ''
+      })
+    }`)
+  }
 }
 
 customElements.define('rdf-form', RdfForm);

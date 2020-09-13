@@ -53,5 +53,8 @@ export class FormElementBase {
     </div>`
   }
 
+  render () {
+    this.form.render()
+  }
 }
 
