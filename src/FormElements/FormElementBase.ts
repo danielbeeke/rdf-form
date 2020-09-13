@@ -1,5 +1,10 @@
 import { html } from 'uhtml'
 import { RdfForm } from '../RdfForm'
+import { library, dom } from '@fortawesome/fontawesome-svg-core'
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
+
+dom.watch()
+library.add(faTimes)
 
 export class FormElementBase {
 
@@ -27,14 +32,23 @@ export class FormElementBase {
 
   templateItem (quad) {
     const jsonQuad = quad.toJSON ? quad.toJSON() : quad
-    const flagCode = jsonQuad.object?.language && jsonQuad.object?.language !== 'en' ? jsonQuad.object?.language : 'gb'
+    const languageCode = jsonQuad.object?.language
 
     return html`
       <div class="field-item">
-        ${jsonQuad?.object?.language ? html`<img class="country-flag" src="${'/flags/' + flagCode + '.svg'}" />` : ''}
+        ${languageCode ? html`<span>${languageCode}</span>` : ''}
         <input type="text" value="${jsonQuad.object.value}">
+        ${this.templateItemActions(quad)}
       </div>
     `
+  }
+
+  templateItemActions (quad) {
+    return html`<div class="field-item-actions">
+      <button>
+        <i class="fas fa-times"></i>
+      </button>
+    </div>`
   }
 
   templateDescription () {
