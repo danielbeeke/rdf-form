@@ -1,8 +1,3 @@
-export interface FormStructure {
-  id: string,
-  children: Array<any>
-}
-
 export type QuadPart = {
   id: string,
   value: string,
@@ -20,6 +15,10 @@ export type NestedQuads = {
 
 export interface FormElementResolver {
   resolve (quad: Quad, predicateMeta: PredicateMeta): FieldSuggestion | void
+}
+
+export type FormElementData = {
+  children: Array<any>
 }
 
 export interface FormElement {

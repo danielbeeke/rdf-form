@@ -1,41 +1,39 @@
-import {debug} from "webpack";
-import { Quad, NestedQuads } from './Types'
-import { findInSet, filterInSet } from './Helpers'
+/**
+ * This module nests the quad in a way that works good for the form.
+ * It groups quads that have the same predicate-subject, quads that are translations of one another and
+ * quads that belong to a multi value field.
+ */
+import { Quad, NestedQuads, FormElementData } from './Types'
+import { filterInSet } from './Helpers'
 
 export class QuadNester {
 
   private subjectReferences = new Map()
   public quadReferences = new Map()
-  private processedQuads: Set<Quad> = new Set()
   public formElementReferences: Set<any> = new Set()
   public quads: Array<Quad>
   readonly nestedQuads: NestedQuads
 
   constructor(quads) {
     this.quads = quads
-    this.nestedQuads = {
-      children: []
-    }
+    this.nestedQuads = { children: [] }
 
     for (const quad of this.quads) {
       const subject = quad.subject?.id ?? quad.subject?.value
-      const object = quad.object?.id ?? quad.object?.value
-      const predicate = quad.predicate?.id ?? quad.predicate?.value
-
       const subjectFormElement = this.ensureSubject(subject)
 
       if (subjectFormElement) {
-        // // We check if we have a subjectFormElement, if no subjectFormElement is found the RDF was incomplete.
         let child = subjectFormElement.children.find(child => child.quad === quad)
-
-        if (!child) {
-          this.createChild(quad, subjectFormElement)
-        }
+        if (!child) this.createChild(quad, subjectFormElement)
       }
     }
   }
 
-  ensureSubject (subject) {
+  /**
+   * Given a subject uri, returns a subject formElementData.
+   * @param subject
+   */
+  ensureSubject (subject): FormElementData {
     let subjectFormElement = this.subjectReferences.get(subject)
     if (subjectFormElement) return subjectFormElement
 
@@ -52,8 +50,6 @@ export class QuadNester {
         children: [],
       }
 
-      this.formElementReferences.add(subjectFormElement)
-      this.subjectReferences.set(subject, subjectFormElement)
       this.nestedQuads.children.push(subjectFormElement)
     }
 
@@ -65,18 +61,30 @@ export class QuadNester {
         children: []
       }
 
-      this.formElementReferences.add(subjectFormElement)
-      this.subjectReferences.set(subject, subjectFormElement)
       const parentSubject = subjectQuads[0].subject?.id ?? subjectQuads[0].subject?.value
       const parentSubjectFormElement = this.ensureSubject(parentSubject)
       parentSubjectFormElement.children.push(subjectFormElement)
     }
 
+    this.formElementReferences.add(subjectFormElement)
+    this.subjectReferences.set(subject, subjectFormElement)
+
+    for (const quad of subjectQuads) {
+      this.quadReferences.set(quad, subjectFormElement)
+    }
+
     return subjectFormElement
   }
 
+  /**
+   * Creates a child within the subject.
+   * @param quad
+   * @param subjectFormElement
+   */
   createChild (quad, subjectFormElement) {
-    if (this.processedQuads.has(quad)) return false
+    const possibleSubject = quad?.object?.id ?? quad?.object?.value
+
+    if (this.quadReferences.get(quad) || this.subjectReferences.get(possibleSubject)) return false
 
     const quads = filterInSet(innerQuad =>
       innerQuad.predicate.equals(quad.predicate) &&
@@ -89,7 +97,6 @@ export class QuadNester {
     }
 
     for (const quad of quads) {
-      this.processedQuads.add(quad)
       this.quadReferences.set(quad, child)
     }
 
@@ -99,6 +106,9 @@ export class QuadNester {
     return child
   }
 
+  /**
+   * Returns the first usable structure of the nestedQuads
+   */
   get structure () {
     return this.nestedQuads.children
   }
