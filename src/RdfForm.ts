@@ -7,6 +7,8 @@ import { FormElementResolverRegistry } from './FormElementResolverRegistry'
 import { FormElementRegistry } from './FormElementRegistry'
 import { DataTypes } from './FormElementResolvers/DataTypes'
 import { Text } from './FormElements/Text'
+import { Type } from './FormElements/Type'
+import { Subject } from './FormElements/Subject'
 import { render, html } from 'uhtml'
 import '../scss/style.scss'
 
@@ -18,6 +20,8 @@ import rdfParser from 'rdf-parse'
 
 FormElementResolverRegistry.register(DataTypes)
 FormElementRegistry.register(Text)
+FormElementRegistry.register(Type)
+FormElementRegistry.register(Subject)
 
 export class RdfForm extends HTMLElement {
 
@@ -25,7 +29,7 @@ export class RdfForm extends HTMLElement {
   private quadNester: QuadNester
   private quads = []
 
-  private proxy: string
+  public proxy: string
   public language: string
 
   /**
@@ -96,7 +100,7 @@ export class RdfForm extends HTMLElement {
     Promise.all(promises).then(() => {
       for (const formElementData of this.quadNester.formElementReferences) {
         const quad = formElementData.quads?.[0]
-        formElementData.type = quad && formElementData.predicateMeta ? FormElementResolverRegistry.resolve(quad, formElementData.predicateMeta) : 'text'
+        formElementData.type = quad && formElementData.predicateMeta ? FormElementResolverRegistry.resolve(quad, formElementData) : 'text'
         formElementData.formElement = FormElementRegistry.get(formElementData.type, formElementData, this)
       }
 

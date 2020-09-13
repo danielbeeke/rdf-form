@@ -68,10 +68,6 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: 'node_modules/svg-country-flags/svg',
-          to: './flags'
-        },
-        {
           from: 'public',
           to: '.'
         },

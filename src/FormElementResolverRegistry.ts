@@ -1,4 +1,4 @@
-import { FormElementResolver, Quad, Newable, FieldSuggestion, PredicateMeta } from './Types'
+import { FormElementResolver, Quad, Newable, FieldSuggestion, FormElementData } from './Types'
 
 class FormElementResolverRegistryClass {
 
@@ -8,10 +8,10 @@ class FormElementResolverRegistryClass {
     this.resolvers.push(new formElementResolver())
   }
 
-  resolve (quad: Quad, predicateMeta: PredicateMeta) {
+  resolve (quad: Quad, formElementData: FormElementData) {
     const suggestions: Array<FieldSuggestion> = []
     for (const resolver of this.resolvers) {
-      const suggestion = resolver.resolve(quad, predicateMeta)
+      const suggestion = resolver.resolve(quad, formElementData)
       if (suggestion) suggestions.push(suggestion)
     }
 

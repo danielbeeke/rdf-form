@@ -14,11 +14,13 @@ export type NestedQuads = {
 }
 
 export interface FormElementResolver {
-  resolve (quad: Quad, predicateMeta: PredicateMeta): FieldSuggestion | void
+  resolve (quad: Quad, formElementData: FormElementData): FieldSuggestion | void
 }
 
 export type FormElementData = {
-  children: Array<any>
+  children: Array<any>,
+  predicateMeta: any,
+  subject: string | void
 }
 
 export interface FormElement {
