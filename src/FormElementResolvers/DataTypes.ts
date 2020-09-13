@@ -11,9 +11,8 @@ export class DataTypes implements FormElementResolver {
       if (typeMapping[predicateMeta.range.default]) {
         return typeMapping[predicateMeta.range.default]
       }
-      else {
-        return { importance: 0, type: 'text' }
-      }
     }
+
+    return { importance: 0, type: 'text' }
   }
 }

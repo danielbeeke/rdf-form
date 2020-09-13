@@ -1,3 +1,5 @@
+import { RdfForm} from './RdfForm'
+
 class FormElementRegistryClass {
 
   readonly elements: Array<any> = []
@@ -6,9 +8,9 @@ class FormElementRegistryClass {
     this.elements.push(formElement)
   }
 
-  get (type: string) {
+  get (type: string, formElementData: any, rdfForm: RdfForm) {
     const formElement = this.elements.find(element => element.type === type)
-    if (formElement) return new formElement()
+    if (formElement) return new formElement(formElementData, rdfForm)
   }
 
 }

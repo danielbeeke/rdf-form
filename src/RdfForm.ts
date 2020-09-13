@@ -23,7 +23,7 @@ export class RdfForm extends HTMLElement {
   private quads = []
 
   private proxy: string
-  private language: string
+  public language: string
 
   async connectedCallback () {
     const proxyUrl = this.getAttribute('proxy')
@@ -47,34 +47,28 @@ export class RdfForm extends HTMLElement {
       for (const [quad, formElementData] of this.quadNester.quadReferences.entries()) {
         const predicate = quad.predicate?.id ?? quad.predicate?.value
         const promise = this.predicateMetaResolver.getFieldMeta(predicate).then(predicateMeta => {
-          if (predicateMeta) {
-            formElementData.predicateMeta = predicateMeta
-            formElementData.type = FormElementResolverRegistry.resolve(quad, formElementData.predicateMeta)
-            formElementData.formElement = FormElementRegistry.get(formElementData.type)
-          }
+          if (predicateMeta) formElementData.predicateMeta = predicateMeta
         })
         promises.push(promise)
       }
+
       Promise.all(promises).then(() => {
-        this.render()
-        console.log(this.quadNester.quadReferences.size)
-        console.log(this.quadNester.quads.length)
-        const mainSubject = this.quadNester.nestedQuads.children[0].quads[0]
-        const mainFormElementData = this.quadNester.quadReferences.get(mainSubject)
-        console.log(this.quadNester.nestedQuads)
+        for (const formElementData of this.quadNester.formElementReferences) {
+          const quad = formElementData.quads?.[0]
+          formElementData.type = quad && formElementData.predicateMeta ? FormElementResolverRegistry.resolve(quad, formElementData.predicateMeta) : 'text'
+          formElementData.formElement = FormElementRegistry.get(formElementData.type, formElementData, this)
+        }
+
+        render(this, html`${this.quadNester.structure.map(
+          child => {
+            return child.formElement ? child.formElement.templateWrapper(child) : ''
+          })
+        }`)
       })
     })
     quadStream.on('error', error => {
       console.error(error)
     })
-  }
-
-  render () {
-    render(this, html`${this.quadNester.nestedQuads.children.map(
-      child => {
-        return child.formElement ? child.formElement[child.children.length ? 'group' : 'wrapper'](child) : ''
-      })
-    }`)
   }
 
   async dereferenceUrl (url) {

@@ -23,7 +23,7 @@ export interface FormElementResolver {
 }
 
 export interface FormElement {
-  readonly type: string
+
 }
 
 export type Newable<T> = { new (...args: any[]): T };
