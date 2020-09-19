@@ -103,4 +103,4 @@ The idea is to put the properties: required, multiple, translatable etc inside a
 ></rdf-form>
 
 ```
-
+[logo]: https://raw.githubusercontent.com/danielbeeke/rdf-form/master/screenshot/progress.png "Screenshot of progress"
