@@ -1,6 +1,7 @@
 /**
  * A custom element that shows a HTML form from a set of quads.
  */
+import { OntologyRepository } from './OntologyRepository'
 import { QuadNester } from './QuadNester'
 import { PredicateMetaResolver } from './PredicateMetaResolver'
 import { FormElementResolverRegistry } from './FormElementResolverRegistry'
@@ -8,10 +9,12 @@ import { FormElementRegistry } from './FormElementRegistry'
 import { DataTypes } from './FormElementResolvers/DataTypes'
 import { Vcard } from './FormElementResolvers/Vcard'
 import { Text } from './FormElements/Text'
+import { Email } from './FormElements/Email'
 import { Phone } from './FormElements/Phone'
 import { Address } from './FormElements/Address'
 import { Type } from './FormElements/Type'
 import { Subject } from './FormElements/Subject'
+import { SchemaOrg } from './UriChangers/SchemaOrg'
 import { render, html } from 'uhtml'
 import '../scss/style.scss'
 
@@ -28,6 +31,8 @@ FormElementRegistry.register(Type)
 FormElementRegistry.register(Subject)
 FormElementRegistry.register(Phone)
 FormElementRegistry.register(Address)
+FormElementRegistry.register(Email)
+OntologyRepository.registerUriChanger(SchemaOrg)
 
 export class RdfForm extends HTMLElement {
 

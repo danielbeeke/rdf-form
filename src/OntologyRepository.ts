@@ -4,18 +4,24 @@
  * chunk = chunk.replace('"@context": "http://schema.org"','"@context": "https://schema.org/docs/jsonldcontext.jsonld"' )
  */
 
-import rdfDereferencer from "rdf-dereference";
+import rdfDereferencer from 'rdf-dereference'
 import { OntoLogyMeta } from './Types'
 
 class OntologyRepositoryClass {
 
   private ontologies: Map<string, OntoLogyMeta>;
   private ontologyAliases: Map<string, string>;
+  readonly uriChangers: Array<any> = []
 
   constructor() {
     this.ontologies = new Map<string, OntoLogyMeta>()
     const ontologyAliasesCache = localStorage.ontologyAliases ? JSON.parse(localStorage.ontologyAliases) : null
     this.ontologyAliases = new Map<string, string>(ontologyAliasesCache)
+    this.ontologyAliases.set('http://ogp.me/ns', 'https://raw.githubusercontent.com/Parsely/schemato/master/schemato/schema_defs/ogp.me.ttl')
+  }
+
+  registerUriChanger (uriChanger: any) {
+    this.uriChangers.push(uriChanger)
   }
 
   async dereference (ontologyUri, proxy: any | null) {
@@ -29,7 +35,7 @@ class OntologyRepositoryClass {
         promise: null
       }
 
-      const ontologyPromise = new Promise(async (resolve): Promise<void> => {
+      const ontologyPromise = new Promise(async (resolve, reject): Promise<void> => {
         this.ontologies.set(ontologyUri, ontologyMeta)
 
         try {
@@ -39,9 +45,10 @@ class OntologyRepositoryClass {
           let { quads, url } = await rdfDereferencer.dereference(ontologyUri, config);
 
           quads
-            .on('error', () => {
+            .on('error', error => {
               // On error we simply leave this one empty.
               // It may be a hiccup or something unknown.
+              console.log(error)
               this.ontologies.delete(ontologyUri)
             })
             .on('data', (quad) => {
@@ -55,7 +62,8 @@ class OntologyRepositoryClass {
             })
         }
         catch (exception) {
-          resolve(deReferencedUrl)
+          console.log(exception)
+          reject(deReferencedUrl)
         }
       })
 

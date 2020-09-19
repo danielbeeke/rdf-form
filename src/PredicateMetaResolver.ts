@@ -9,7 +9,6 @@ export class PredicateMetaResolver {
   constructor(proxy: any, language: string) {
     this.proxy = proxy
     this.language = language
-
     this.fieldMetas = new Map<string, object>()
   }
 
@@ -29,9 +28,9 @@ export class PredicateMetaResolver {
     const ontologyUri = url.toString()
     const quads = await OntologyRepository.dereference(ontologyUri, this.proxy)
 
-    const matches = quads.filter(
+    const matches = quads ? quads.filter(
       metaQuad => metaQuad?.subject?.value === predicateUri
-    )
+    ) : []
 
     if (matches.length) {
       const fieldMeta = {}

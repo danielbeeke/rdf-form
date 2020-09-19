@@ -6,6 +6,7 @@ import { FormElementBase } from './FormElementBase'
 export class Phone extends FormElementBase implements FormElement {
 
   static type: string = 'phone'
+
   constructor (formElementData, rdfForm: RdfForm) {
     super(formElementData, rdfForm)
     this.translatable = false

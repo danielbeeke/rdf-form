@@ -56,3 +56,7 @@ export type AddressFields = {
   streetAddress: FormElementData,
   type: FormElementData,
 }
+
+export interface UriChanger {
+  check (uri: string): void
+}

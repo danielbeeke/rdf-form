@@ -1,13 +1,18 @@
 rdf-form {
+  --radius: 4px;
+  --background-color: #eee;
+  --border-color: #c3c3c3;
 
+  font-family: "Helvetica Neue", sans-serif;
   max-width: 800px;
   margin: 0 auto;
   display: block;
 
   input, textarea, select {
     flex: 1 1 auto;
-    padding: 4px;
+    padding: 8px;
     border: 1px solid gray;
+    border-radius: var(--radius);
   }
 
   .field {
@@ -19,15 +24,29 @@ rdf-form {
   .field-label {
     font-weight: bold;
     text-transform: capitalize;
+    padding-bottom: 10px;
+  }
+
+  .children .field-label {
+    font-weight: 300;
+    font-style: italic;
   }
 
   .country-flag {
     max-width: 22px;
   }
 
+  .children {
+    padding-left: 20px;
+    border-left: 2px solid var(--border-color);
+  }
+
   .field-items {
-    padding: 5px;
-    background: #efefef;
+     &:not(.inline) {
+       padding: 5px;
+       background: var(--background-color);
+       border-radius: var(--radius);
+    }
 
     &.inline {
       display: flex;
@@ -48,11 +67,11 @@ rdf-form {
     gap: 10px;
 
     &:not(.inline) {
-      padding: 5px 0;
+      padding: 10px 5px;
     }
 
     &:not(.inline):not(:last-child) {
-      border-bottom: 1px dashed #ccc;
+      border-bottom: 1px dashed var(--border-color);
     }
   }
 
@@ -64,22 +83,30 @@ rdf-form {
     padding: 5px;
   }
 
-
   .field-description-tooltip-toggle {
-    opacity: .3;
+    position: relative;
+
+    svg {
+      opacity: .3;
+    }
   }
 
   .field-description-tooltip {
-    display: none;
+    display: flex;
     position: absolute;
+    left: 50%;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    top: 0;
+    white-space: nowrap;
+    transform: translate(-50%, -100%);
+    opacity: 0;
+    pointer-events: none;
   }
 
-  .field-description-tooltip-toggle:hover + .field-description-tooltip {
-    display: block;
-  }
-
-  .children {
-    padding: 20px;
+  .field-description-tooltip-toggle:hover .field-description-tooltip {
+    opacity: 1;
   }
 
   .language-selector {
@@ -94,10 +121,12 @@ rdf-form {
     }
   }
 
-  button {
-    padding: 4px;
-    border: 1px solid gray;
+  .button {
+    padding: 10px;
+    border-radius: var(--radius);
+    background: #cccccc;
     cursor: pointer;
+    border: none;
   }
 }
 

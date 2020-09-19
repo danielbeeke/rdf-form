@@ -23,21 +23,42 @@ export class Type extends FormElementBase implements FormElement {
       this.collapsed.set(quad, true)
     }
 
+    const predicate = this.data.quads[0].object?.id ?? this.data.quads[0].object?.value
+
     OntologyRepository.dereference(object, rdfForm.proxy).then(quads => {
-      const classQuads = quads.filter(quad => quad.object.value === 'http://www.w3.org/2002/07/owl#Class' && quad.subject.value.substr(0, 4) === 'http')
-      this.options = classQuads.map(quad => quad.subject.value)
+      const ourSubject = quads.find(quad => [
+        'http://www.w3.org/2000/01/rdf-schema#Class',
+        'http://www.w3.org/2002/07/owl#Class'
+      ].includes(quad.object.value) && quad.subject.value === predicate)
+
+      if (ourSubject) {
+        const className = ourSubject.object.value
+        const classQuads = quads.filter(quad => quad.object.value === className && quad.subject.value.substr(0, 4) === 'http')
+        this.options = classQuads.map(quad => quad.subject.value)
+      }
+
       this.render()
     })
   }
 
+  optionDisplay (uri) {
+    if (uri.split('#').length > 1) {
+      return uri.split('#')[1]
+    }
+    else {
+      return uri.split('/').pop()
+    }
+  }
+
   templateItem (quad) {
+
     return html.for(quad)`
       <div class="field-item inline">
-        <select>
+        <select class="select">
           ${this.options.map(option => quad.object.value === option ? html`
-            <option selected>${option.split('#')[1]}</option>
+            <option selected value="${option}">${this.optionDisplay(option)}</option>
           ` : html`
-            <option>${option.split('#')[1]}</option>
+            <option value="${option}">${this.optionDisplay(option)}</option>
           `)}
         </select>
 
@@ -47,7 +68,7 @@ export class Type extends FormElementBase implements FormElement {
   }
 
   templateWrapper (field) {
-    return html.for(field)`<div class="field">
+    return html.for(field)`<div class="${'field ' + this.constructor['type'] }">
       ${this.templateLabel()}
 
       ${this.data.quads.length ? html`
@@ -55,13 +76,11 @@ export class Type extends FormElementBase implements FormElement {
       ${this.data.quads.map(quad => this.templateItem(quad))}
 
       <div class="field-items-actions">
-          ${this.translatable ? this.languageSelector(null, (event) => this.setNewLanguage(event.target.value), field) : ''}
-          <button onclick="${() => this.addQuad()}"><i class="fas fa-plus"></i></button>
+          <button class="button" onclick="${() => this.addQuad()}"><i class="fas fa-plus"></i></button>
       </div>
 
       </div>
       ` : ''}
-
 
       ${this.data.children && this.data.children.length ? html`
         <div class="children">${this.data.children.map(child => child.formElement.templateWrapper(child))}</div>

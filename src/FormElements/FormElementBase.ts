@@ -10,13 +10,15 @@ library.add(faTimes, faQuestionCircle, faPlus, faLanguage)
 
 export class FormElementBase {
 
+  static type: string = 'base'
+
   readonly data: any
   readonly form: RdfForm
   public translatable: boolean
   public multiple: boolean
   public removable: boolean
-  private translationsEnabled: boolean
-  private languages: Array<any>
+  public translationsEnabled: boolean
+  public languages: Array<any>
   readonly newQuad: any
 
   constructor (formElementData, rdfForm: RdfForm) {
@@ -24,9 +26,9 @@ export class FormElementBase {
     this.data = formElementData
     this.languages = []
 
-    this.translatable = this.data.quads[0]?.toJSON().object.termType === 'Literal'
+    this.translatable = this.data.quads[0]?.toJSON && this.data.quads[0]?.toJSON().object.termType === 'Literal'
 
-    this.translationsEnabled = !! this.data.quads[0] ? this.data.quads[0].toJSON().object?.language : false
+    this.translationsEnabled = !! this.data.quads[0]?.toJSON ? this.data.quads[0]?.toJSON().object?.language : false
 
     this.multiple = this.translatable || this.data.quads.length > 1
 
@@ -88,7 +90,7 @@ export class FormElementBase {
     <label class="field-label">
       ${this.label}
       ${this.templateDescription()}
-      ${this.translatable && !this.translationsEnabled ? html`<button onclick="${() => this.enabledTranslations()}"><i class="fas fa-language"></i></button>` : ''}
+      ${this.translatable && !this.translationsEnabled ? html`<button class="button" onclick="${() => this.enabledTranslations()}"><i class="fas fa-language"></i></button>` : ''}
     </label>`
   }
 
@@ -124,16 +126,16 @@ export class FormElementBase {
 
   templateItemActions (quad) {
     return html.for(quad)`<div class="field-item-actions">
-        ${this.removable ? html`<button onclick="${() => this.removeQuad(quad)}"><i class="fas fa-times"></i></button>` : ''}
+        ${this.removable ? html`<button class="button" onclick="${() => this.removeQuad(quad)}"><i class="fas fa-times"></i></button>` : ''}
     </div>`
   }
 
   templateDescription () {
-    return this.description ? html`<i class="fas fa-question-circle field-description-tooltip-toggle"></i><small class="field-description-tooltip">${this.description}</small>` : ''
+    return this.description ? html`<span class="field-description-tooltip-toggle"><i class="fas fa-question-circle"></i><small class="field-description-tooltip">${this.description}</small></span>` : ''
   }
 
   templateWrapper (field) {
-    return html.for(field)`<div class="field">
+    return html.for(field)`<div class="${'field ' + this.constructor['type'] }">
       ${this.templateLabel()}
 
       ${this.data.quads.length ? html`
@@ -143,8 +145,7 @@ export class FormElementBase {
       ` : ''}
 
       <div class="field-items-actions">
-          ${this.translationsEnabled ? this.languageSelector(null, (event) => this.setNewLanguage(event.target.value), field) : ''}
-          ${this.multiple ? html`<button onclick="${() => this.addQuad()}"><i class="fas fa-plus"></i></button>` : ''}
+          ${this.multiple ? html`<button class="button" onclick="${() => this.addQuad()}"><i class="fas fa-plus"></i></button>` : ''}
       </div>
 
       ${this.data.children && this.data.children.length ? html`

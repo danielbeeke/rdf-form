@@ -39,7 +39,7 @@ export class Address extends FormElementBase implements FormElement {
       properties.forEach(property => field.formElement[property] = false)
     }
 
-    return html.for(field)`<div class="field">
+    return html.for(field)`<div class="${'field ' + this.constructor['type'] }">
       ${this.templateLabel()}
 
       <div class="children">

@@ -63,9 +63,16 @@ export class QuadNester {
       }
 
       const parentSubject = subjectQuads[0].subject?.id ?? subjectQuads[0].subject?.value
-      const parentSubjectFormElement = this.ensureSubject(parentSubject)
-      parentSubjectFormElement.children.push(subjectFormElement)
-      subjectFormElement.parent = parentSubject
+
+      if (parentSubject === subject) {
+        this.nestedQuads.children.push(subjectFormElement)
+        subjectFormElement.parent = this.nestedQuads
+      }
+      else {
+        const parentSubjectFormElement = this.ensureSubject(parentSubject)
+        parentSubjectFormElement.children.push(subjectFormElement)
+        subjectFormElement.parent = parentSubject
+      }
     }
 
     this.formElementReferences.add(subjectFormElement)
@@ -113,7 +120,12 @@ export class QuadNester {
    * Returns the first usable structure of the nestedQuads
    */
   get structure () {
-    return this.nestedQuads.children
+    if (this.nestedQuads.children.length) {
+      return this.nestedQuads.children[0].children
+    }
+    else {
+      return this.nestedQuads.children
+    }
   }
 
 }
