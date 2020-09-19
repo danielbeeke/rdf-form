@@ -6,7 +6,10 @@ import { PredicateMetaResolver } from './PredicateMetaResolver'
 import { FormElementResolverRegistry } from './FormElementResolverRegistry'
 import { FormElementRegistry } from './FormElementRegistry'
 import { DataTypes } from './FormElementResolvers/DataTypes'
+import { Vcard } from './FormElementResolvers/Vcard'
 import { Text } from './FormElements/Text'
+import { Phone } from './FormElements/Phone'
+import { Address } from './FormElements/Address'
 import { Type } from './FormElements/Type'
 import { Subject } from './FormElements/Subject'
 import { render, html } from 'uhtml'
@@ -19,9 +22,12 @@ import rdfDereferencer from 'rdf-dereference'
 import rdfParser from 'rdf-parse'
 
 FormElementResolverRegistry.register(DataTypes)
+FormElementResolverRegistry.register(Vcard)
 FormElementRegistry.register(Text)
 FormElementRegistry.register(Type)
 FormElementRegistry.register(Subject)
+FormElementRegistry.register(Phone)
+FormElementRegistry.register(Address)
 
 export class RdfForm extends HTMLElement {
 

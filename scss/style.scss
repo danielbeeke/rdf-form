@@ -1,7 +1,17 @@
 rdf-form {
+
+  max-width: 800px;
+  margin: 0 auto;
+  display: block;
+
+  input, textarea, select {
+    flex: 1 1 auto;
+    padding: 4px;
+    border: 1px solid gray;
+  }
+
   .field {
-    padding: 10px;
-    padding-left: 30px;
+    padding-bottom: 20px;
     display: flex;
     flex-direction: column;
   }
@@ -13,6 +23,81 @@ rdf-form {
 
   .country-flag {
     max-width: 22px;
+  }
+
+  .field-items {
+    padding: 5px;
+    background: #efefef;
+
+    &.inline {
+      display: flex;
+      gap: 10px;
+    }
+  }
+
+  .row {
+    display: flex;
+
+    .field {
+      flex: 1 1 auto;
+    }
+  }
+
+  .field-item {
+    display: flex;
+    gap: 10px;
+
+    &:not(.inline) {
+      padding: 5px 0;
+    }
+
+    &:not(.inline):not(:last-child) {
+      border-bottom: 1px dashed #ccc;
+    }
+  }
+
+  .field-item-actions {
+    float: right;
+  }
+
+  *:not(.inline) > .field-items-actions {
+    padding: 5px;
+  }
+
+
+  .field-description-tooltip-toggle {
+    opacity: .3;
+  }
+
+  .field-description-tooltip {
+    display: none;
+    position: absolute;
+  }
+
+  .field-description-tooltip-toggle:hover + .field-description-tooltip {
+    display: block;
+  }
+
+  .children {
+    padding: 20px;
+  }
+
+  .language-selector {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    option {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  button {
+    padding: 4px;
+    border: 1px solid gray;
+    cursor: pointer;
   }
 }
 

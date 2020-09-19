@@ -1,3 +1,5 @@
+import {html, Tag, TemplateFunction} from 'uhtml'
+
 export type QuadPart = {
   id: string,
   value: string,
@@ -20,10 +22,18 @@ export interface FormElementResolver {
 export type FormElementData = {
   children: Array<any>,
   predicateMeta: any,
-  subject: string | void
+  subject: string | void,
+  quads: Array<Quad>,
+  parent: FormElementData,
+  formElement: FormElement
 }
 
-export interface FormElement {}
+export interface FormElement {
+  templateWrapper (field: FormElementData): any,
+  translatable: boolean,
+  multiple: boolean,
+  removable: boolean,
+}
 
 export interface OntoLogyMeta {
   promise: Promise<any>,
@@ -38,3 +48,11 @@ export type FieldSuggestion = {
 }
 
 export type PredicateMeta = any
+
+export type AddressFields = {
+  postalCode: FormElementData,
+  country: FormElementData,
+  locality: FormElementData,
+  streetAddress: FormElementData,
+  type: FormElementData,
+}

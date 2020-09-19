@@ -26,18 +26,20 @@ export class Type extends FormElementBase implements FormElement {
     OntologyRepository.dereference(object, rdfForm.proxy).then(quads => {
       const classQuads = quads.filter(quad => quad.object.value === 'http://www.w3.org/2002/07/owl#Class' && quad.subject.value.substr(0, 4) === 'http')
       this.options = classQuads.map(quad => quad.subject.value)
+      this.render()
     })
   }
 
-
   templateItem (quad) {
-    return html`
-      <div class="field-item">
-        <strong>${quad.object.value.split('#')[1].toLowerCase()}</strong>
-        ${!this.collapsed.get(quad) ? html`<input type="text" value="${quad.object.value}">` : ''}
-        <button onclick="${() => { this.collapsed.set(quad, !this.collapsed.get(quad)); this.render() }}">
-            ${this.collapsed.get(quad) ? html`<span><i class="fas fa-pencil-alt"></i></span>` : html`<span><i class="fas fa-check"></i></span>`}
-        </button>
+    return html.for(quad)`
+      <div class="field-item inline">
+        <select>
+          ${this.options.map(option => quad.object.value === option ? html`
+            <option selected>${option.split('#')[1]}</option>
+          ` : html`
+            <option>${option.split('#')[1]}</option>
+          `)}
+        </select>
 
         ${this.templateItemActions(quad)}
       </div>
@@ -45,9 +47,27 @@ export class Type extends FormElementBase implements FormElement {
   }
 
   templateWrapper (field) {
-    return html`<div class="field">
-      ${field.quads.map(quad => this.templateItem(quad))}
+    return html.for(field)`<div class="field">
+      ${this.templateLabel()}
+
+      ${this.data.quads.length ? html`
+      <div class="field-items inline">
+      ${this.data.quads.map(quad => this.templateItem(quad))}
+
+      <div class="field-items-actions">
+          ${this.translatable ? this.languageSelector(null, (event) => this.setNewLanguage(event.target.value), field) : ''}
+          <button onclick="${() => this.addQuad()}"><i class="fas fa-plus"></i></button>
+      </div>
+
+      </div>
+      ` : ''}
+
+
+      ${this.data.children && this.data.children.length ? html`
+        <div class="children">${this.data.children.map(child => child.formElement.templateWrapper(child))}</div>
+      ` : ''}
     </div>`
   }
+
 
 }

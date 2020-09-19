@@ -18,7 +18,7 @@ class OntologyRepositoryClass {
     this.ontologyAliases = new Map<string, string>(ontologyAliasesCache)
   }
 
-  async dereference (ontologyUri, proxy: any) {
+  async dereference (ontologyUri, proxy: any | null) {
     ontologyUri = ontologyUri.split('#')[0]
     const deReferencedUrl = this.ontologyAliases.get(ontologyUri)
     if (deReferencedUrl) ontologyUri = deReferencedUrl

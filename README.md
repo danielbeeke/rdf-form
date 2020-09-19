@@ -5,6 +5,8 @@ Maybe it is. That is the idea behind this code.
 
 This readme will try to explain the concepts involved in an order that is somewhat close the execution of the code.
 
+![alt text][logo]
+
 ## Custom Elements
 
 - Create a HTML element like ```<rdf-form url="https://www.rubensworks.net/" />```
@@ -60,3 +62,45 @@ This process nests the quads into a structure that will be used for the form. Th
 Every FormElementResolver will be called for each quad. The resolver can do a suggestion for what will be used to render the field, including its children. That suggestion could be for an address for example an autocomplete geocoder for addresses. Or it could be an input with the type number. These suggestions will be in the following format: ```{ type: 'address-compound', importance: 23 }```
 
 When all resolvers have had their turn the suggestion with the highest importance will be used.
+
+# Work in progress
+
+The idea is to put the properties: required, multiple, translatable etc inside an ontology. That way you can create a form, add a uri to a form definition and render it:
+
+```
+
+<rdf-form
+        rdf='
+  @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+  @prefix v:  <http://www.w3.org/2006/vcard/ns#> .
+
+  <http://example.com/me/corky> a v:VCard ;
+     v:fn "Corky Crystal" ;
+     v:nickname "Corks"@en ;
+     v:nickname "Kurk"@nl ;
+     v:tel
+         [ a v:Home, v:Voice ;
+             rdf:value "+61 7 5555 5555"
+         ] ;
+     v:email  <mailto:corky@example.com> ;
+     v:adr
+         [ a v:Home ;
+             v:country-name "Australia" ;
+             v:locality "WonderCity" ;
+             v:postal-code "5555" ;
+             v:street-address "111 Lake Drive"
+         ] . '
+        type="text/turtle"
+        proxy="https://thingproxy.freeboard.io/fetch/"
+    definition='
+  @prefix rf:  <http://rdf-form.io#> .
+  @prefix v:  <http://www.w3.org/2006/vcard/ns#> .
+
+   v:nickname rf:translatable true ;
+   v:nickname rf:multiple true .
+
+'
+></rdf-form>
+
+```
+

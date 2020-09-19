@@ -51,6 +51,7 @@ export class QuadNester {
       }
 
       this.nestedQuads.children.push(subjectFormElement)
+      subjectFormElement.parent = this.nestedQuads
     }
 
     // The subject exists as object. Recursively call ourselves so we have the subject of the subject.
@@ -64,6 +65,7 @@ export class QuadNester {
       const parentSubject = subjectQuads[0].subject?.id ?? subjectQuads[0].subject?.value
       const parentSubjectFormElement = this.ensureSubject(parentSubject)
       parentSubjectFormElement.children.push(subjectFormElement)
+      subjectFormElement.parent = parentSubject
     }
 
     this.formElementReferences.add(subjectFormElement)
@@ -94,6 +96,7 @@ export class QuadNester {
     const child = {
       children: [],
       quads: quads,
+      parent: subjectFormElement
     }
 
     for (const quad of quads) {

@@ -11,6 +11,7 @@ class FormElementRegistryClass {
   get (type: string, formElementData: any, rdfForm: RdfForm) {
     const formElement = this.elements.find(element => element.type === type)
     if (formElement) return new formElement(formElementData, rdfForm)
+    else throw new Error('Could not find: ' + type)
   }
 
 }

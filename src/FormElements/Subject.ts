@@ -8,7 +8,7 @@ export class Subject extends FormElementBase implements FormElement {
 
 
   templateWrapper (field) {
-    return html`<div class="field">
+    return html.for(field)`<div class="field">
       ${this.templateLabel()}
 
       ${field.children && field.children.length ? html`
