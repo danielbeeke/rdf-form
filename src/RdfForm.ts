@@ -13,6 +13,7 @@ import { Email } from './FormElements/Email'
 import { Phone } from './FormElements/Phone'
 import { Address } from './FormElements/Address'
 import { Type } from './FormElements/Type'
+import { Country } from './FormElements/Country'
 import { Subject } from './FormElements/Subject'
 import { SchemaOrg } from './UriChangers/SchemaOrg'
 import { render, html } from 'uhtml'
@@ -31,6 +32,7 @@ FormElementRegistry.register(Type)
 FormElementRegistry.register(Subject)
 FormElementRegistry.register(Phone)
 FormElementRegistry.register(Address)
+FormElementRegistry.register(Country)
 FormElementRegistry.register(Email)
 OntologyRepository.registerUriChanger(SchemaOrg)
 

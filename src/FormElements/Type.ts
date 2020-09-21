@@ -76,7 +76,7 @@ export class Type extends FormElementBase implements FormElement {
       ${this.data.quads.map(quad => this.templateItem(quad))}
 
       <div class="field-items-actions">
-          <button class="button" onclick="${() => this.addQuad()}"><i class="fas fa-plus"></i></button>
+          <button class="button add" onclick="${() => this.addQuad()}"><i class="fas fa-plus"></i></button>
       </div>
 
       </div>

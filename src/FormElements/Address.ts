@@ -1,11 +1,14 @@
 import { html } from 'uhtml'
+import { OntologyRepository } from '../OntologyRepository'
 import { RdfForm } from '../RdfForm'
 import { FormElementData, FormElement, AddressFields } from '../Types'
 import { FormElementBase } from './FormElementBase'
+import { debounce } from '../Helpers'
 
 export class Address extends FormElementBase implements FormElement {
 
   static type: string = 'address'
+  public initiated = false
 
   private fields: AddressFields = {
     type: null,
@@ -28,7 +31,24 @@ export class Address extends FormElementBase implements FormElement {
     return 'The address of the subject'
   }
 
+  init () {
+    this.initiated = true
+    this.fields.postalCode.formElement.addEventListener('keyup', debounce((event) => {
+      const country = this.fields.country.formElement?.['countries'].find(country => country.name === this.fields.country.formElement.value)
+
+      if (country) {
+        fetch(`http://api.geonames.org/postalCodeSearch?postalcode=${this.fields.postalCode.formElement.value}&maxRows=10&type=json&username=danielbeeke&country=${country.countryCodeISO3166Alpha2}`)
+          .then(response => response.json())
+          .then(response => {
+            console.log(response)
+          })
+      }
+    }, 300))
+  }
+
   templateWrapper (field: FormElementData): any {
+    if (!this.initiated) this.init()
+
     let renderSubField = (name: string) => {
       return this.fields[name].formElement.templateWrapper(this.fields[name])
     }
@@ -36,7 +56,10 @@ export class Address extends FormElementBase implements FormElement {
     let properties = ['translatable', 'multiple', 'removable']
 
     for (const [fieldName, field] of Object.entries(this.fields)) {
-      properties.forEach(property => field.formElement[property] = false)
+      properties.forEach(property => {
+        if (fieldName === 'type' && property === 'removable') return
+        field.formElement[property] = false
+      })
     }
 
     return html.for(field)`<div class="${'field ' + this.constructor['type'] }">
@@ -44,11 +67,13 @@ export class Address extends FormElementBase implements FormElement {
 
       <div class="children">
      ${renderSubField('type')}
-     ${renderSubField('country')}
+     <div class="row">
+       ${renderSubField('country')}
+       ${renderSubField('postalCode')}
+     </div>
 
       <div class="row">
        ${renderSubField('streetAddress')}
-       ${renderSubField('postalCode')}
        ${renderSubField('locality')}
       </div>
 

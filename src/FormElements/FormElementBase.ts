@@ -2,13 +2,13 @@ import { html } from 'uhtml'
 import { LanguageCodes } from '../Helpers'
 import { RdfForm } from '../RdfForm'
 import { library, dom } from '@fortawesome/fontawesome-svg-core'
-import { faTimes, faQuestionCircle, faPlus, faLanguage } from '@fortawesome/free-solid-svg-icons'
+import { faTimes, faQuestionCircle, faPlus, faLanguage, faCog } from '@fortawesome/free-solid-svg-icons'
 import { FormElementData } from '../Types'
 
 dom.watch()
-library.add(faTimes, faQuestionCircle, faPlus, faLanguage)
+library.add(faTimes, faQuestionCircle, faPlus, faLanguage, faCog)
 
-export class FormElementBase {
+export class FormElementBase extends EventTarget {
 
   static type: string = 'base'
 
@@ -20,18 +20,17 @@ export class FormElementBase {
   public translationsEnabled: boolean
   public languages: Array<any>
   readonly newQuad: any
+  public fieldMenuExpanded: boolean = false
 
   constructor (formElementData, rdfForm: RdfForm) {
+    super()
     this.form = rdfForm
     this.data = formElementData
     this.languages = []
 
     this.translatable = this.data.quads[0]?.toJSON && this.data.quads[0]?.toJSON().object.termType === 'Literal'
-
     this.translationsEnabled = !! this.data.quads[0]?.toJSON ? this.data.quads[0]?.toJSON().object?.language : false
-
     this.multiple = this.translatable || this.data.quads.length > 1
-
     this.removable = true
 
     LanguageCodes.list(this.form.proxy).then(languages => {
@@ -51,6 +50,10 @@ export class FormElementBase {
   get description () {
     const comment = this.data?.predicateMeta?.comment
     return comment ? comment?.[this.form.language] ?? comment?.['default'] : ''
+  }
+
+  get value () {
+    return this.data.quads[0].object.value
   }
 
   getSubformElement (predicateUri): FormElementData {
@@ -85,13 +88,41 @@ export class FormElementBase {
     this.render()
   }
 
+  on (type: string, event: Event) {
+    this.dispatchEvent(new CustomEvent(type, {
+      detail: {
+        originalEvent: event
+      }
+    }))
+  }
+
+  toggleMenu () {
+    this.fieldMenuExpanded = !this.fieldMenuExpanded
+    this.render()
+  }
+
   templateLabel () {
     return html`
     <label class="field-label">
       ${this.label}
       ${this.templateDescription()}
-      ${this.translatable && !this.translationsEnabled ? html`<button class="button" onclick="${() => this.enabledTranslations()}"><i class="fas fa-language"></i></button>` : ''}
+      ${this.templateMenu()}
     </label>`
+  }
+
+  templateMenu () {
+    let buttons = []
+
+    if (this.translatable && !this.translationsEnabled) {
+      buttons.push(html`<li><button class="button" onclick="${() => this.enabledTranslations()}"><i class="fas fa-language"></i></button></li>`)
+    }
+
+    return buttons.length ? html`
+      <button onclick="${() => this.toggleMenu()}" class="toggle-field-menu"><i class="fas fa-cog"></i></button>
+      <ul class="${'field-menu' + (this.fieldMenuExpanded === true ? ' expanded' : '')}">
+        ${buttons}
+      </ul>
+    ` : ''
   }
 
   languageSelector (selected = '', callback: any = () => {}, forElement) {
@@ -115,7 +146,11 @@ export class FormElementBase {
 
     return html.for(quad)`
       <div class="field-item">
-        <input type="text" value="${jsonQuad.object.value}">
+        <input type="text"
+        onchange="${event => this.on('change', event)}"
+        onkeyup="${event => this.on('keyup', event)}"
+        value="${jsonQuad.object.value}">
+
         ${languageCode ?
       selectedLanguage && this.translationsEnabled ? this.languageSelector(languageCode, () => {}, quad) : html`<span>${languageCode}</span>`
         : ''}
@@ -125,9 +160,15 @@ export class FormElementBase {
   }
 
   templateItemActions (quad) {
-    return html.for(quad)`<div class="field-item-actions">
-        ${this.removable ? html`<button class="button" onclick="${() => this.removeQuad(quad)}"><i class="fas fa-times"></i></button>` : ''}
-    </div>`
+    let fieldItemActions = []
+
+    if (this.removable) {
+      fieldItemActions.push(html`<button class="button remove" onclick="${() => this.removeQuad(quad)}"><i class="fas fa-times"></i></button>`)
+    }
+
+    return fieldItemActions.length > 0 ? html.for(quad)`<div class="field-item-actions">
+        ${fieldItemActions}
+    </div>` : ''
   }
 
   templateDescription () {
@@ -135,18 +176,22 @@ export class FormElementBase {
   }
 
   templateWrapper (field) {
+    let fieldItemsActions = []
+
+    if (this.multiple) {
+      fieldItemsActions.push(html`<button class="button add" onclick="${() => this.addQuad()}"><i class="fas fa-plus"></i></button>`)
+    }
+
     return html.for(field)`<div class="${'field ' + this.constructor['type'] }">
       ${this.templateLabel()}
 
-      ${this.data.quads.length ? html`
+      ${this.data.quads.length > 0 ? html`
       <div class="field-items">
       ${this.data.quads.map(quad => this.templateItem(quad))}
       </div>
       ` : ''}
 
-      <div class="field-items-actions">
-          ${this.multiple ? html`<button class="button" onclick="${() => this.addQuad()}"><i class="fas fa-plus"></i></button>` : ''}
-      </div>
+      ${fieldItemsActions.length ? html`<div class="field-items-actions">${fieldItemsActions}</div>` : ''}
 
       ${this.data.children && this.data.children.length ? html`
         <div class="children">${this.data.children.map(child => child.formElement.templateWrapper(child))}</div>

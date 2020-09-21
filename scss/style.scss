@@ -1,23 +1,30 @@
 rdf-form {
   --radius: 4px;
-  --background-color: #eee;
+  --background-color: #eef6f4;
   --border-color: #c3c3c3;
+  --button-color: gray;
+  --add-button-color: #99e9ab;
+  --remove-button-color: #cd4d4d;
+  --text-color: #102406;
 
+  padding: 20px 0;
   font-family: "Helvetica Neue", sans-serif;
   max-width: 800px;
   margin: 0 auto;
   display: block;
+  color: var(--text-color);
 
   input, textarea, select {
     flex: 1 1 auto;
     padding: 8px;
-    border: 1px solid gray;
+    border: 1px solid var(--border-color);
     border-radius: var(--radius);
   }
 
   .field {
-    padding-bottom: 20px;
+    padding-bottom: 35px;
     display: flex;
+    position: relative;
     flex-direction: column;
   }
 
@@ -25,6 +32,7 @@ rdf-form {
     font-weight: bold;
     text-transform: capitalize;
     padding-bottom: 10px;
+    display: flex;
   }
 
   .children .field-label {
@@ -38,6 +46,7 @@ rdf-form {
 
   .children {
     padding-left: 20px;
+    margin-left: 6px;
     border-left: 2px solid var(--border-color);
   }
 
@@ -56,6 +65,7 @@ rdf-form {
 
   .row {
     display: flex;
+    gap: 10px;
 
     .field {
       flex: 1 1 auto;
@@ -80,11 +90,12 @@ rdf-form {
   }
 
   *:not(.inline) > .field-items-actions {
-    padding: 5px;
+    padding: 5px 0;
   }
 
   .field-description-tooltip-toggle {
     position: relative;
+    margin-left: 10px;
 
     svg {
       opacity: .3;
@@ -94,13 +105,14 @@ rdf-form {
   .field-description-tooltip {
     display: flex;
     position: absolute;
-    left: 50%;
+    left: 30px;
     background: white;
     border: 1px solid #ccc;
     padding: 10px;
-    top: 0;
+    top: 50%;
+    border-radius: var(--radius);
     white-space: nowrap;
-    transform: translate(-50%, -100%);
+    transform: translate(0, -50%);
     opacity: 0;
     pointer-events: none;
   }
@@ -124,9 +136,53 @@ rdf-form {
   .button {
     padding: 10px;
     border-radius: var(--radius);
-    background: #cccccc;
+    background: var(--button-color);
     cursor: pointer;
     border: none;
+
+    &.add {
+      background: var(--add-button-color);
+    }
+
+    &.remove {
+      background: var(--remove-button-color);
+
+      svg path {
+        fill: white;
+      }
+    }
+  }
+
+  .field-menu {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    background: var(--background-color);
+    border-radius: var(--radius);
+    list-style: none;
+    padding: 0;
+
+    .button {
+      background: var(--background-color);
+    }
+
+    &.expanded {
+      opacity: 1;
+      pointer-events: all;
+    }
+  }
+
+  .toggle-field-menu {
+    cursor: pointer;
+    border: 0;
+    background: none;
+    margin-left: auto;
+    height: 100%;
+
+    svg {
+      opacity: .3;
+    }
   }
 }
 

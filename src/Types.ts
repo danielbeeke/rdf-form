@@ -25,14 +25,15 @@ export type FormElementData = {
   subject: string | void,
   quads: Array<Quad>,
   parent: FormElementData,
-  formElement: FormElement
+  formElement: FormElement,
 }
 
-export interface FormElement {
+export interface FormElement extends EventTarget {
   templateWrapper (field: FormElementData): any,
   translatable: boolean,
   multiple: boolean,
   removable: boolean,
+  value: any
 }
 
 export interface OntoLogyMeta {

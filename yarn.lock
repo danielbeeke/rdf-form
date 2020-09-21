@@ -3053,9 +3053,9 @@ camelcase@^6.0.0:
   integrity sha512-8KMDF1Vz2gzOq54ONPJS65IvTUaB1cHJ2DMM7MbPmLZljDH1qpzzLsWdiN9pHh6qvkRVDTi/07+eNGch/oLU4w==
 
 caniuse-lite@^1.0.30001131:
-  version "1.0.30001132"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001132.tgz#309279274f10d3aa736aa91fa269fcc8d0cd7ef9"
-  integrity sha512-zk5FXbnsmHa0Ktc/NOZJRr+ilXva+2KFJuRiQfnjkxJfV/7DYP5C27lSQF++/veCUzVWE5xecZnSBJjf6fSwJA==
+  version "1.0.30001133"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001133.tgz#ec564c5495311299eb05245e252d589a84acd95e"
+  integrity sha512-s3XAUFaC/ntDb1O3lcw9K8MPeOW7KO3z9+GzAoBxfz1B0VdacXPMKgFUtG4KIsgmnbexmi013s9miVu4h+qMHw==
 
 canonicalize@^1.0.1:
   version "1.0.3"
@@ -8181,9 +8181,9 @@ uhandlers@^0.3.6:
     uarray "^1.0.0"
 
 uhtml@^2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/uhtml/-/uhtml-2.1.1.tgz#316bc12f182ab299344554f7389c5d5f18f89378"
-  integrity sha512-2lR3NXVMJ7se0+Uznv3GJLw9w5sCIfQs3Kc0x90EXc6S7MsDCikVkw8wzi0OXawfZ5KziUYemfj+kSwackZrjw==
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/uhtml/-/uhtml-2.1.2.tgz#7170789dc0b6c1fced4aee826b8174bd254aea29"
+  integrity sha512-2kBz7ank/FnDDk1l1+0/Behj5ptTgi2/GdLg+/8jyofi5ipIwWBh5CJg0vbRZF90LVvZ+EfSmLRBJAyNs3mcEA==
   dependencies:
     "@ungap/create-content" "^0.2.0"
     uarray "^1.0.0"
