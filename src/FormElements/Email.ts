@@ -13,7 +13,10 @@ export class Email extends FormElementBase implements FormElement {
 
     return html.for(quad)`
       <div class="field-item">
-        <input type="email" value="${jsonQuad.object.value.replace('mailto:', '')}">
+        <input
+        onchange="${event => this.on('change', event, quad)}"
+        onkeyup="${event => this.on('keyup', event, quad)}"
+        type="email" value="${jsonQuad.object.value.replace('mailto:', '')}">
         ${languageCode ?
       selectedLanguage && this.translationsEnabled ? this.languageSelector(languageCode, () => {}, quad) : html`<span>${languageCode}</span>`
       : ''}

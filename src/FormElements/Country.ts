@@ -47,7 +47,10 @@ export class Country extends FormElementBase implements FormElement {
 
     return html.for(quad)`
       <div class="field-item">
-        <input list="countries" type="text" value="${quad.object.value}">
+        <input list="countries"
+        onchange="${event => this.on('change', event, quad)}"
+        onkeyup="${event => this.on('keyup', event, quad)}"
+        type="text" value="${quad.object.value}">
         ${this.countries.length > 0 ? html`
         <datalist id="countries">
             ${this.countries.map(country => html`<option value="${country['name']}">`)}

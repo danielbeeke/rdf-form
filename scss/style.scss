@@ -7,7 +7,7 @@ rdf-form {
   --remove-button-color: #cd4d4d;
   --text-color: #102406;
 
-  padding: 20px 0;
+  padding: 20px;
   font-family: "Helvetica Neue", sans-serif;
   max-width: 800px;
   margin: 0 auto;
@@ -162,6 +162,7 @@ rdf-form {
     border-radius: var(--radius);
     list-style: none;
     padding: 0;
+    border: 1px solid var(--border-color);
 
     .button {
       background: var(--background-color);

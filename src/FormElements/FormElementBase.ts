@@ -3,7 +3,7 @@ import { LanguageCodes } from '../Helpers'
 import { RdfForm } from '../RdfForm'
 import { library, dom } from '@fortawesome/fontawesome-svg-core'
 import { faTimes, faQuestionCircle, faPlus, faLanguage, faCog } from '@fortawesome/free-solid-svg-icons'
-import { FormElementData } from '../Types'
+import { FormElementData, Quad } from '../Types'
 
 dom.watch()
 library.add(faTimes, faQuestionCircle, faPlus, faLanguage, faCog)
@@ -40,6 +40,12 @@ export class FormElementBase extends EventTarget {
 
     const lastQuad = this.data.quads[this.data.quads.length - 1];
     this.newQuad = Object.assign({}, lastQuad)
+
+    this.addEventListener('keyup', (event: any) => {
+      const value = event?.detail.originalEvent?.target.value
+      const quad = event?.detail.quad
+      quad.object.id = value
+    })
   }
 
   get label () {
@@ -53,7 +59,9 @@ export class FormElementBase extends EventTarget {
   }
 
   get value () {
-    return this.data.quads[0].object.value
+    const value = this.data.quads[0]?.object?.id ?? this.data.quads[0]?.object?.value
+    console.log(value)
+    return value
   }
 
   getSubformElement (predicateUri): FormElementData {
@@ -88,10 +96,11 @@ export class FormElementBase extends EventTarget {
     this.render()
   }
 
-  on (type: string, event: Event) {
+  on (type: string, event: Event, quad: Quad) {
     this.dispatchEvent(new CustomEvent(type, {
       detail: {
-        originalEvent: event
+        originalEvent: event,
+        quad: quad
       }
     }))
   }
@@ -147,8 +156,8 @@ export class FormElementBase extends EventTarget {
     return html.for(quad)`
       <div class="field-item">
         <input type="text"
-        onchange="${event => this.on('change', event)}"
-        onkeyup="${event => this.on('keyup', event)}"
+        onchange="${event => this.on('change', event, quad)}"
+        onkeyup="${event => this.on('keyup', event, quad)}"
         value="${jsonQuad.object.value}">
 
         ${languageCode ?

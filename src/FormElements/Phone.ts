@@ -19,7 +19,10 @@ export class Phone extends FormElementBase implements FormElement {
   templateItem (quad) {
     return html.for(quad)`
       <div class="field-item">
-        <input type="phone" value="${quad.object.value}">
+        <input type="phone"
+        onchange="${event => this.on('change', event, quad)}"
+        onkeyup="${event => this.on('keyup', event, quad)}"
+        value="${quad.object.value}">
         ${this.templateItemActions(quad)}
       </div>
     `

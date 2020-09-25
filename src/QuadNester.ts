@@ -2,6 +2,8 @@
  * This module nests the quad in a way that works good for the form.
  * It groups quads that have the same predicate-subject, quads that are translations of one another and
  * quads that belong to a multi value field.
+ *
+ * TODO json-ld framing
  */
 import { Quad, NestedQuads, FormElementData } from './Types'
 import { filterInSet } from './Helpers'

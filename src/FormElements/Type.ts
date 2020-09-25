@@ -54,7 +54,10 @@ export class Type extends FormElementBase implements FormElement {
 
     return html.for(quad)`
       <div class="field-item inline">
-        <select class="select">
+        <select class="select"
+        onchange="${event => this.on('change', event, quad)}"
+        onkeyup="${event => this.on('keyup', event, quad)}"
+        >
           ${this.options.map(option => quad.object.value === option ? html`
             <option selected value="${option}">${this.optionDisplay(option)}</option>
           ` : html`

@@ -37,7 +37,9 @@ export class Address extends FormElementBase implements FormElement {
       const country = this.fields.country.formElement?.['countries'].find(country => country.name === this.fields.country.formElement.value)
 
       if (country) {
-        fetch(`http://api.geonames.org/postalCodeSearch?postalcode=${this.fields.postalCode.formElement.value}&maxRows=10&type=json&username=danielbeeke&country=${country.countryCodeISO3166Alpha2}`)
+        const postalCode = this.fields.postalCode.formElement.value
+
+        fetch(`http://api.geonames.org/postalCodeSearch?postalcode=${postalCode}&maxRows=10&type=json&username=danielbeeke&country=${country.countryCodeISO3166Alpha2}`)
           .then(response => response.json())
           .then(response => {
             console.log(response)
