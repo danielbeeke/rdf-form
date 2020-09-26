@@ -29,11 +29,7 @@ export type FormElementData = {
 }
 
 export interface FormElement extends EventTarget {
-  templateWrapper (field: FormElementData): any,
-  translatable: boolean,
-  multiple: boolean,
-  removable: boolean,
-  value: any
+
 }
 
 export interface OntoLogyMeta {

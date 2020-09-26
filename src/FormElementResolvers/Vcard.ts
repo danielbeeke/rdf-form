@@ -2,16 +2,16 @@ import {FieldSuggestion, FormElementData, FormElementResolver, PredicateMeta, Qu
 
 export class Vcard implements FormElementResolver {
 
-  resolve(quad: Quad, formElementData: FormElementData): FieldSuggestion | void {
-    if (
-      quad.predicate?.id === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#value' &&
-      formElementData.parent.quads[0].predicate.id === 'http://www.w3.org/2006/vcard/ns#tel'
-    ) {
-      return { importance: 5, type: 'phone'}
-    }
-
-    if (quad.predicate?.id === 'http://www.w3.org/2006/vcard/ns#adr') {
-      return { importance: 5, type: 'address'}
-    }
+  resolve(predicateUri, predicateMeta): FieldSuggestion | void {
+    // if (
+    //   quad.predicate?.id === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#value' &&
+    //   formElementData.parent.quads[0].predicate.id === 'http://www.w3.org/2006/vcard/ns#tel'
+    // ) {
+    //   return { importance: 5, type: 'phone'}
+    // }
+    //
+    // if (quad.predicate?.id === 'http://www.w3.org/2006/vcard/ns#adr') {
+    //   return { importance: 5, type: 'address'}
+    // }
   }
 }

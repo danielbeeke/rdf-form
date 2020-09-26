@@ -1,14 +1,15 @@
 import { OntologyRepository } from './OntologyRepository'
+import { RdfForm } from './RdfForm'
 
 export class PredicateMetaResolver {
 
   readonly proxy: any;
   readonly language: string;
   private fieldMetas: Map<string, object>;
+  private form: RdfForm
 
-  constructor(proxy: any, language: string) {
-    this.proxy = proxy
-    this.language = language
+  constructor(rdfForm: RdfForm) {
+    this.form = rdfForm
     this.fieldMetas = new Map<string, object>()
   }
 
@@ -26,7 +27,7 @@ export class PredicateMetaResolver {
     }
 
     const ontologyUri = url.toString()
-    const quads = await OntologyRepository.dereference(ontologyUri, this.proxy)
+    const quads = await this.form.ontologyRepository.dereference(ontologyUri)
 
     const matches = quads ? quads.filter(
       metaQuad => metaQuad?.subject?.value === predicateUri

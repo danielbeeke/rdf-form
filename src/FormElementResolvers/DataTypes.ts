@@ -9,27 +9,7 @@ const typeMapping = {
 
 export class DataTypes implements FormElementResolver {
 
-  resolve(quad: Quad, formElementData: FormElementData): FieldSuggestion | void {
-    const predicateMeta = formElementData.predicateMeta
-
-    if (formElementData?.subject) {
-      return { importance: 0, type: 'subject' }
-    }
-
-    const predicate = quad.predicate?.id ?? quad.predicate?.value
-
-    if (predicate) {
-      if (typeMapping[predicate]) {
-        return typeMapping[predicate]
-      }
-    }
-
-    if (predicateMeta.range?.default) {
-      if (typeMapping[predicateMeta.range.default]) {
-        return typeMapping[predicateMeta.range.default]
-      }
-    }
-
+  resolve(predicateUri, predicateMeta): FieldSuggestion | void {
     return { importance: 0, type: 'text' }
   }
 }

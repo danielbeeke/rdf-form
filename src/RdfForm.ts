@@ -1,49 +1,38 @@
 /**
  * A custom element that shows a HTML form from a set of quads.
  */
+import { parse as ttl2jsonld } from '@frogcat/ttl2jsonld'
 import { OntologyRepository } from './OntologyRepository'
-import { QuadNester } from './QuadNester'
 import { PredicateMetaResolver } from './PredicateMetaResolver'
 import { FormElementResolverRegistry } from './FormElementResolverRegistry'
 import { FormElementRegistry } from './FormElementRegistry'
+import { FormElementFactory } from './FormElementFactory'
 import { DataTypes } from './FormElementResolvers/DataTypes'
 import { Vcard } from './FormElementResolvers/Vcard'
 import { Text } from './FormElements/Text'
-import { Email } from './FormElements/Email'
-import { Phone } from './FormElements/Phone'
-import { Address } from './FormElements/Address'
-import { Type } from './FormElements/Type'
-import { Country } from './FormElements/Country'
-import { Subject } from './FormElements/Subject'
 import { SchemaOrg } from './UriChangers/SchemaOrg'
 import { render, html } from 'uhtml'
 import '../scss/style.scss'
 
-import * as Streamify from 'streamify-string'
 import * as ActorHttpProxy from '@comunica/actor-http-proxy'
-
-import rdfDereferencer from 'rdf-dereference'
-import rdfParser from 'rdf-parse'
-
-FormElementResolverRegistry.register(DataTypes)
-FormElementResolverRegistry.register(Vcard)
-FormElementRegistry.register(Text)
-FormElementRegistry.register(Type)
-FormElementRegistry.register(Subject)
-FormElementRegistry.register(Phone)
-FormElementRegistry.register(Address)
-FormElementRegistry.register(Country)
-FormElementRegistry.register(Email)
-OntologyRepository.registerUriChanger(SchemaOrg)
 
 export class RdfForm extends HTMLElement {
 
-  private predicateMetaResolver: PredicateMetaResolver
-  private quadNester: QuadNester
-  private quads = []
+  public predicateMetaResolver: PredicateMetaResolver
+  public formElementFactory: FormElementFactory
+  public formElementRegistry: FormElementRegistry
+  public formElementResolverRegistry: FormElementResolverRegistry
+  public ontologyRepository: OntologyRepository
 
+  public jsonLdContext: object
   public proxy: string
   public language: string
+
+  public formDefinition: object
+  private data: object
+
+  public childFormElements: Array<any> = []
+  public structure: object = {}
 
   /**
    * When the element loads, fetch the quads from the resource,
@@ -53,80 +42,47 @@ export class RdfForm extends HTMLElement {
     const proxyUrl = this.getAttribute('proxy')
     this.proxy = proxyUrl ? new (<any> ActorHttpProxy).ProxyHandlerStatic(proxyUrl) : null;
     this.language = this.getAttribute('lang') ?? 'en'
-    this.predicateMetaResolver = new PredicateMetaResolver(this.proxy, this.language)
 
-    const url = this.getAttribute('url') ? this.getAttribute('url').trim() : null
-    const rdf = this.getAttribute('rdf') ? this.getAttribute('rdf').trim() : null
+    this.predicateMetaResolver = new PredicateMetaResolver(this)
+    this.formElementFactory = new FormElementFactory(this)
+    this.formElementRegistry = new FormElementRegistry(this)
+    this.formElementResolverRegistry = new FormElementResolverRegistry(this)
+    this.ontologyRepository = new OntologyRepository(this)
 
-    if (url && rdf) throw new Error('Only one data source can be used')
-    if (!url && !rdf) throw new Error('A data source must be used')
+    this.formElementResolverRegistry.register(DataTypes)
+    this.formElementResolverRegistry.register(Vcard)
+    this.formElementRegistry.register(Text)
 
-    const quadStream = url ? await this.dereferenceUrl(url) : this.parseRdfText(rdf)
-    quadStream.on('data', quad => {
-      this.quads.push(quad)
-    })
-    quadStream.on('end', async () => {
-      this.processQuads()
-    })
-    quadStream.on('error', error => {
-      console.error(error)
-    })
+    this.data = await this.attributeToJsonLd('data', true)
+    this.formDefinition = await this.attributeToJsonLd('form-definition') ?? {}
+    this.jsonLdContext = this.data['@context']
+    delete this.data['@context']
+
+    await this.formElementFactory.handleData(this.data, this.structure, this.childFormElements)
+    this.render()
   }
 
   /**
-   * Fetches the resource quads via URL.
-   * @param url
+   * Given an attribute name that is used on the custom element,
+   * fetches the url if needed and converts to JSON-ld.
+   *
+   * @param name
+   * @param required
    */
-  async dereferenceUrl (url) {
-    const config = {}
-    if (this.proxy) config['@comunica/actor-http-proxy:httpProxyHandler'] = this.proxy
-    let { quads } = await rdfDereferencer.dereference(url, config)
-    return quads
-  }
+  async attributeToJsonLd (name, required = false): Promise<object> {
+    let urlOrValue = this.getAttribute(name).trim()
+    if (required && !urlOrValue) throw new Error(`The attribute ${name} does not have a content or does not exist`)
 
-  /**
-   * Fetches the resource quads via text.
-   * @param rdf
-   */
-  parseRdfText (rdf) {
-    const type = this.getAttribute('type')
-    if (!['text/turtle'].includes(type)) throw new Error('Unknown type')
-    /** @see https://comunica.dev/docs/query/advanced/source_types/ */
-    return rdfParser.parse(Streamify(rdf), { contentType: type });
-  }
-
-  /**
-   * When everything is fetched, the data needs to be structured.
-   * After that all the formElement types need to be resolved and finally rendered.
-   */
-  processQuads () {
-    this.quadNester = new QuadNester(this.quads)
-    const promises = []
-    for (const [quad, formElementData] of this.quadNester.quadReferences.entries()) {
-      const predicate = quad.predicate?.id ?? quad.predicate?.value
-      const promise = this.predicateMetaResolver.getFieldMeta(predicate).then(predicateMeta => {
-        if (predicateMeta) formElementData.predicateMeta = predicateMeta
-      })
-      promises.push(promise)
+    if (urlOrValue.slice(-3)) {
+      const response = await fetch(urlOrValue)
+      urlOrValue = await response.text()
     }
 
-    Promise.all(promises).then(() => {
-      for (const formElementData of this.quadNester.formElementReferences) {
-        const quad = formElementData.quads?.[0]
-        formElementData.type = quad && formElementData.predicateMeta ? FormElementResolverRegistry.resolve(quad, formElementData) : 'text'
-        formElementData.formElement = FormElementRegistry.get(formElementData.type, formElementData, this)
-      }
-
-      this.render()
-    })
+    return urlOrValue ? ttl2jsonld(urlOrValue) : {}
   }
 
   render () {
-    render(this, html`${this.quadNester.structure.map(
-      child => {
-        return child.formElement ? child.formElement.templateWrapper(child) : ''
-      })
-    }`)
+    render(this, html`${Object.values(this.structure).map(formElement => formElement.render())}`)
   }
 }
 

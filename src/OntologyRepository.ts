@@ -6,14 +6,17 @@
 
 import rdfDereferencer from 'rdf-dereference'
 import { OntoLogyMeta } from './Types'
+import { RdfForm } from './RdfForm'
 
-class OntologyRepositoryClass {
+export class OntologyRepository {
 
   private ontologies: Map<string, OntoLogyMeta>;
   private ontologyAliases: Map<string, string>;
+  private form: RdfForm
   readonly uriChangers: Array<any> = []
 
-  constructor() {
+  constructor(rdfForm: RdfForm) {
+    this.form = rdfForm
     this.ontologies = new Map<string, OntoLogyMeta>()
     const ontologyAliasesCache = localStorage.ontologyAliases ? JSON.parse(localStorage.ontologyAliases) : null
     this.ontologyAliases = new Map<string, string>(ontologyAliasesCache)
@@ -24,7 +27,7 @@ class OntologyRepositoryClass {
     this.uriChangers.push(uriChanger)
   }
 
-  async dereference (ontologyUri, proxy: any | null) {
+  async dereference (ontologyUri) {
     ontologyUri = ontologyUri.split('#')[0]
     const deReferencedUrl = this.ontologyAliases.get(ontologyUri)
     if (deReferencedUrl) ontologyUri = deReferencedUrl
@@ -40,7 +43,7 @@ class OntologyRepositoryClass {
 
         try {
           const config = {}
-          if (proxy) config['@comunica/actor-http-proxy:httpProxyHandler'] = proxy
+          config['@comunica/actor-http-proxy:httpProxyHandler'] = this.form.proxy
 
           let { quads, url } = await rdfDereferencer.dereference(ontologyUri, config);
 
@@ -77,5 +80,3 @@ class OntologyRepositoryClass {
   }
 
 }
-
-export const OntologyRepository = new OntologyRepositoryClass()

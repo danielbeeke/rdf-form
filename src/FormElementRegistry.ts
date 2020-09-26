@@ -1,19 +1,22 @@
-import { RdfForm} from './RdfForm'
+import { RdfForm } from './RdfForm'
 
-class FormElementRegistryClass {
+export class FormElementRegistry {
 
+  private form: RdfForm
   readonly elements: Array<any> = []
 
-  register (formElement: any) {
-    this.elements.push(formElement)
+  constructor(rdfForm: RdfForm ) {
+    this.form = rdfForm
   }
 
-  get (type: string, formElementData: any, rdfForm: RdfForm) {
+  register (...formElements: any) {
+    this.elements.push(...formElements)
+  }
+
+  get (type: string, predicate, data) {
     const formElement = this.elements.find(element => element.type === type)
-    if (formElement) return new formElement(formElementData, rdfForm)
+    if (formElement) return new formElement(data, predicate, this.form)
     else throw new Error('Could not find: ' + type)
   }
 
 }
-
-export const FormElementRegistry = new FormElementRegistryClass()
