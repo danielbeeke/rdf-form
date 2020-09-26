@@ -14,13 +14,18 @@ export class FormElementBase extends EventTarget {
   private form: RdfForm
   private values: Array<any>
   private predicate: string
-  public childFormElements: Array<any> = []
-  public wrapperClasses: Array<string> = ['form-element']
+  private predicateMeta: any
 
-  constructor (data, predicate, rdfForm: RdfForm) {
+  public childFormElements: Array<any> = []
+
+  public wrapperClasses: Array<string> = ['form-element']
+  public labelClasses: Array<string> = ['form-element-label']
+
+  constructor (data, predicate, predicateMeta, rdfForm: RdfForm) {
     super()
     this.form = rdfForm
     this.predicate = predicate
+    this.predicateMeta = predicateMeta
     this.data = data
   }
 
@@ -38,9 +43,49 @@ export class FormElementBase extends EventTarget {
     delete this.data
   }
 
+  get label () {
+    const label = this?.predicateMeta?.label?.[this.form.language] ?? this?.predicateMeta?.label?.default
+
+    if (label) {
+      return label.charAt(0).toUpperCase() + label.slice(1)
+    }
+
+    return ''
+  }
+
+  get description () {
+    const comment = this?.predicateMeta?.comment?.[this.form.language] ?? this?.predicateMeta?.comment?.default
+
+    if (comment) {
+      return comment.charAt(0).toUpperCase() + comment.slice(1)
+    }
+
+    return ''
+  }
+
+  templateLabel () {
+    return this.label ? html`
+    <label class="${this.labelClasses.join(' ')}">
+      ${this.label}
+      ${this.templateDescription()}
+    </label>` : ''
+  }
+
+  templateDescription () {
+    return this.description ? html`
+    <span class="field-description-tooltip-toggle">
+      <i class="fas fa-question-circle"></i>
+      <small class="field-description-tooltip">
+        ${this.description}
+      </small>
+    </span>` : ''
+  }
+
   templateWrapper () {
     return html`
     <div class="${this.wrapperClasses.join(' ')}">
+
+        ${this.templateLabel()}
 
     </div>`
   }

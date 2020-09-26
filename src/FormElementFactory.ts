@@ -21,9 +21,11 @@ export class FormElementFactory {
       predicateUriExpanded = predicateUriExpanded.replace(alias + ':', uri)
     }
 
+    predicateUriExpanded = predicateUriExpanded.replace('@', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+
     const predicateMeta = await this.form.predicateMetaResolver.getFieldMeta(predicateUriExpanded)
     const formElementType = this.form.formElementResolverRegistry.resolve(predicateUriExpanded, predicateMeta)
-    const formElement = this.form.formElementRegistry.get(formElementType, predicateUri, data)
+    const formElement = this.form.formElementRegistry.get(formElementType, predicateUri, data, predicateMeta)
     await formElement.init()
     return formElement
   }

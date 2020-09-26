@@ -60,6 +60,7 @@ export class RdfForm extends HTMLElement {
 
     await this.formElementFactory.handleData(this.data, this.structure, this.childFormElements)
     this.render()
+    console.log(this.structure)
   }
 
   /**
