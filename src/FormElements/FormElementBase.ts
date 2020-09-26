@@ -20,6 +20,10 @@ export class FormElementBase extends EventTarget {
 
   public wrapperClasses: Array<string> = ['form-element']
   public labelClasses: Array<string> = ['form-element-label']
+  public itemClasses: Array<string> = ['form-element-item']
+  public childrenClasses: Array<string> = ['form-element-child']
+  public childItemClasses: Array<string> = ['form-element-children']
+  public languageSelectorClasses: Array<string> = ['form-element-language-selector']
 
   constructor (data, predicate, predicateMeta, rdfForm: RdfForm) {
     super()
@@ -45,22 +49,12 @@ export class FormElementBase extends EventTarget {
 
   get label () {
     const label = this?.predicateMeta?.label?.[this.form.language] ?? this?.predicateMeta?.label?.default
-
-    if (label) {
-      return label.charAt(0).toUpperCase() + label.slice(1)
-    }
-
-    return ''
+    return label ? label.charAt(0).toUpperCase() + label.slice(1) : ''
   }
 
   get description () {
     const comment = this?.predicateMeta?.comment?.[this.form.language] ?? this?.predicateMeta?.comment?.default
-
-    if (comment) {
-      return comment.charAt(0).toUpperCase() + comment.slice(1)
-    }
-
-    return ''
+    return comment ? comment.charAt(0).toUpperCase() + comment.slice(1) : ''
   }
 
   templateLabel () {
@@ -81,16 +75,57 @@ export class FormElementBase extends EventTarget {
     </span>` : ''
   }
 
+  templateItem (index, value) {
+    const textValue = value?.['@value'] ?? value
+    return html`<input type="text" value="${textValue}">`
+  }
+
+  templateLanguageSelector (value) {
+    const selectedLanguage = value['@language']
+
+    return html`
+    <select onchange="${event => value['@language'] = event.target.value}" class="${this.languageSelectorClasses.join(' ')}">
+      ${Object.entries(this.form.languages).map((language) => {
+        const code = language[0]
+        const labels = language[1]
+
+        return code === selectedLanguage ? html`
+        <option value="${code}" selected>${labels.join(' / ')}</option>
+        ` : html`
+        <option value="${code}">${labels.join(' / ')}</option>
+        `
+      })}
+    </select>`
+  }
+
   templateWrapper () {
     return html`
     <div class="${this.wrapperClasses.join(' ')}">
 
         ${this.templateLabel()}
 
+        ${this?.values ? this.values.map((value, index) => html`
+          <div class="${this.itemClasses.join(' ')}">
+            ${value?.['@language'] ? this.templateLanguageSelector(value) : ''}
+            ${this.templateItem(index, value)}
+          </div>
+        `) : ''}
+
+        ${this.childFormElements.length ? html`
+          <div class="${this.childrenClasses.join(' ')}">
+            ${this.childFormElements.map(childFormElementId => html`
+              <div class="${this.childItemClasses.join(' ')}">
+                ${this[childFormElementId].render()}
+              </div>
+            `)}
+          </div>
+        ` : ''}
+
     </div>`
   }
 
   render () {
+    console.log('element render')
     return this.templateWrapper()
   }
 
