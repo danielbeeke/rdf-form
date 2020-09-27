@@ -16,7 +16,7 @@ export type NestedQuads = {
 }
 
 export interface FormElementResolver {
-  resolve (quad: Quad, formElementData: FormElementData): FieldSuggestion | void
+  resolve (quad: Quad, formElementData: FormElementData, uiQuads: any): FieldSuggestion | void
 }
 
 export type FormElementData = {

@@ -13,23 +13,30 @@ export class FormElementBase extends EventTarget {
   private data: object
   private form: RdfForm
   private values: Array<any>
+  private initialValues: Array<any>
   private predicate: string
   private predicateMeta: any
+  private uiSettings: any
 
   public childFormElements: Array<any> = []
 
-  public wrapperClasses: Array<string> = ['form-element']
-  public labelClasses: Array<string> = ['form-element-label']
-  public itemClasses: Array<string> = ['form-element-item']
-  public childrenClasses: Array<string> = ['form-element-child']
-  public childItemClasses: Array<string> = ['form-element-children']
-  public languageSelectorClasses: Array<string> = ['form-element-language-selector']
+  public cssClasses = {
+    wrapper: ['form-element', this.constructor['type']],
+    item: ['form-element-item'],
+    items: ['form-element-items'],
+    label: ['form-element-label'],
+    children: ['form-element-children'],
+    childItem: ['form-element-child'],
+    languageSelector: ['form-element-language-selector'],
+    description: ['form-element-description']
+  }
 
-  constructor (data, predicate, predicateMeta, rdfForm: RdfForm) {
+  constructor (data, predicate, predicateMeta, uiSettings, rdfForm: RdfForm) {
     super()
     this.form = rdfForm
     this.predicate = predicate
     this.predicateMeta = predicateMeta
+    this.uiSettings = uiSettings
     this.data = data
   }
 
@@ -44,47 +51,55 @@ export class FormElementBase extends EventTarget {
       await this.form.formElementFactory.handleData(this.data, this, this.childFormElements)
     }
 
+    if (this.values) this.initialValues = [...this.values]
+
     delete this.data
   }
 
   get label () {
-    const label = this?.predicateMeta?.label?.[this.form.language] ?? this?.predicateMeta?.label?.default
+    const label = this.uiSettings?.label ??
+      this?.predicateMeta?.label?.[this.form.language] ??
+      this?.predicateMeta?.label?.default
+
     return label ? label.charAt(0).toUpperCase() + label.slice(1) : ''
   }
 
   get description () {
-    const comment = this?.predicateMeta?.comment?.[this.form.language] ?? this?.predicateMeta?.comment?.default
+    const comment = this.uiSettings?.prompt ??
+      this?.predicateMeta?.comment?.[this.form.language] ??
+      this?.predicateMeta?.comment?.default
+
     return comment ? comment.charAt(0).toUpperCase() + comment.slice(1) : ''
+  }
+
+  isRequired (index) {
+    return this.uiSettings?.minValue > 0 && this.uiSettings?.minValue > index
   }
 
   templateLabel () {
     return this.label ? html`
-    <label class="${this.labelClasses.join(' ')}">
+    <label class="${this.cssClasses.label.join(' ')}">
       ${this.label}
-      ${this.templateDescription()}
     </label>` : ''
   }
 
   templateDescription () {
     return this.description ? html`
-    <span class="field-description-tooltip-toggle">
-      <i class="fas fa-question-circle"></i>
-      <small class="field-description-tooltip">
-        ${this.description}
-      </small>
-    </span>` : ''
+    <small class="${this.cssClasses.description.join(' ')}">
+      ${this.description}
+    </small>` : ''
   }
 
   templateItem (index, value) {
     const textValue = value?.['@value'] ?? value
-    return html`<input type="text" value="${textValue}">`
+    return html`<input type="text" value="${textValue}" required="${this.isRequired(index)}">`
   }
 
-  templateLanguageSelector (value) {
+  templateLanguageSelector (index, value) {
     const selectedLanguage = value['@language']
 
     return html`
-    <select onchange="${event => value['@language'] = event.target.value}" class="${this.languageSelectorClasses.join(' ')}">
+    <select onchange="${event => this.values[index]['@language'] = event.target.value}" class="${this.cssClasses.languageSelector.join(' ')}">
       ${Object.entries(this.form.languages).map((language) => {
         const code = language[0]
         const labels = language[1]
@@ -100,32 +115,37 @@ export class FormElementBase extends EventTarget {
 
   templateWrapper () {
     return html`
-    <div class="${this.wrapperClasses.join(' ')}">
+    <div class="${this.cssClasses.wrapper.join(' ')}">
 
-        ${this.templateLabel()}
+      ${this.templateLabel()}
 
-        ${this?.values ? this.values.map((value, index) => html`
-          <div class="${this.itemClasses.join(' ')}">
-            ${value?.['@language'] ? this.templateLanguageSelector(value) : ''}
+      ${this?.values ? html`
+        <div class="${this.cssClasses.items}">
+        ${this.values.map((value, index) => html`
+          <div class="${this.cssClasses.item.join(' ')}">
             ${this.templateItem(index, value)}
+            ${this.values[index]?.['@language'] ? this.templateLanguageSelector(index, value) : ''}
           </div>
-        `) : ''}
+        `)}
+        </div>
+      ` : ''}
 
-        ${this.childFormElements.length ? html`
-          <div class="${this.childrenClasses.join(' ')}">
-            ${this.childFormElements.map(childFormElementId => html`
-              <div class="${this.childItemClasses.join(' ')}">
-                ${this[childFormElementId].render()}
-              </div>
-            `)}
-          </div>
-        ` : ''}
+      ${this.templateDescription()}
+
+      ${this.childFormElements.length ? html`
+        <div class="${this.cssClasses.children.join(' ')}">
+          ${this.childFormElements.map(childFormElementId => html`
+            <div class="${this.cssClasses.childItem.join(' ')}">
+              ${this[childFormElementId].render()}
+            </div>
+          `)}
+        </div>
+      ` : ''}
 
     </div>`
   }
 
   render () {
-    console.log('element render')
     return this.templateWrapper()
   }
 

@@ -9,7 +9,9 @@ const typeMapping = {
 
 export class DataTypes implements FormElementResolver {
 
-  resolve(predicateUri, predicateMeta): FieldSuggestion | void {
-    return { importance: 0, type: 'text' }
+  resolve(predicateUri, predicateMeta, uiQuads): FieldSuggestion | void {
+    const givenFieldType = uiQuads?.fieldType
+
+    return { importance: 0, type: givenFieldType ? givenFieldType : 'string' }
   }
 }

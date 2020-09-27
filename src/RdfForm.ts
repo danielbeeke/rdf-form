@@ -1,21 +1,19 @@
 /**
- * A custom element that shows a HTML form from a set of quads.
+ * A custom element that shows a HTML form from a turtle file.
  */
-import { parse as ttl2jsonld } from '@frogcat/ttl2jsonld'
 import { OntologyRepository } from './OntologyRepository'
 import { PredicateMetaResolver } from './PredicateMetaResolver'
 import { FormElementResolverRegistry } from './FormElementResolverRegistry'
 import { FormElementRegistry } from './FormElementRegistry'
 import { FormElementFactory } from './FormElementFactory'
 import { DataTypes } from './FormElementResolvers/DataTypes'
+import * as ActorHttpProxy from '@comunica/actor-http-proxy'
 import { Vcard } from './FormElementResolvers/Vcard'
-import { Text } from './FormElements/Text'
-import { newEngine } from '@comunica/actor-init-sparql'
-import { SchemaOrg } from './UriChangers/SchemaOrg'
+import { String } from './FormElements/String'
+import { Textarea } from './FormElements/Textarea'
+import { getCountries, getLanguages, cachePromiseOutput, attributeToJsonLd, attributeToQuads } from './Helpers'
 import { render, html } from 'uhtml'
 import '../scss/style.scss'
-
-import * as ActorHttpProxy from '@comunica/actor-http-proxy'
 
 export class RdfForm extends HTMLElement {
 
@@ -31,7 +29,7 @@ export class RdfForm extends HTMLElement {
   public languages: object = {}
   public language: string
 
-  public formDefinition: object
+  public formDefinition: Array<any> = []
   private data: object
 
   public childFormElements: Array<any> = []
@@ -54,95 +52,58 @@ export class RdfForm extends HTMLElement {
 
     this.formElementResolverRegistry.register(DataTypes)
     this.formElementResolverRegistry.register(Vcard)
-    this.formElementRegistry.register(Text)
+    this.formElementRegistry.register(String)
+    this.formElementRegistry.register(Textarea)
 
-    this.data = await this.attributeToJsonLd('data', true)
-    this.formDefinition = await this.attributeToJsonLd('form-definition') ?? {}
+    this.data = await attributeToJsonLd(this, 'data', true)
     this.jsonLdContext = this.data['@context']
+    if (this.data?.['@graph'] && this.getAttribute('data').split('#').length > 1) {
+      this.selectCorrectGraph()
+    }
+
+    // Check if a form definition can be found via the class.
+    if (this.data?.['@type']) {
+      const typeSplit = this.data['@type'].split(':')
+      const typeUri = this.jsonLdContext[typeSplit[0]] + typeSplit[1]
+      const typeQuads = await this.ontologyRepository.dereference(typeUri)
+      const formQuad = typeQuads.find(quad => quad.predicate.id === 'http://rdf.danielbeeke.nl/form/form-dev.ttl#Form' && quad.subject.id === typeUri)
+      if (formQuad) {
+        const formUri = formQuad.object.id
+        this.formDefinition = [...this.formDefinition, ... await this.ontologyRepository.dereference(formUri)]
+      }
+    }
+
+    this.formDefinition = [...this.formDefinition, ... await attributeToQuads(this, 'form-definition')] ?? []
     delete this.data['@context']
 
+    this.languages = await cachePromiseOutput(getLanguages, 3600, this)
+    this.countries = await cachePromiseOutput(getCountries, 3600, this)
+
     await this.formElementFactory.handleData(this.data, this.structure, this.childFormElements)
-    await this.getLanguages()
-    await this.getCountries()
+    console.log(this.structure)
     this.render()
   }
 
-  async getLanguages () {
-    const comunica = newEngine();
-    const wikidataQuery = `
-      PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-
-      SELECT ?code ?label WHERE {
-        ?object wdt:P218 ?code .
-        ?object rdfs:label ?label ;
-        FILTER (lang(?label) = '${this.language}')
-      }
-      ORDER BY ASC(?label)
-    `
-
-    const result = await comunica.query(wikidataQuery, {
-      sources: [{ value: 'https://query.wikidata.org/sparql', type: 'sparql' }],
-    });
-
-    /** @ts-ignore */
-    const items = await result.bindings()
-
-    this.languages = {}
-    for (const item of items) {
-      const code = item.get('?code').value
-      const label = item.get('?label').value
-      if (!this.languages[code]) this.languages[code] = []
-      this.languages[code].push(label)
-    }
-  }
-
-  async getCountries () {
-    const quads = await this.ontologyRepository.dereference('https://www.w3.org/Consortium/Offices/Presentations/RDFTutorial/rdfs/Countries.owl')
-    const countries = quads
-      .filter(quad => quad.predicate.value === 'http://www.bpiresearch.com/BPMO/2004/03/03/cdl/Countries#countryCodeISO3166Alpha2')
-
-    for (const countryQuad of countries) {
-      let countryObject = { name: null }
-      countryObject['subject'] = countryQuad.subject.value;
-      const countryQuads = quads.filter(quad => quad.subject.value === countryQuad.subject.value)
-      for (const innerQuad of countryQuads) {
-        countryObject[innerQuad.predicate.value.split('#')[1]] = innerQuad.object.value
-      }
-
-      const countryMeta = quads.find(quad => quad.subject.value === countryObject['referencesCountry'] && quad.predicate.value === 'http://www.bpiresearch.com/BPMO/2004/03/03/cdl/Countries#nameEnglish')
-      countryObject.name = countryMeta.object.value
-      this.countries.push(countryObject)
-    }
-
-    this.countries.sort((a, b) => {
-      if (a['name'] > b['name']) return 1;
-      if (b['name'] > a['name']) return -1;
-
-      return 0;
-    })
-  }
-
   /**
-   * Given an attribute name that is used on the custom element,
-   * fetches the url if needed and converts to JSON-ld.
-   *
-   * @param name
-   * @param required
+   * When multiple graphs were found at the data attribute URL, select the one after the #.
    */
-  async attributeToJsonLd (name, required = false): Promise<object> {
-    let urlOrValue = this.getAttribute(name).trim()
-    if (required && !urlOrValue) throw new Error(`The attribute ${name} does not have a content or does not exist`)
+  selectCorrectGraph () {
+    // Multiple graphs were found at the url or inside the text.
+    let found = false
+    const urlId = this.getAttribute('data').split('#')[1]
 
-    if (urlOrValue.slice(-3)) {
-      const response = await fetch(urlOrValue)
-      urlOrValue = await response.text()
+    for (const graph of this.data['@graph']) {
+      const id = graph['@id'].split(':')[1]
+      if (id === urlId) {
+        found = true
+        this.data = graph
+      }
     }
 
-    return urlOrValue ? ttl2jsonld(urlOrValue) : {}
+    if (!found) throw new Error(`Could not find the graph in the data that you requested: ${urlId}`)
   }
 
   render () {
-    console.log('root render')
     render(this, html`${Object.values(this.structure).map(formElement => formElement.render())}`)
   }
 }

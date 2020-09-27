@@ -1,3 +1,7 @@
+import { newEngine } from '@comunica/actor-init-sparql'
+import { parse as ttl2jsonld } from '@frogcat/ttl2jsonld'
+import * as N3 from 'n3'
+
 export const findInSet = (pred, set) => {
   for (let item of set) if (pred(item)) return item
 }
@@ -21,4 +25,101 @@ export function debounce(func, wait, immediate = false) {
     timeout = setTimeout(later, wait);
     if (callNow) func.apply(context, args);
   };
-};
+}
+
+export async function cachePromiseOutput(callback, time = 3600, ...parameters) {
+  const cache = localStorage?.['cache_' + callback.name] ? JSON.parse(localStorage['cache_' + callback.name]) : null
+  if (cache && cache.timestamp > (Date.now() / 1000)) return cache.value
+  const output = await callback(...parameters)
+
+  localStorage['cache_' + callback.name] = JSON.stringify({
+    value: output,
+    timestamp: (Date.now() / 1000) + time
+  })
+
+  return output
+}
+
+/**
+ * Fetches a list of languages.
+ * @param form
+ */
+export async function getLanguages (form) {
+  return getWikidataKeyLabel(form, 'wdt:P218')
+}
+
+/**
+ * Fetches a list of countries.
+ * @param form
+ */
+export async function getCountries (form) {
+  return getWikidataKeyLabel(form, 'wdt:P297')
+}
+
+/**
+ * Returns a key-label(s) object by a property like: wdt:P297
+ * @param form
+ * @param property
+ */
+async function getWikidataKeyLabel(form, property) {
+  let list = {}
+
+  const comunica = newEngine();
+  const wikidataQuery = `
+    PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+
+    SELECT ?key ?label WHERE {
+      ?object ${property} ?key .
+      ?object rdfs:label ?label ;
+      FILTER (lang(?label) = '${form.language}')
+    }
+    ORDER BY ASC(?label)
+  `
+
+  const result = await comunica.query(wikidataQuery, {
+    sources: [{ value: 'https://query.wikidata.org/sparql', type: 'sparql' }],
+  });
+
+  /** @ts-ignore */
+  const items = await result.bindings()
+
+  for (const item of items) {
+    const key = item.get('?key').value
+    const label = item.get('?label').value
+    if (!list[key]) list[key] = []
+    list[key].push(label)
+  }
+
+  return list
+}
+
+async function attributeToText (element, name, required = false): Promise<string> {
+  let urlOrValue = element.getAttribute(name) ? element.getAttribute(name).trim() : false
+  if (required && !urlOrValue) throw new Error(`The attribute ${name} does not have a content or does not exist`)
+
+  if (urlOrValue && urlOrValue.slice(-3)) {
+    const response = await fetch(urlOrValue)
+    urlOrValue = await response.text()
+  }
+
+  return urlOrValue
+}
+
+/**
+ * Given an attribute name that is used on the custom element,
+ * fetches the url if needed and converts to JSON-ld.
+ *
+ * @param element
+ * @param name
+ * @param required
+ */
+export async function attributeToJsonLd (element, name, required = false): Promise<Array<any>> {
+  const text = await attributeToText(element, name, required)
+  return text ? ttl2jsonld(text) : []
+}
+
+export async function attributeToQuads (element, name, required = false): Promise<Array<any>> {
+  const text = await attributeToText(element, name, required)
+  const parser = new N3.Parser();
+  return text ? parser.parse(text) : []
+}

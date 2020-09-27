@@ -21,46 +21,35 @@ rdf-form {
     border-radius: var(--radius);
   }
 
-  .field {
+  .form-element {
     padding-bottom: 35px;
     display: flex;
     position: relative;
     flex-direction: column;
   }
 
-  .field-label {
+  .form-element-label {
     font-weight: bold;
     text-transform: capitalize;
     padding-bottom: 10px;
     display: flex;
   }
 
-  .children .field-label {
+  .form-element-children .form-element-label {
     font-weight: 300;
     font-style: italic;
   }
 
-  .country-flag {
-    max-width: 22px;
-  }
-
-  .children {
+  .form-element-children {
     padding-left: 20px;
     margin-left: 6px;
     border-left: 2px solid var(--border-color);
   }
 
-  .field-items {
-     &:not(.inline) {
-       padding: 5px;
-       background: var(--background-color);
-       border-radius: var(--radius);
-    }
-
-    &.inline {
-      display: flex;
-      gap: 10px;
-    }
+  .form-element-items {
+     padding: 5px;
+     background: var(--background-color);
+     border-radius: var(--radius);
   }
 
   .row {
@@ -72,53 +61,14 @@ rdf-form {
     }
   }
 
-  .field-item {
+  .form-element-item {
     display: flex;
     gap: 10px;
+    padding: 10px 5px;
 
-    &:not(.inline) {
-      padding: 10px 5px;
-    }
-
-    &:not(.inline):not(:last-child) {
+    &:not(:last-child) {
       border-bottom: 1px dashed var(--border-color);
     }
-  }
-
-  .field-item-actions {
-    float: right;
-  }
-
-  *:not(.inline) > .field-items-actions {
-    padding: 5px 0;
-  }
-
-  .field-description-tooltip-toggle {
-    position: relative;
-    margin-left: 10px;
-
-    svg {
-      opacity: .3;
-    }
-  }
-
-  .field-description-tooltip {
-    display: flex;
-    position: absolute;
-    left: 30px;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 10px;
-    top: 50%;
-    border-radius: var(--radius);
-    white-space: nowrap;
-    transform: translate(0, -50%);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .field-description-tooltip-toggle:hover .field-description-tooltip {
-    opacity: 1;
   }
 
   .language-selector {
@@ -150,39 +100,6 @@ rdf-form {
       svg path {
         fill: white;
       }
-    }
-  }
-
-  .field-menu {
-    opacity: 0;
-    pointer-events: none;
-    position: absolute;
-    right: 0;
-    background: var(--background-color);
-    border-radius: var(--radius);
-    list-style: none;
-    padding: 0;
-    border: 1px solid var(--border-color);
-
-    .button {
-      background: var(--background-color);
-    }
-
-    &.expanded {
-      opacity: 1;
-      pointer-events: all;
-    }
-  }
-
-  .toggle-field-menu {
-    cursor: pointer;
-    border: 0;
-    background: none;
-    margin-left: auto;
-    height: 100%;
-
-    svg {
-      opacity: .3;
     }
   }
 }

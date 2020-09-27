@@ -1,5 +1,8 @@
 import { RdfForm } from './RdfForm'
 
+/**
+ * Keeps track of all the possible FormElements.
+ */
 export class FormElementRegistry {
 
   private form: RdfForm
@@ -13,10 +16,10 @@ export class FormElementRegistry {
     this.elements.push(...formElements)
   }
 
-  get (type: string, predicate, data, predicateMeta) {
+  get (type: string, predicate, data, predicateMeta, uiSettings) {
     const formElement = this.elements.find(element => element.type === type)
-    if (formElement) return new formElement(data, predicate, predicateMeta, this.form)
-    else throw new Error('Could not find: ' + type)
+    if (formElement) return new formElement(data, predicate, predicateMeta, uiSettings, this.form)
+    else throw new Error('Could not find FormElement: ' + type)
   }
 
 }
