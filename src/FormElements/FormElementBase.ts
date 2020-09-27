@@ -10,19 +10,20 @@ export class FormElementBase extends EventTarget {
 
   static type: string = 'base'
 
-  private data: object
-  private form: RdfForm
-  private values: Array<any>
-  private initialValues: Array<any>
-  private predicate: string
-  private predicateMeta: any
-  private uiSettings: any
+  public data: object
+  public form: RdfForm
+  public values: Array<any>
+  public initialValues: Array<any>
+  public predicate: string
+  public predicateMeta: any
+  public uiSettings: any
 
   public childFormElements: Array<any> = []
 
   public cssClasses = {
     wrapper: ['form-element', this.constructor['type']],
     item: ['form-element-item'],
+    itemFooter: ['form-element-item-footer'],
     items: ['form-element-items'],
     label: ['form-element-label'],
     children: ['form-element-children'],
@@ -45,6 +46,9 @@ export class FormElementBase extends EventTarget {
       this.values = this.data
     }
     else if (typeof this.data === 'string') {
+      this.values = [this.data]
+    }
+    else if (this.data?.['@value'] || this.data?.['@id']) {
       this.values = [this.data]
     }
     else {
@@ -113,6 +117,10 @@ export class FormElementBase extends EventTarget {
     </select>`
   }
 
+  templateItemFooter (index, value) {
+    return html``
+  }
+
   templateWrapper () {
     return html`
     <div class="${this.cssClasses.wrapper.join(' ')}">
@@ -121,12 +129,16 @@ export class FormElementBase extends EventTarget {
 
       ${this?.values ? html`
         <div class="${this.cssClasses.items}">
-        ${this.values.map((value, index) => html`
+        ${this.values.map((value, index) => {
+          const templateItemFooter = this.templateItemFooter(index, value)
+
+          return html`
           <div class="${this.cssClasses.item.join(' ')}">
             ${this.templateItem(index, value)}
             ${this.values[index]?.['@language'] ? this.templateLanguageSelector(index, value) : ''}
+            ${templateItemFooter ? html`<div class="${this.cssClasses.itemFooter.join(' ')}">${templateItemFooter}</div>` : ''}
           </div>
-        `)}
+        `})}
         </div>
       ` : ''}
 
@@ -146,7 +158,7 @@ export class FormElementBase extends EventTarget {
   }
 
   render () {
-    return this.templateWrapper()
+    return this.form.render()
   }
 
 }

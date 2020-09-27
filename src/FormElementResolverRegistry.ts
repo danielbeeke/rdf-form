@@ -19,10 +19,10 @@ export class FormElementResolverRegistry {
     this.resolvers.push(new formElementResolver())
   }
 
-  resolve (predicateUri, predicateMeta, uiSettings) {
+  resolve (predicateUri, predicateMeta, uiSettings, data) {
     const suggestions: Array<FieldSuggestion> = []
     for (const resolver of this.resolvers) {
-      const suggestion = resolver.resolve(predicateUri, predicateMeta, uiSettings)
+      const suggestion = resolver.resolve(predicateUri, predicateMeta, uiSettings, data)
       if (suggestion) suggestions.push(suggestion)
     }
 

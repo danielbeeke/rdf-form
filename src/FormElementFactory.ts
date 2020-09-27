@@ -48,7 +48,7 @@ export class FormElementFactory {
       uiSettings[shortenedPredicate] = jsonQuad.object.value
     }
 
-    const formElementType = this.form.formElementResolverRegistry.resolve(predicateUriExpanded, predicateMeta, uiSettings)
+    const formElementType = this.form.formElementResolverRegistry.resolve(predicateUriExpanded, predicateMeta, uiSettings, data)
     const formElement = this.form.formElementRegistry.get(formElementType, predicateUri, data, predicateMeta, uiSettings)
     await formElement.init()
     return formElement

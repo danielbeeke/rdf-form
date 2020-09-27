@@ -1,10 +1,7 @@
-import { OntologyRepository } from './OntologyRepository'
 import { RdfForm } from './RdfForm'
 
 export class PredicateMetaResolver {
 
-  readonly proxy: any;
-  readonly language: string;
   private fieldMetas: Map<string, object>;
   private form: RdfForm
 

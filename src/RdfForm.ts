@@ -10,6 +10,7 @@ import { DataTypes } from './FormElementResolvers/DataTypes'
 import * as ActorHttpProxy from '@comunica/actor-http-proxy'
 import { Vcard } from './FormElementResolvers/Vcard'
 import { String } from './FormElements/String'
+import { Uri } from './FormElements/Uri'
 import { Textarea } from './FormElements/Textarea'
 import { getCountries, getLanguages, cachePromiseOutput, attributeToJsonLd, attributeToQuads } from './Helpers'
 import { render, html } from 'uhtml'
@@ -54,6 +55,7 @@ export class RdfForm extends HTMLElement {
     this.formElementResolverRegistry.register(Vcard)
     this.formElementRegistry.register(String)
     this.formElementRegistry.register(Textarea)
+    this.formElementRegistry.register(Uri)
 
     this.data = await attributeToJsonLd(this, 'data', true)
     this.jsonLdContext = this.data['@context']
@@ -80,7 +82,6 @@ export class RdfForm extends HTMLElement {
     this.countries = await cachePromiseOutput(getCountries, 3600, this)
 
     await this.formElementFactory.handleData(this.data, this.structure, this.childFormElements)
-    console.log(this.structure)
     this.render()
   }
 
@@ -104,7 +105,7 @@ export class RdfForm extends HTMLElement {
   }
 
   render () {
-    render(this, html`${Object.values(this.structure).map(formElement => formElement.render())}`)
+    render(this, html`${Object.values(this.structure).map(formElement => formElement.templateWrapper())}`)
   }
 }
 

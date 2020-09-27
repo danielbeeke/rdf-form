@@ -9,8 +9,12 @@ const typeMapping = {
 
 export class DataTypes implements FormElementResolver {
 
-  resolve(predicateUri, predicateMeta, uiQuads): FieldSuggestion | void {
+  resolve(predicateUri, predicateMeta, uiQuads, data): FieldSuggestion | void {
     const givenFieldType = uiQuads?.fieldType
+
+    if (data?.['@id'] && data?.['@id'].substr(0, 4) === 'http') {
+      return { importance: 0, type: 'uri' }
+    }
 
     return { importance: 0, type: givenFieldType ? givenFieldType : 'string' }
   }

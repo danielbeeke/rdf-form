@@ -64,11 +64,16 @@ rdf-form {
   .form-element-item {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
     padding: 10px 5px;
 
     &:not(:last-child) {
       border-bottom: 1px dashed var(--border-color);
     }
+  }
+
+  .form-element-item-footer {
+    flex: 0 0 100%;
   }
 
   .language-selector {
