@@ -2,6 +2,7 @@ import { html } from 'uhtml'
 import { RdfForm } from '../RdfForm'
 import { library, dom } from '@fortawesome/fontawesome-svg-core'
 import { faTimes, faQuestionCircle, faPlus, faLanguage, faCog } from '@fortawesome/free-solid-svg-icons'
+import { fieldPrototype } from '../Types'
 
 dom.watch()
 library.add(faTimes, faQuestionCircle, faPlus, faLanguage, faCog)
@@ -10,15 +11,8 @@ export class FormElementBase extends EventTarget {
 
   static type: string = 'base'
 
-  public data: object
+  public field: fieldPrototype
   public form: RdfForm
-  public values: Array<any>
-  public initialValues: Array<any>
-  public predicate: string
-  public predicateMeta: any
-  public uiSettings: any
-
-  public childFormElements: Array<any> = []
 
   public cssClasses = {
     wrapper: ['form-element', this.constructor['type']],
@@ -32,58 +26,39 @@ export class FormElementBase extends EventTarget {
     description: ['form-element-description']
   }
 
-  constructor (data, predicate, predicateMeta, uiSettings, rdfForm: RdfForm) {
+  constructor (field, rdfForm: RdfForm) {
     super()
     this.form = rdfForm
-    this.predicate = predicate
-    this.predicateMeta = predicateMeta
-    this.uiSettings = uiSettings
-    this.data = data
-  }
-
-  async init () {
-    if (Array.isArray(this.data)) {
-      this.values = this.data
-    }
-    else if (typeof this.data === 'string') {
-      this.values = [this.data]
-    }
-    else if (this.data?.['@value'] || this.data?.['@id']) {
-      this.values = [this.data]
-    }
-    else {
-      await this.form.formElementFactory.handleData(this.data, this, this.childFormElements)
-    }
-
-    if (this.values) this.initialValues = [...this.values]
-
-    delete this.data
+    this.field = field
   }
 
   get label () {
-    const label = this.uiSettings?.label ??
-      this?.predicateMeta?.label?.[this.form.language] ??
-      this?.predicateMeta?.label?.default
-
+    const label = this.field.label[this.form.language]
     return label ? label.charAt(0).toUpperCase() + label.slice(1) : ''
   }
 
   get description () {
-    const comment = this.uiSettings?.prompt ??
-      this?.predicateMeta?.comment?.[this.form.language] ??
-      this?.predicateMeta?.comment?.default
+    return ''
+  }
 
-    return comment ? comment.charAt(0).toUpperCase() + comment.slice(1) : ''
+  get values () {
+    if (this.field.binding) {
+      const values = this.form.expandedData[this.field.binding]
+      return Array.isArray(values) ? values : [values]
+    }
+
+    return []
   }
 
   isRequired (index) {
-    return this.uiSettings?.minValue > 0 && this.uiSettings?.minValue > index
+    return this.field.required
   }
 
   templateLabel () {
     return this.label ? html`
     <label class="${this.cssClasses.label.join(' ')}">
       ${this.label}
+      ${this.field.required ? html`<span>*</span>` : ''}
     </label>` : ''
   }
 
@@ -104,16 +79,6 @@ export class FormElementBase extends EventTarget {
 
     return html`
     <select onchange="${event => this.values[index]['@language'] = event.target.value}" class="${this.cssClasses.languageSelector.join(' ')}">
-      ${Object.entries(this.form.languages).map((language) => {
-        const code = language[0]
-        const labels = language[1]
-
-        return code === selectedLanguage ? html`
-        <option value="${code}" selected>${labels.join(' / ')}</option>
-        ` : html`
-        <option value="${code}">${labels.join(' / ')}</option>
-        `
-      })}
     </select>`
   }
 
@@ -122,14 +87,21 @@ export class FormElementBase extends EventTarget {
   }
 
   templateWrapper () {
+    const countToRender = this.values.length ? this.values.length : 1
+
+    const itemsToRender = []
+    for (let i = 0; i < countToRender; i++) {
+      itemsToRender.push(this.values[i] ? this.values[i] : null)
+    }
+
     return html`
     <div class="${this.cssClasses.wrapper.join(' ')}">
 
       ${this.templateLabel()}
 
-      ${this?.values ? html`
+      ${html`
         <div class="${this.cssClasses.items}">
-        ${this.values.map((value, index) => {
+        ${itemsToRender.map((value, index) => {
           const templateItemFooter = this.templateItemFooter(index, value)
 
           return html`
@@ -140,19 +112,9 @@ export class FormElementBase extends EventTarget {
           </div>
         `})}
         </div>
-      ` : ''}
+      `}
 
       ${this.templateDescription()}
-
-      ${this.childFormElements.length ? html`
-        <div class="${this.cssClasses.children.join(' ')}">
-          ${this.childFormElements.map(childFormElementId => html`
-            <div class="${this.cssClasses.childItem.join(' ')}">
-              ${this[childFormElementId].render()}
-            </div>
-          `)}
-        </div>
-      ` : ''}
 
     </div>`
   }

@@ -5,7 +5,7 @@ import { RdfForm } from './RdfForm'
  */
 export class FormElementRegistry {
 
-  private form: RdfForm
+  readonly form: RdfForm
   readonly elements: Array<any> = []
 
   constructor(rdfForm: RdfForm ) {
@@ -16,9 +16,9 @@ export class FormElementRegistry {
     this.elements.push(...formElements)
   }
 
-  get (type: string, predicate, data, predicateMeta, uiSettings) {
+  get (type: string, field) {
     const formElement = this.elements.find(element => element.type === type)
-    if (formElement) return new formElement(data, predicate, predicateMeta, uiSettings, this.form)
+    if (formElement) return new formElement(field, this.form)
     else throw new Error('Could not find FormElement: ' + type)
   }
 
