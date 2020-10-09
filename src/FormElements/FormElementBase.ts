@@ -79,6 +79,15 @@ export class FormElementBase extends EventTarget {
 
     return html`
     <select onchange="${event => this.values[index]['@language'] = event.target.value}" class="${this.cssClasses.languageSelector.join(' ')}">
+    ${Object.entries(this.form.i14nLanguages).map((language) => {
+      const code = language[0]
+      const label = language[1]
+      return code === selectedLanguage ? html`
+        <option value="${code}" selected>${label}</option>
+        ` : html`
+        <option value="${code}">${label}</option>
+        `
+    })}
     </select>`
   }
 

@@ -5,7 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const isDevelopment = process.env.NODE_ENV === 'development'
 
-let htmlPageNames = ['profile', 'vcard', 'prayer']
+let htmlPageNames = ['prayer']
 let multipleHtmlPlugins = htmlPageNames.map(name => {
   return new HtmlWebpackPlugin({
     template: `./html/${name}.html`,

@@ -11,6 +11,8 @@ import { Textarea } from './FormElements/Textarea'
 import { Subject } from './FormElements/Subject'
 import { Reference } from './FormElements/Reference'
 
+import { I14n } from './i14n'
+
 import { attributeToJsonLd, selectCorrectGraph } from './Helpers'
 import { render, html } from 'uhtml'
 import '../scss/style.scss'
@@ -22,7 +24,10 @@ export class RdfForm extends HTMLElement {
 
   public jsonLdContext: object
   public proxy: string
+  public i14nLanguages: object
+  public uiLanguages: object
   public language: string
+  public t: any
 
   public formJsonLd: Object = {}
   public formDefinition: Map<any, any> = new Map()
@@ -36,7 +41,12 @@ export class RdfForm extends HTMLElement {
   async connectedCallback () {
     const proxyUrl = this.getAttribute('proxy')
     this.proxy = proxyUrl ? new (<any> ActorHttpProxy).ProxyHandlerStatic(proxyUrl) : null;
-    this.language = this.getAttribute('lang') ?? 'en'
+    const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? { 'en': 'English' }
+    this.i14nLanguages = JSON.parse(this.getAttribute('i14n-languages')) ?? defaultLanguages
+    this.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
+
+    this.language = this.getAttribute('selected-language') ?? 'en'
+    this.t = await I14n(this.language, Object.keys(this.i14nLanguages))
 
     this.formElementRegistry = new FormElementRegistry(this)
     this.ontologyRepository = new OntologyRepository(this)
@@ -55,9 +65,35 @@ export class RdfForm extends HTMLElement {
   }
 
   render () {
+    render(this, html`
+      ${this.languageSwitcher()}
+      ${Array.from(this.formDefinition.values()).map(formElement => formElement.templateWrapper())}
+      ${this.actions()}
+    `)
+  }
 
-    render(this, html`${Array.from(this.formDefinition.values())
-      .map(formElement => formElement.templateWrapper())}`)
+  languageSwitcher () {
+    return Object.keys(this.uiLanguages).length > 1 ? html`
+      <select onchange="${async event => {
+        this.language = event.target.value;
+        this.t = await I14n(this.language, Object.keys(this.i14nLanguages))
+        this.render()
+      }}" class="language-switcher">
+        ${Object.entries(this.uiLanguages).map((language) => {
+          const code = language[0]
+          const label = language[1]
+          return code === this.language ? html`
+            <option value="${code}" selected>${label}</option>
+            ` : html`
+            <option value="${code}">${label}</option>
+          `
+        })}
+      </select>
+    ` : ''
+  }
+
+  actions () {
+    return html`<button>${this.t.direct('Save')}</button>`
   }
 }
 

@@ -8,6 +8,6 @@ export class Textarea extends FormElementBase implements FormElement {
 
   templateItem (index, value) {
     const textValue = value?.['@value'] ?? value
-    return html`<textarea required="${this.isRequired(index)}">${textValue.trim()}</textarea>`
+    return html`<textarea required="${this.isRequired(index)}" rows="${this.field.rows}">${textValue.trim()}</textarea>`
   }
 }
