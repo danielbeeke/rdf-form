@@ -53,20 +53,27 @@ export class RdfForm extends HTMLElement {
 
     this.formElementRegistry.register(String, Textarea, Subject, Reference)
 
-    this.data = await attributeToJsonLd(this, 'data', true)
+    this.data = await attributeToJsonLd(this, 'data')
     this.jsonLdContext = this.data['@context']
     this.data = selectCorrectGraph(this.data, this.getAttribute('data'))
     this.expandedData = expandAll(this.data, this.jsonLdContext)
     delete this.data['@context']
 
     this.formJsonLd = await attributeToJsonLd(this, 'form');
-    this.formDefinition = jsonLdToFormDefinition(this.formJsonLd, this.formElementRegistry);
-    this.render()
+    this.formDefinition = await jsonLdToFormDefinition(this.formJsonLd, this.formElementRegistry);
+
+    const promises = Array.from(this.formDefinition.values()).map(formElement => formElement.init())
+
+    Promise.all(promises).then(() => {
+      this.render()
+    })
   }
 
   render () {
     render(this, html`
-      ${this.languageSwitcher()}
+      <div class="top-actions">
+        ${this.languageSwitcher()}
+      </div>
       ${Array.from(this.formDefinition.values()).map(formElement => formElement.templateWrapper())}
       ${this.actions()}
     `)
@@ -93,7 +100,7 @@ export class RdfForm extends HTMLElement {
   }
 
   actions () {
-    return html`<button>${this.t.direct('Save')}</button>`
+    return html`<button class="button">${this.t.direct('Save')}</button>`
   }
 }
 

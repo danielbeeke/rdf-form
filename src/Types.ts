@@ -16,6 +16,7 @@ export interface fieldPrototype {
   binding: '',
   translatable: false,
   name: null,
-  label: {}
+  label: {},
+  input: null
 }
 

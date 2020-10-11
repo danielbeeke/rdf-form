@@ -48,10 +48,11 @@ const fieldPrototype = {
   binding: null,
   translatable: false,
   name: null,
-  label: null
+  label: null,
+  input: null
 }
 
-export function jsonLdToFormDefinition (jsonLd, formElementRegistry: FormElementRegistry) {
+export async function jsonLdToFormDefinition (jsonLd, formElementRegistry: FormElementRegistry) {
   const fieldsArray = []
   const fields: Map<any, any> = new Map()
 
@@ -98,7 +99,8 @@ export function jsonLdToFormDefinition (jsonLd, formElementRegistry: FormElement
   })
 
   for (const field of fieldsArray) {
-    fields.set(field.name, formElementRegistry.get(field.fieldWidget, field))
+    const formElement = formElementRegistry.get(field.fieldWidget, field)
+    fields.set(field.name, formElement)
   }
 
   return fields;

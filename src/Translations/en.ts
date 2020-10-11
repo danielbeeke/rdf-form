@@ -1,2 +1,1 @@
-export let Translations = {
-};
+export let Translations = {}
