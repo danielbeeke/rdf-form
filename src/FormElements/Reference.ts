@@ -3,6 +3,7 @@ import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
 import { getObjectOfQuadByPredicate, debounce } from '../Helpers'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { newEngine } from '@comunica/actor-init-sparql'
 
 dom.watch()
 library.add(faTimes)
@@ -15,27 +16,27 @@ export class Reference extends FormElementBase implements FormElement {
 
   async init(): Promise<void> {
     await super.init();
+
     this.updateMetas().then(() => this.render())
+
+    // if there is an autocomplete query and the query does not contain the SEARCH_TERM token.
+    if (typeof this.field.autoCompleteQuery === 'string') {
+      if (!this.field.autoCompleteQuery.includes('SEARCH_TERM')) {
+        await this.sparqlQuery()
+      }
+    }
 
     this.addEventListener('keyup', debounce(async (event: any) => {
       const value = event.detail.originalEvent.target.value
+
       if (value.substr(0, 4) !== 'http') {
-        const response = await fetch(`https://lookup.dbpedia.org/api/prefix?query=${value}`)
-        const xml = await response.text();
-
-        const parser = new DOMParser();
-        const dom: any = parser.parseFromString(xml, 'application/xml')
-
         this.searchSuggestions = []
 
-        for (const result of dom.querySelectorAll('Result')) {
-          const label = result.querySelector('Label').textContent
-          const uri = result.querySelector('URI').textContent
-
-          // Dedup languages.
-          if (uri.substr(0, 18) === 'http://dbpedia.org') {
-            this.searchSuggestions.push({ label, uri })
-          }
+        if (this.field.autoCompleteQuery) {
+          await this.sparqlQuery(value)
+        }
+        else {
+          await this.dbpediaSuggestions(value)
         }
 
         this.render()
@@ -49,13 +50,56 @@ export class Reference extends FormElementBase implements FormElement {
     })
   }
 
+  async sparqlQuery (searchTerm: string = '') {
+    const config = {}
+    config['@comunica/actor-http-proxy:httpProxyHandler'] = this.form.proxy
+    const myEngine = newEngine();
+    let query: string = this.field.autoCompleteQuery
+    query = query.replace(/LANGUAGE/g, this.form.language)
+    query = query.replace(/SEARCH_TERM/g, searchTerm)
+
+    const result = await myEngine.query(query, {
+      sources: [this.field.autoCompleteSource],
+    });
+
+    /** @ts-ignore */
+    const bindings = await result.bindings()
+
+    for (const binding of bindings) {
+      let label = binding.get('?label')?.id
+      if (label.split('"').length > 1) label = label.split('"')[1]
+      const uri = binding.get('?uri')?.id
+      this.searchSuggestions.push({ label, uri })
+    }
+  }
+
+  async dbpediaSuggestions (searchTerm: string) {
+    const response = await fetch(`https://lookup.dbpedia.org/api/prefix?query=${searchTerm}`)
+    const xml = await response.text();
+
+    const parser = new DOMParser();
+    const dom: any = parser.parseFromString(xml, 'application/xml')
+
+    this.searchSuggestions = []
+
+    for (const result of dom.querySelectorAll('Result')) {
+      const label = result.querySelector('Label').textContent
+      const uri = result.querySelector('URI').textContent
+
+      // Dedup languages.
+      if (uri.substr(0, 18) === 'http://dbpedia.org') {
+        this.searchSuggestions.push({ label, uri })
+      }
+    }
+  }
+
   removeReference (index) {
     this.values[index]['@id'] = ''
     this.metas[index] = {}
   }
 
   templateItem (index, value) {
-    const textValue = value?.['@id']
+    const textValue = value?.['@id'] ?? ''
 
     const meta = this.metas[index]
 
@@ -63,11 +107,10 @@ export class Reference extends FormElementBase implements FormElement {
     <div classy:referencePreview="reference-preview">
         ${meta.thumbnail ? this.html`<img classy:referencePreviewLeft="reference-preview-left" src="${meta.thumbnail}" />` : ''}
         <div classy:referencePreviewRight="reference-preview-right">
-          ${meta.label ? this.html`<h3 classy:referencePreviewTitle="reference-preview-title">
+          ${meta.label ? this.html`<h3 classy:referencePreviewTitle="reference-preview-title" title="${textValue}">
             ${meta.label} <button class="button" onclick="${() => {this.removeReference(index); this.render()}}"><i class="fas fa-times"></i></button>
           </h3>` : ''}
           ${meta.description ? this.html`<small classy:referencePreviewDescription="reference-preview-description">${meta.description}</small>` : ''}
-          <small classy:referencePreviewUrl="reference-preview-url">${textValue}</small>
         </div>
     </div>
     ` : this.html`
@@ -76,7 +119,7 @@ export class Reference extends FormElementBase implements FormElement {
       onkeyup="${event => this.on(event, index)}"
       type="text"
       .value="${textValue}"
-      required="${this.isRequired(index)}"
+      required=${this.isRequired(index)}
     >
 
     ${this.searchSuggestions.length ? this.html`
@@ -89,6 +132,9 @@ export class Reference extends FormElementBase implements FormElement {
 
   async selectSuggestion (suggestionUrl, index) {
     this.searchSuggestions = []
+    if (!this.values[index]?.['@id']) {
+      this.values[index] = { '@id': '' }
+    }
     this.values[index]['@id'] = suggestionUrl
     await this.updateMetas()
   }
@@ -104,10 +150,14 @@ export class Reference extends FormElementBase implements FormElement {
     if (!uri || uri.substr(0, 4) !== 'http') return
     const quads = await this.form.ontologyRepository.dereference(uri)
 
+    let description =
+      getObjectOfQuadByPredicate('http://purl.org/dc/terms/description', uri, quads, this.form.language) ??
+      getObjectOfQuadByPredicate('http://www.w3.org/2000/01/rdf-schema#comment', uri, quads, this.form.language)
+
     return {
-      thumbnail: getObjectOfQuadByPredicate('http://dbpedia.org/ontology/thumbnail', quads),
-      label: getObjectOfQuadByPredicate('http://www.w3.org/2000/01/rdf-schema#label', quads, this.form.language),
-      description: getObjectOfQuadByPredicate('http://purl.org/dc/terms/description', quads, this.form.language),
+      thumbnail: getObjectOfQuadByPredicate('http://dbpedia.org/ontology/thumbnail', uri, quads),
+      label: getObjectOfQuadByPredicate('http://www.w3.org/2000/01/rdf-schema#label', uri, quads, this.form.language),
+      description: description,
     }
   }
 }

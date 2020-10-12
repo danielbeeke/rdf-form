@@ -124,8 +124,8 @@ export async function attributeToQuads (element, name, required = false): Promis
   return text ? parser.parse(text) : []
 }
 
-export function getObjectOfQuadByPredicate (predicate, quads, language = null) {
-  const quad = quads.find(quad => quad.predicate.value === predicate && (quad.object.language === language || language === null))
+export function getObjectOfQuadByPredicate (predicate, uri, quads, language = null) {
+  let quad = quads.find(quad => quad.predicate.value === predicate && (quad.object.language === language || language === null) && quad.subject.value === uri)
   return quad && (quad.object?.value ?? quad.object?.id)
 }
 
