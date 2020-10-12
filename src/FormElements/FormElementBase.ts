@@ -1,8 +1,19 @@
-import { html } from 'uhtml'
+/**
+ * This is the base class for every form element.
+ * You can extend this class and only overwrite the template methods that you want to change.
+ *
+ * Also if you only want to change css classes you can use the following:
+ * - Inspect the template and search for classy:IDENTIFIER="DEFAULT_CLASSES"
+ * - Before starting RdfForm call:
+ * - Classy.add(IDENTIFIER, ['your', 'classes'])
+ * - Classy.add('formElement', ['your', 'classes'])
+ */
+
 import { RdfForm } from '../RdfForm'
 import { library, dom } from '@fortawesome/fontawesome-svg-core'
 import { faTimes, faQuestionCircle, faPlus, faLanguage, faCog } from '@fortawesome/free-solid-svg-icons'
 import { fieldPrototype } from '../Types'
+import { Classy } from '../Classy'
 
 dom.watch()
 library.add(faTimes, faQuestionCircle, faPlus, faLanguage, faCog)
@@ -14,32 +25,29 @@ export class FormElementBase extends EventTarget {
   public field: fieldPrototype
   public form: RdfForm
   public values: Array<any> = []
+  public html: any
 
   private menuIsOpen: boolean = false
 
-  public cssClasses = {
-    wrapper: ['form-element', this.constructor['type']],
-    item: ['form-element-item'],
-    itemFooter: ['form-element-item-footer'],
-    items: ['form-element-items'],
-    label: ['form-element-label'],
-    menu: ['form-element-menu'],
-    menuButton: ['form-element-menu-button', 'button'],
-    menuWrapper: ['form-element-menu-wrapper'],
-    children: ['form-element-children'],
-    childItem: ['form-element-child'],
-    languageSelector: ['form-element-language-selector'],
-    description: ['form-element-description']
-  }
-
   constructor (field, rdfForm: RdfForm) {
     super()
+    this.html = Classy
     this.form = rdfForm
     this.field = field
-    this.values = Array.isArray(this.form.expandedData[this.field.binding]) ? this.form.expandedData[this.field.binding] : [this.form.expandedData[this.field.binding]]
+    this.values = Array.isArray(this.form.expandedData[this.field.binding]) ?
+      this.form.expandedData[this.field.binding] :
+      [this.form.expandedData[this.field.binding]]
   }
 
   async init () {}
+
+  render () {
+    return this.form.render()
+  }
+
+  /************************************************************************
+   * Getters and setters.
+   ************************************************************************/
 
   get label () {
     const label = this.field.label[this.form.language]
@@ -48,15 +56,6 @@ export class FormElementBase extends EventTarget {
 
   get description () {
     return ''
-  }
-
-  addTranslation () {
-    let usedLanguages = this.values.map(value => value['@language'])
-    let unusedLanguages = Object.keys(this.form.i14nLanguages).filter(language => !usedLanguages.includes(language))
-
-    if (unusedLanguages.length) {
-      this.values.push({ '@value': '', '@language': unusedLanguages.shift() })
-    }
   }
 
   get hasTranslations () {
@@ -71,6 +70,37 @@ export class FormElementBase extends EventTarget {
 
   showRemoveButton (index) {
     return index > 0
+  }
+
+  isRequired (index) {
+    return index === 0 && this.field.required
+  }
+
+  getMenuButtons () {
+    const buttons = []
+
+    if (this.field.translatable && !this.hasTranslations) {
+      buttons.push(this.createButton('add', 'enableTranslations', 'Create translation'))
+    }
+
+    if (this.field.translatable && this.hasTranslations) {
+      buttons.push(this.createButton('remove', 'removeTranslations', 'Remove translations'))
+    }
+
+    return buttons
+  }
+
+  /************************************************************************
+   * Mutators.
+   ************************************************************************/
+
+  addTranslation () {
+    let usedLanguages = this.values.map(value => value['@language'])
+    let unusedLanguages = Object.keys(this.form.i14nLanguages).filter(language => !usedLanguages.includes(language))
+
+    if (unusedLanguages.length) {
+      this.values.push({ '@value': '', '@language': unusedLanguages.shift() })
+    }
   }
 
   addItem () {
@@ -106,10 +136,6 @@ export class FormElementBase extends EventTarget {
     }
   }
 
-  isRequired (index) {
-    return index === 0 && this.field.required
-  }
-
   setValue (event, index) {
     if (!event?.target?.value) return
     if (typeof this.values[index]?.['@value'] !== 'undefined') {
@@ -123,6 +149,17 @@ export class FormElementBase extends EventTarget {
     }
   }
 
+  /************************************************************************
+   * Helpers.
+   ************************************************************************/
+
+  createButton (buttonClass, method, label) {
+    return this.html`<button class="${'button ' + buttonClass}" onclick="${() => {
+      this[method]()
+      this.render()
+    }}">${this.form.t.direct(label)}</button>`
+  }
+
   on (event, index) {
     this.setValue(event, index)
     this.dispatchEvent(new CustomEvent(event.type, {
@@ -133,25 +170,29 @@ export class FormElementBase extends EventTarget {
     }))
   }
 
+  /************************************************************************
+   * Templates.
+   ************************************************************************/
+
   templateLabel () {
-    return this.label ? html`
-    <label class="${this.cssClasses.label.join(' ')}">
+    return this.label ? this.html`
+    <label classy:label="form-element-label">
       ${this.label}
-      ${this.field.required ? html`<span>*</span>` : ''}
+      ${this.field.required ? this.html`<span>*</span>` : ''}
       ${this.templateFieldMenu()}
     </label>` : ''
   }
 
   templateDescription () {
-    return this.description ? html`
-    <small class="${this.cssClasses.description.join(' ')}">
+    return this.description ? this.html`
+    <small classy:description="form-element-description">
       ${this.description}
     </small>` : ''
   }
 
   templateItem (index, value) {
     const textValue = value?.['@value'] ?? value
-    return html`
+    return this.html`
     <input
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
@@ -167,12 +208,12 @@ export class FormElementBase extends EventTarget {
     let unusedLanguages = Object.keys(this.form.i14nLanguages).filter(language => !usedLanguages.includes(language))
     unusedLanguages.push(selectedLanguage)
 
-    return html`
-    <select onchange="${event => this.values[index]['@language'] = event.target.value}" class="${this.cssClasses.languageSelector.join(' ')}">
+    return this.html`
+    <select onchange="${event => this.values[index]['@language'] = event.target.value}" classy:languageSelector="form-element-language-selector">
     ${unusedLanguages.map((language) => {
-      return language === selectedLanguage ? html`
+      return language === selectedLanguage ? this.html`
         <option value="${language}" selected>${this.form.i14nLanguages[language]}</option>
-        ` : html`
+        ` : this.html`
         <option value="${language}">${this.form.i14nLanguages[language]}</option>
         `
     })}
@@ -184,41 +225,24 @@ export class FormElementBase extends EventTarget {
   }
 
   templateFieldMenu () {
-    const classes = [...this.cssClasses.menu]
-    if (this.menuIsOpen) classes.push('open')
-
     const buttons = this.getMenuButtons()
 
-    return buttons.length ? html`
-      <div class="${this.cssClasses.menuWrapper.join(' ')}">
-        <button class="${this.cssClasses.menuButton.join(' ')}" onclick="${() => {this.menuIsOpen = !this.menuIsOpen; this.render()}}"><i class="fas fa-cog"></i></button>
-        <ul onclick="${() => {this.menuIsOpen = false; this.render()}}" class="${classes.join(' ')}">
-          ${buttons.map(button => html`<li>${button}</li>`)}
+    return buttons.length ? this.html`
+      <div classy:menu-wrapper="form-element-menu-wrapper">
+        <button classy:menuButton="form-element-menu-button button" onclick="${() => {this.menuIsOpen = !this.menuIsOpen; this.render()}}">
+            <i class="fas fa-cog"></i>
+        </button>
+        <ul onclick="${() => {this.menuIsOpen = false; this.render()}}" open="${this.menuIsOpen}" classy:menu="form-element-menu">
+          ${buttons.map(button => this.html`<li>${button}</li>`)}
         </ul>
       </div>
     ` : ''
   }
 
-  getMenuButtons () {
-    const buttons = []
-
-    if (this.field.translatable && !this.hasTranslations) {
-      buttons.push(html`<button class="button add" onclick="${() => {
-        this.enableTranslations()
-        this.render()
-      }}">${this.form.t.direct('Create translation')}</button>`)
-    }
-
-    if (this.field.translatable && this.hasTranslations) {
-      buttons.push(html`<button class="button add" onclick="${() => {
-        this.removeTranslations()
-        this.render()
-      }}">${this.form.t.direct('Remove translations')}</button>`)
-    }
-
-    return buttons
-  }
-
+  /**
+   * Called via the RdfForm
+   * @see RdfForm.render()
+   */
   templateWrapper () {
     const countToRender = this.values.length ? this.values.length : 1
 
@@ -227,27 +251,27 @@ export class FormElementBase extends EventTarget {
       itemsToRender.push(this.values[i] ? this.values[i] : null)
     }
 
-    return html`
-    <div class="${this.cssClasses.wrapper.join(' ')}">
+    return this.html`
+    <div classy:wrapper="form-element">
 
       ${this.templateLabel()}
 
-      ${html`
-        <div class="${this.cssClasses.items.join(' ')}">
+      ${this.html`
+        <div classy:items="form-element-items">
         ${itemsToRender.map((value, index) => {
           const templateItemFooter = this.templateItemFooter(index, value)
 
-          return html`
-          <div class="${this.cssClasses.item.join(' ')}">
+          return this.html`
+          <div classy:item="form-element-item">
             ${this.templateItem(index, value)}
             ${this.values[index]?.['@language'] ? this.templateLanguageSelector(index, value) : ''}
 
-            ${this.showRemoveButton(index) ? html`<button class="button remove" onclick="${() => {
+            ${this.showRemoveButton(index) ? this.html`<button class="button remove" onclick="${() => {
               this.removeItem(index)
               this.render()
             }}">${this.form.t.direct('Remove item')}</button>` : ''}
 
-            ${templateItemFooter ? html`<div class="${this.cssClasses.itemFooter.join(' ')}">${templateItemFooter}</div>` : ''}
+            ${templateItemFooter ? this.html`<div classy:item-footer="item-footer">${templateItemFooter}</div>` : ''}
           </div>
         `})}
         </div>
@@ -255,22 +279,18 @@ export class FormElementBase extends EventTarget {
 
       ${this.templateDescription()}
 
-      <div class="field-actions">
-        ${this.field.translatable && this.anotherTranslationIsPossible && this.hasTranslations ? html`<button class="button add" onclick="${() => {
+      <div classy:actions="form-element-actions">
+        ${this.field.translatable && this.anotherTranslationIsPossible && this.hasTranslations ? this.html`<button class="button add" onclick="${() => {
           this.addTranslation()
           this.render()
         }}">${this.form.t.direct('Add translation')}</button>` : ''}
 
-        ${this.field.multiple ? html`<button class="button add" onclick="${() => {
+        ${this.field.multiple ? this.html`<button class="button add" onclick="${() => {
           this.addItem()
           this.render()
         }}">${this.form.t.direct('Add item')}</button>` : ''}
       </div>
     </div>`
-  }
-
-  render () {
-    return this.form.render()
   }
 
 }

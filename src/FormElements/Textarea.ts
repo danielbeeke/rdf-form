@@ -7,8 +7,11 @@ export class Textarea extends FormElementBase implements FormElement {
   static type: string = 'textarea'
 
   templateItem (index, value) {
-    const textValue = value?.['@value'] ?? value ?? ''
-    return html`
+    let textValue = value?.['@value'] ?? value ?? ''
+
+    if (textValue) textValue.trim()
+
+    return this.html`
     <textarea
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"

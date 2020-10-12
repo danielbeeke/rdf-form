@@ -1,6 +1,5 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import { html } from 'uhtml'
 
 export class Subject extends FormElementBase implements FormElement {
 
@@ -30,18 +29,18 @@ export class Subject extends FormElementBase implements FormElement {
 
   templateItem (index, value) {
     const textValue = value?.['@value'] ?? value
-    return html`<input readonly type="text" value="${textValue}" required="${this.isRequired(index)}">`
+    return this.html`<input readonly type="text" value="${textValue}" required="${this.isRequired(index)}">`
   }
 
   templateWrapper () {
-    return html`
-    <div class="${this.cssClasses.wrapper.join(' ')}">
+    return this.html`
+    <div classy:wrapper="form-element">
 
       ${this.templateLabel()}
 
-      ${html`
-        <div class="${this.cssClasses.items}">
-          <div class="${this.cssClasses.item.join(' ')}">
+      ${this.html`
+        <div classy:items="form-element-items">
+          <div classy:item="form-element-item">
             ${this.templateItem(0, this.values[0])}
           </div>
         </div>

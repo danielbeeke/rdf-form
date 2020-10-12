@@ -84,7 +84,7 @@ rdf-form {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
-    padding: 10px 5px;
+    padding: 5px;
     justify-items: flex-start;
     align-items: flex-start;
 
@@ -146,7 +146,7 @@ rdf-form {
     position: relative;
   }
 
-  .field-actions {
+  .form-element-actions {
     margin-top: 10px;
   }
 
@@ -164,7 +164,7 @@ rdf-form {
       margin-top: 10px;
     }
 
-    &.open {
+    &[open=true] {
       opacity: 1;
       visibility: visible;
       pointer-events: all;
@@ -197,6 +197,10 @@ rdf-form {
     button {
       margin-left: auto;
     }
+  }
+
+  .search-suggestions {
+    flex: 0 0 100%;
   }
 }
 
