@@ -63,6 +63,12 @@ export class RdfForm extends HTMLElement {
     this.formDefinition = await jsonLdToFormDefinition(this.formJsonLd, this.formElementRegistry);
 
     const promises = Array.from(this.formDefinition.values()).map(formElement => formElement.init())
+    this.removeAttribute('data')
+    this.removeAttribute('form')
+    this.removeAttribute('selected-language')
+    this.removeAttribute('i14n-languages')
+    this.removeAttribute('ui-languages')
+    this.removeAttribute('proxy')
 
     Promise.all(promises).then(() => {
       this.render()
@@ -71,11 +77,15 @@ export class RdfForm extends HTMLElement {
 
   render () {
     render(this, html`
-      <div class="top-actions">
+      <div class="actions top">
         ${this.languageSwitcher()}
       </div>
+
       ${Array.from(this.formDefinition.values()).map(formElement => formElement.templateWrapper())}
-      ${this.actions()}
+
+      <div class="actions bottom">
+        ${this.actions()}
+      </div>
     `)
   }
 
@@ -83,6 +93,7 @@ export class RdfForm extends HTMLElement {
     return Object.keys(this.uiLanguages).length > 1 ? html`
       <select onchange="${async event => {
         this.language = event.target.value;
+        this.dispatchEvent(new CustomEvent('language-change'))
         this.t = await I14n(this.language, Object.keys(this.i14nLanguages))
         this.render()
       }}" class="language-switcher">
@@ -105,3 +116,4 @@ export class RdfForm extends HTMLElement {
 }
 
 customElements.define('rdf-form', RdfForm);
+

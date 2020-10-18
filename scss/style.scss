@@ -186,7 +186,12 @@ rdf-form {
     }
 
     .reference-preview-left {
-      max-height: 120px;
+      width: 80px;
+      display: block;
+      min-width: 80px;
+      flex: 0 0 80px;
+      height: 80px;
+      object-fit: cover;
       margin-right: 10px;
     }
   }

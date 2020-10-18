@@ -124,9 +124,17 @@ export async function attributeToQuads (element, name, required = false): Promis
   return text ? parser.parse(text) : []
 }
 
-export function getObjectOfQuadByPredicate (predicate, uri, quads, language = null) {
-  let quad = quads.find(quad => quad.predicate.value === predicate && (quad.object.language === language || language === null) && quad.subject.value === uri)
-  return quad && (quad.object?.value ?? quad.object?.id)
+export function getObjectOfQuadByPredicate (predicates, uri, quads, language = null) {
+  for (const predicate of predicates) {
+    let quad = quads.find(quad => quad.predicate.value === predicate &&
+      (quad.object.language === language || language === null || !quad.object?.language) &&
+      quad.subject.value === uri
+    )
+
+    if (quad && (quad.object?.value ?? quad.object?.id)) {
+      return quad.object?.value ?? quad.object?.id
+    }
+  }
 }
 
 export function sortFormElements (a, b) {
