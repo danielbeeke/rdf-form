@@ -46,7 +46,7 @@ rdf-form {
     flex-direction: column;
   }
 
-  .form-element-label {
+  .form-element > .label {
     font-weight: bold;
     text-transform: capitalize;
     padding-bottom: 10px;
@@ -54,18 +54,18 @@ rdf-form {
     align-items: flex-end;
   }
 
-  .form-element-children .form-element-label {
-    font-weight: 300;
-    font-style: italic;
-  }
-
-  .form-element-children {
+  .children {
     padding-left: 20px;
     margin-left: 6px;
     border-left: 2px solid var(--border-color);
+
+    .form-element > .label {
+      font-weight: 300;
+      font-style: italic;
+    }
   }
 
-  .form-element-items {
+  .items {
      padding: 5px;
      background: var(--background-color);
      border-radius: var(--radius);
@@ -80,7 +80,7 @@ rdf-form {
     }
   }
 
-  .form-element-item {
+  .item {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
@@ -93,7 +93,7 @@ rdf-form {
     }
   }
 
-  .form-element-item-footer {
+  .item-footer {
     flex: 0 0 100%;
   }
 
@@ -109,7 +109,7 @@ rdf-form {
     }
   }
 
-  .form-element-language-selector {
+  .language-selector {
     max-width: 130px;
   }
 
@@ -133,12 +133,12 @@ rdf-form {
     }
   }
 
-  .form-element-menu-button {
+  .menu-button {
     float: right;
     margin-left: auto;
   }
 
-  .form-element-menu-wrapper {
+  .menu-wrapper {
     margin-left: auto;
     display: flex;
     align-items: flex-end;
@@ -146,11 +146,11 @@ rdf-form {
     position: relative;
   }
 
-  .form-element-actions {
+  .actions {
     margin-top: 10px;
   }
 
-  .form-element-menu {
+  .menu {
     opacity: 0;
     visibility: hidden;
     display: block;
@@ -171,41 +171,27 @@ rdf-form {
     }
   }
 
-  .reference-preview {
-    flex: 1 1 100%;
-    display: flex;
-
-    .reference-preview-right {
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-
-      h3 {
-        margin-top: 0;
-      }
-    }
-
-    .reference-preview-left {
-      width: 80px;
-      display: block;
-      min-width: 80px;
-      flex: 0 0 80px;
-      height: 80px;
-      object-fit: cover;
-      margin-right: 10px;
-    }
-  }
-
-  .reference-preview-title {
-    display: flex;
-
-    button {
-      margin-left: auto;
-    }
-  }
-
   .search-suggestions {
     flex: 0 0 100%;
+  }
+}
+
+.form-element[type="reference"] {
+  .items {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .item {
+    justify-items: center;
+    
+    &:not(:last-child) {
+      border-bottom: none;
+    }
+
+    &[expanded="true"] {
+      flex: 1 1 100%;
+    }
   }
 }
 

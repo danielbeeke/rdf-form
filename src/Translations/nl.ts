@@ -5,4 +5,5 @@ export let Translations = {
   'Remove translations': 'Vertalingen verwijderen',
   'Create translation': 'Vertalen',
   'Remove item': 'Verwijder onderdeel',
+  'Loading...': 'Laden...',
 }

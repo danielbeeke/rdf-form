@@ -1,11 +1,11 @@
-import { dom, library } from '@fortawesome/fontawesome-svg-core'
+import {dom, library, text} from '@fortawesome/fontawesome-svg-core'
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
 import { debounce } from '../Helpers'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faTimes, faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
 
 dom.watch()
-library.add(faTimes)
+library.add(faTimes, faPencilAlt, faCheck)
 
 export class Reference extends FormElementBase implements FormElement {
 
@@ -27,7 +27,7 @@ export class Reference extends FormElementBase implements FormElement {
       this.updateMetas().then(() => this.render())
     })
 
-    this.addEventListener('change', () => {
+    this.addEventListener('change', event => {
       this.updateMetas().then(() => this.render())
     })
 
@@ -51,19 +51,23 @@ export class Reference extends FormElementBase implements FormElement {
    */
   async templateItem (index, value) {
     const textValue = value?.['@id'] ?? ''
-    const meta = this.metas.get(value)
+    const meta = this.metas.get(textValue)
 
-    const description = (await meta['dc:description'] ?? await meta['rdf:comment'] ?? '').toString()
-    const thumbnail = (await meta['dbp:thumbnail'] ?? await meta['foaf:depiction'] ?? '').toString()
-    const label = (await meta['rdf:label'] ?? await meta['foaf:name'] ?? '').toString()
-
-    const metaResolved = { label, description, thumbnail }
-
-    return metaResolved && Object.keys(metaResolved).length ? this.templateReferencePreview(metaResolved) : this.html`
-      ${super.templateItem(index, textValue)}
+    return meta && !this.expanded.get(index) ? this.html`
+      ${await this.templateReferenceLabel(meta)}
+      <button class="button" onclick="${() => { this.expanded.set(index, true); this.render() }}">
+        <i class="fas fa-pencil-alt"></i>
+      </button>
+    ` : this.html`
+      ${await super.templateItem(index, textValue)}
+      <button class="button" onclick="${() => { this.expanded.set(index, false); this.render() }}">
+        <i class="fas fa-check"></i>
+      </button>
       ${this.searchSuggestions.length ? this.html`
       <ul classy:referencePreviewSearchSuggestions="search-suggestions">
-        ${this.searchSuggestions.map(suggestion => this.html`<li onclick="${async () => { await this.selectSuggestion(suggestion.uri, index); this.render() }}">${suggestion.label}</li>`)}
+        ${this.searchSuggestions.map(suggestion => this.html`<li onclick="${async () => {
+          await this.selectSuggestion(suggestion.uri, index); this.render()
+        }}">${suggestion.label}</li>`)}
       </ul>
       ` : ''}
     `

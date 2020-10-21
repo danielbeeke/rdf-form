@@ -14,10 +14,11 @@ import { RdfForm } from '../RdfForm'
 import { library, dom } from '@fortawesome/fontawesome-svg-core'
 import { faTimes, faQuestionCircle, faPlus, faLanguage, faCog } from '@fortawesome/free-solid-svg-icons'
 import { fieldPrototype } from '../Types'
+import {debounce, waiter, fetchObjectByPredicates} from '../Helpers'
 import { Classy } from '../Classy'
 
 const { PathFactory } = require('../../../LDflex/lib/index.js');
-const { default: ComunicaEngine } = require('@ldflex/comunica');
+const { default: ComunicaEngine } = require('../../../LDflex-Comunica');
 const { namedNode } = require('@rdfjs/data-model');
 
 dom.watch()
@@ -27,12 +28,14 @@ export class FormElementBase extends EventTarget {
 
   static type: string = 'base'
 
+  public expanded = new Map()
   public field: fieldPrototype
   public form: RdfForm
   public values: Array<any> = []
   public html: any
   public searchSuggestions = []
   public metas = new Map()
+  public render: any
 
   private menuIsOpen: boolean = false
   private pathContext = {
@@ -40,7 +43,7 @@ export class FormElementBase extends EventTarget {
     "dbp": "http://dbpedia.org/property/",
     "foaf": "http://xmlns.com/foaf/0.1/",
     "dc": "http://purl.org/dc/terms/",
-    "rdf": "http://www.w3.org/2000/01/rdf-schema#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
   }
 
   constructor (field, rdfForm: RdfForm) {
@@ -56,13 +59,11 @@ export class FormElementBase extends EventTarget {
       this.form.expandedData[this.field.binding] :
       [this.form.expandedData[this.field.binding]]
     ) : []
+
+    this.render = debounce(() => this.form.render(), 100)
   }
 
   async init () {}
-
-  render () {
-    return this.form.render()
-  }
 
   /************************************************************************
    * Getters and setters.
@@ -133,7 +134,6 @@ export class FormElementBase extends EventTarget {
 
   removeItem (index) {
     this.values.splice(index, 1)
-    console.log(this.values)
   }
 
   enableTranslations () {
@@ -175,6 +175,7 @@ export class FormElementBase extends EventTarget {
       this.values[index] = { '@id': '' }
     }
     this.values[index]['@id'] = suggestionUrl
+    this.expanded.set(index, false)
     await this.updateMetas()
   }
 
@@ -209,9 +210,9 @@ export class FormElementBase extends EventTarget {
     query = query.replace(/SEARCH_TERM/g, searchTerm)
 
     const config = {}
-    if (this.form.proxy) config['@comunica/actor-http-proxy:httpProxyHandler'] = this.form.proxy
+    if (this.form.proxy) config['httpProxyHandler'] = this.form.proxy
     const myEngine = newEngine();
-    const result = await myEngine.query(query, { sources: [this.field.autoCompleteSource], config });
+    const result = await myEngine.query(query, Object.assign({ sources: [this.field.autoCompleteSource] }, config));
 
     /** @ts-ignore */
     const bindings = await result.bindings()
@@ -248,10 +249,13 @@ export class FormElementBase extends EventTarget {
     for (const value of this.values) {
       const uri = value?.['@id']
 
-      if (!this.metas.get(value)) {
-        const queryEngine = new ComunicaEngine(uri);
+      if (!this.metas.get(uri)) {
+        const queryEngine = new ComunicaEngine(uri, {
+          'httpProxyHandler': this.form.proxy
+        });
+
         const path = new PathFactory({ context: this.pathContext, queryEngine });
-        this.metas.set(value, path.create({ subject: namedNode(uri) }))
+        this.metas.set(uri, path.create({ subject: namedNode(uri) }))
       }
     }
   }
@@ -260,35 +264,36 @@ export class FormElementBase extends EventTarget {
    * Templates.
    ************************************************************************/
 
-  templateLabel () {
+  async templateLabel () {
     return this.label ? this.html`
     <label classy:label="label">
       ${this.label}
       ${this.field.required ? this.html`<span>*</span>` : ''}
-      ${this.templateFieldMenu()}
+      ${await this.templateFieldMenu()}
     </label>` : ''
   }
 
-  templateDescription () {
+  async templateDescription () {
     return this.description ? this.html`
     <small classy:description="description">
       ${this.description}
     </small>` : ''
   }
 
-  templateItem (index, value) {
+  async templateItem (index, value) {
     const textValue = value?.['@value'] ?? value
+
     return this.html`
     <input
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
       type="text"
-      value="${textValue}"
+      .value="${textValue}"
       required="${this.isRequired(index)}"
     >`
   }
 
-  templateLanguageSelector (index, value) {
+  async templateLanguageSelector (index, value) {
     const selectedLanguage = value['@language']
     let usedLanguages = this.values.map(value => value['@language'])
     let unusedLanguages = Object.keys(this.form.i14nLanguages).filter(language => !usedLanguages.includes(language))
@@ -306,25 +311,23 @@ export class FormElementBase extends EventTarget {
     </select>`
   }
 
-  templateItemFooter (index, value) {
+  async templateItemFooter (index, value) {
     return false
   }
 
-  templateReferencePreview (meta) {
+  async templateReferenceLabel (flexPath) {
+    const waiterId = await flexPath.toString() + '@' + this.form.language
+    const labelPromise = fetchObjectByPredicates(flexPath, this.form.language, ['rdfs:label', 'foaf:name'])
+    const label = waiter(waiterId, labelPromise, this.render)
+
     return this.html`
-    <div classy:referencePreview="reference-preview">
-        ${meta.thumbnail ? this.html`<img classy:referencePreviewLeft="left" src="${meta.thumbnail}" />` : ''}
-        <div classy:referencePreviewRight="right">
-          ${meta.label ? this.html`<h3 classy:referencePreviewTitle="title">
-          ${meta.label}
-          </h3>` : ''}
-          ${meta.description ? this.html`<small classy:referencePreviewDescription="description">${meta.description}</small>` : ''}
-        </div>
-    </div>
+      <div classy:referenceLabel="reference-label">
+        ${label.loading ? this.form.t.direct('Loading...') : label}
+      </div>
     `
   }
 
-  templateFieldMenu () {
+  async templateFieldMenu () {
     const buttons = this.getMenuButtons()
 
     return buttons.length ? this.html`
@@ -343,7 +346,7 @@ export class FormElementBase extends EventTarget {
    * Called via the RdfForm
    * @see RdfForm.render()
    */
-  templateWrapper () {
+  async templateWrapper () {
     const countToRender = this.values.length ? this.values.length : 1
 
     const itemsToRender = []
@@ -354,17 +357,17 @@ export class FormElementBase extends EventTarget {
     return this.html`
     <div classy:wrapper="form-element" type="${this.constructor.name.toLowerCase()}">
 
-      ${this.templateLabel()}
+      ${await this.templateLabel()}
 
       ${this.html`
         <div classy:items="items">
-        ${itemsToRender.map((value, index) => {
-          const templateItemFooter = this.templateItemFooter(index, value)
+        ${await Promise.all(itemsToRender.map(async (value, index) => {
+          const templateItemFooter = await this.templateItemFooter(index, value)
 
           return this.html`
-          <div classy:item="item">
-            ${this.templateItem(index, value)}
-            ${this.values[index]?.['@language'] ? this.templateLanguageSelector(index, value) : ''}
+          <div classy:item="item" expanded="${this.expanded.get(index)}">
+            ${await this.templateItem(index, value)}
+            ${this.values[index]?.['@language'] ? await this.templateLanguageSelector(index, value) : ''}
 
             <button class="button remove" onclick="${() => {
               this.removeItem(index)
@@ -375,11 +378,11 @@ export class FormElementBase extends EventTarget {
 
             ${templateItemFooter ? this.html`<div classy:item-footer="item-footer">${templateItemFooter}</div>` : ''}
           </div>
-        `})}
+        `}))}
         </div>
       `}
 
-      ${this.templateDescription()}
+      ${await this.templateDescription()}
 
       <div classy:actions="actions">
         ${this.field.translatable && this.anotherTranslationIsPossible && this.hasTranslations ? this.html`<button class="button add" onclick="${() => {

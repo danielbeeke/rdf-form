@@ -1,6 +1,7 @@
 import { newEngine } from '@comunica/actor-init-sparql'
 import { parse as ttl2jsonld } from '@frogcat/ttl2jsonld'
 import * as N3 from 'n3'
+import { html } from 'uhtml'
 
 export const findInSet = (pred, set) => {
   for (let item of set) if (pred(item)) return item
@@ -165,5 +166,35 @@ export function selectCorrectGraph (data, url) {
   }
   else {
     return data
+  }
+}
+
+const loaderPromises = new Map()
+
+export function waiter (reference, promiseFunction, callback) {
+  let promise = loaderPromises.get(reference);
+
+  if (!promise) {
+    promise = promiseFunction.then ? promiseFunction : new Promise(promiseFunction)
+    loaderPromises.set(reference, promise)
+  }
+
+  if (promise.then) {
+    promise.then(meta => {
+      loaderPromises.set(reference, meta)
+      callback()
+    })
+    return { loading: true }
+  }
+  else {
+    return promise
+  }
+}
+
+export async function fetchObjectByPredicates (flexPath, language, predicates) {
+  for (const predicate of predicates) {
+    let value = await flexPath[predicate]['@' + language]
+    if (!value) value = await flexPath[predicate]
+    if (value) return value.toString()
   }
 }

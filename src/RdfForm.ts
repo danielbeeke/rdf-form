@@ -10,10 +10,11 @@ import { String } from './FormElements/String'
 import { Textarea } from './FormElements/Textarea'
 import { Subject } from './FormElements/Subject'
 import { Reference } from './FormElements/Reference'
+import { Classy } from './Classy'
 
 import { I14n } from './i14n'
 
-import { attributeToJsonLd, selectCorrectGraph } from './Helpers'
+import {attributeToJsonLd, selectCorrectGraph} from './Helpers'
 import { render, html } from 'uhtml'
 import '../scss/style.scss'
 
@@ -75,21 +76,21 @@ export class RdfForm extends HTMLElement {
     })
   }
 
-  render () {
-    render(this, html`
+  async render () {
+    render(this, Classy`
       <div class="actions top">
-        ${this.languageSwitcher()}
+        ${await this.languageSwitcher()}
       </div>
 
-      ${Array.from(this.formDefinition.values()).map(formElement => formElement.templateWrapper())}
+      ${await Promise.all(Array.from(this.formDefinition.values()).map(async (formElement) => await formElement.templateWrapper()))}
 
       <div class="actions bottom">
-        ${this.actions()}
+        ${await this.actions()}
       </div>
     `)
   }
 
-  languageSwitcher () {
+  async languageSwitcher () {
     return Object.keys(this.uiLanguages).length > 1 ? html`
       <select onchange="${async event => {
         this.language = event.target.value;
@@ -110,7 +111,7 @@ export class RdfForm extends HTMLElement {
     ` : ''
   }
 
-  actions () {
+  async actions () {
     return html`<button class="button">${this.t.direct('Save')}</button>`
   }
 }

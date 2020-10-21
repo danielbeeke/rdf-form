@@ -21,6 +21,8 @@ export const Classy = function (templates, ...values) {
   return html(newTemplates, ...values)
 }
 
+Classy.for = html.for
+
 Classy.add = function (identifier: string, classes: Array<string>) {
   classReplacements.set(identifier, classes)
 }
