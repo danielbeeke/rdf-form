@@ -9,6 +9,10 @@
     background: var(--add-button-color);
   }
 
+  &.edit {
+    background: var(--edit-button-color);
+  }
+
   &.remove {
     background: var(--remove-button-color);
 

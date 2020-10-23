@@ -1,7 +1,7 @@
 import {dom, library } from '@fortawesome/fontawesome-svg-core'
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import {debounce, fa} from '../Helpers'
+import {debounce, fa, waiter} from '../Helpers'
 import { faTimes, faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
 
 dom.watch()
@@ -10,16 +10,30 @@ library.add(faTimes, faPencilAlt, faCheck)
 export class Reference extends FormElementBase implements FormElement {
 
   static type: string = 'reference'
+  public ourTemplateRemoveButton: any
+
+  public isLoadingSuggestions = new Map()
 
   async init(): Promise<void> {
     await super.init();
 
+    this.ourTemplateRemoveButton = this.templateRemoveButton
+    /** @ts-ignore */
+    this.templateRemoveButton = () => {}
+
     this.addEventListener('keyup', debounce(async (event: any) => {
-      const value = event.detail?.originalEvent?.originalTarget?.value
+      const value = event.detail?.value
+      const index = event.detail?.index
 
       if (value && value.substr(0, 4) !== 'http') {
+        this.isLoadingSuggestions.set(index, true)
         this.searchSuggestions = []
-        this.field.autoCompleteQuery ? await this.prepareSparqlQuery(value) : await this.dbpediaSuggestions(value)
+        this.render()
+        const refreshPromise = this.field.autoCompleteQuery ? this.prepareSparqlQuery(value) : this.dbpediaSuggestions(value)
+        refreshPromise.then(() => {
+          this.render()
+          this.isLoadingSuggestions.set(index, false)
+        })
         this.render()
       }
     }, 400))
@@ -49,28 +63,22 @@ export class Reference extends FormElementBase implements FormElement {
     const textValue = value?.['@id'] ?? ''
     const meta = this.metas.get(textValue)
 
-    return meta && !this.expanded.get(index) ? this.html`
-      ${await this.templateReferenceLabel(meta)}
-      <button class="button" onclick="${() => { this.expanded.set(index, true); this.render() }}">
+    return this.html`
+      ${textValue.substr(0, 4) === 'http' ? await this.templateReferenceLabel(meta) : ''}
+      ${this.isLoadingSuggestions.get(index) ? this.form.t.direct('Loading...') : ''}
+      ${meta && !this.expanded.get(index) ? this.html`
+      <button class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
         ${fa(faPencilAlt)}
       </button>
+      ${await this.ourTemplateRemoveButton(index)}
     ` : this.html`
       ${await super.templateItem(index, textValue)}
       <button class="button" onclick="${() => { this.expanded.set(index, false); this.render() }}">
         ${fa(faCheck)}
       </button>
-      ${this.searchSuggestions.length ? this.html`
-      <ul classy:searchSuggestions="search-suggestions">
-        ${this.searchSuggestions.map(suggestion => this.html`
-        <li classy:searchSuggestion="search-suggestion" onclick="${async () => {
-          await this.selectSuggestion(suggestion.uri, index); this.render()
-        }}">
-          ${suggestion.image ? this.html`<img src="${suggestion.image}">` : ''}
-          <span>${suggestion.label}</span>
-        </li>`)}
-      </ul>
-      ` : ''}
+      ${await this.ourTemplateRemoveButton(index)}
+      ${await this.templateSearchSuggestions(index)}
+    `}
     `
   }
-
 }

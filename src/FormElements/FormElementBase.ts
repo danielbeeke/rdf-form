@@ -201,7 +201,8 @@ export class FormElementBase extends EventTarget {
     this.dispatchEvent(new CustomEvent(event.type, {
       detail: {
         originalEvent: event,
-        index: index
+        index: index,
+        value: event.target.value
       }
     }))
   }
@@ -236,18 +237,23 @@ export class FormElementBase extends EventTarget {
   }
 
   async dbpediaSuggestions (searchTerm: string) {
-    const query = `
-    PREFIX  bif:  <bif:>
-    SELECT DISTINCT ?s
-WHERE
-  { ?s a owl:Thing .
-    ?s rdfs:label ?label .
-      FILTER ( LANGMATCHES ( LANG ( ?label ), 'en' ) )
-    ?label bif:contains '"apple"' .
-  }
-  limit 500  offset 0`
+    const response = await fetch(`https://lookup.dbpedia.org/api/prefix?query=${searchTerm}`)
+    const xml = await response.text();
 
-    return this.searchSuggestionsSparqlQuery(query, searchTerm, 'http://dbpedia.org/sparql')
+    const parser = new DOMParser();
+    const dom: any = parser.parseFromString(xml, 'application/xml')
+
+    this.searchSuggestions = []
+
+    for (const result of dom.querySelectorAll('Result')) {
+      const label = result.querySelector('Label').textContent
+      const uri = result.querySelector('URI').textContent
+
+      // Dedup languages.
+      if (uri.substr(0, 18) === 'http://dbpedia.org') {
+        this.searchSuggestions.push({ label, uri })
+      }
+    }
   }
 
   async updateMetas () {
@@ -350,6 +356,30 @@ WHERE
     ` : ''
   }
 
+  async templateRemoveButton (index) {
+    return this.html`
+    <button class="button remove" onclick="${() => {
+      this.removeItem(index)
+      this.render()
+      }}">
+      ${fa(faTimes)}
+    </button>`
+  }
+
+  async templateSearchSuggestions (index) {
+    return this.searchSuggestions.length ? this.html`
+    <ul classy:searchSuggestions="search-suggestions">
+      ${this.searchSuggestions.map(suggestion => this.html`
+      <li classy:searchSuggestion="search-suggestion" onclick="${async () => {
+        await this.selectSuggestion(suggestion.uri, index); this.render()
+      }}">
+        ${suggestion.image ? this.html`<img src="${suggestion.image}">` : ''}
+        <span classy:suggestionTitle="title">${suggestion.label}</span>
+      </li>`)}
+    </ul>
+      ` : ''
+  }
+
   /**
    * Called via the RdfForm
    * @see RdfForm.render()
@@ -376,14 +406,7 @@ WHERE
           <div classy:item="item" expanded="${this.expanded.get(index)}">
             ${await this.templateItem(index, value)}
             ${this.values[index]?.['@language'] ? await this.templateLanguageSelector(index, value) : ''}
-
-            <button class="button remove" onclick="${() => {
-              this.removeItem(index)
-              this.render()
-            }}">
-              ${fa(faTimes)}
-            </button>
-
+            ${await this.templateRemoveButton(index)}
             ${templateItemFooter ? this.html`<div classy:item-footer="item-footer">${templateItemFooter}</div>` : ''}
           </div>
         `}))}
