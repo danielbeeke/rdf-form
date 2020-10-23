@@ -11,10 +11,10 @@
 
 import { newEngine } from '@comunica/actor-init-sparql'
 import { RdfForm } from '../RdfForm'
-import { library, dom } from '@fortawesome/fontawesome-svg-core'
+import { library } from '@fortawesome/fontawesome-svg-core'
 import { faTimes, faQuestionCircle, faPlus, faLanguage, faCog } from '@fortawesome/free-solid-svg-icons'
 import { fieldPrototype } from '../Types'
-import {debounce, waiter, fetchObjectByPredicates} from '../Helpers'
+import {debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'
 
 const { PathFactory } = require('../../../LDflex/lib/index.js');
@@ -207,6 +207,8 @@ export class FormElementBase extends EventTarget {
   }
 
   async searchSuggestionsSparqlQuery (query, searchTerm, source) {
+    if (!searchTerm || searchTerm.length < 4) return
+
     query = query.replace(/LANGUAGE/g, this.form.language)
     query = query.replace(/SEARCH_TERM/g, searchTerm)
 
@@ -235,23 +237,17 @@ export class FormElementBase extends EventTarget {
 
   async dbpediaSuggestions (searchTerm: string) {
     const query = `
-    select (?s2 as ?c1)  where
-      {
-        quad map virtrdf:DefaultQuadMap
-        {
-          graph ?g
-          {
-             ?s1 ?s1textp ?o1 .
-            ?o1 bif:contains  '(${searchTerm.toUpperCase()})'  .
+    PREFIX  bif:  <bif:>
+    SELECT DISTINCT ?s
+WHERE
+  { ?s a owl:Thing .
+    ?s rdfs:label ?label .
+      FILTER ( LANGMATCHES ( LANG ( ?label ), 'en' ) )
+    ?label bif:contains '"apple"' .
+  }
+  limit 500  offset 0`
 
-          }
-         }
-        ?s1 <http://dbpedia.org/ontology/thumbnail> ?s2 .
-
-      }
-    group by (?s2) order by desc (<LONG::IRI_RANK> (?s2))  limit 500  offset 0`
-
-    return this.searchSuggestionsSparqlQuery(query, searchTerm, 'http://dbpedia.org/sparql?default-graph-uri=&query=')
+    return this.searchSuggestionsSparqlQuery(query, searchTerm, 'http://dbpedia.org/sparql')
   }
 
   async updateMetas () {
@@ -345,7 +341,7 @@ export class FormElementBase extends EventTarget {
     return buttons.length ? this.html`
       <div classy:menu-wrapper="menu-wrapper">
         <button classy:menuButton="menu-button button" onclick="${() => {this.menuIsOpen = !this.menuIsOpen; this.render()}}">
-            <i class="fas fa-cog"></i>
+            ${fa(faCog)}
         </button>
         <ul onclick="${() => {this.menuIsOpen = false; this.render()}}" open="${this.menuIsOpen}" classy:menu="menu">
           ${buttons.map(button => this.html`<li>${button}</li>`)}
@@ -385,7 +381,7 @@ export class FormElementBase extends EventTarget {
               this.removeItem(index)
               this.render()
             }}">
-              <i class="fas fa-times"></i>
+              ${fa(faTimes)}
             </button>
 
             ${templateItemFooter ? this.html`<div classy:item-footer="item-footer">${templateItemFooter}</div>` : ''}

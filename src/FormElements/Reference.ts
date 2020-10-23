@@ -1,7 +1,7 @@
-import {dom, library, text} from '@fortawesome/fontawesome-svg-core'
+import {dom, library } from '@fortawesome/fontawesome-svg-core'
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import { debounce } from '../Helpers'
+import {debounce, fa} from '../Helpers'
 import { faTimes, faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
 
 dom.watch()
@@ -52,12 +52,12 @@ export class Reference extends FormElementBase implements FormElement {
     return meta && !this.expanded.get(index) ? this.html`
       ${await this.templateReferenceLabel(meta)}
       <button class="button" onclick="${() => { this.expanded.set(index, true); this.render() }}">
-        <i class="fas fa-pencil-alt"></i>
+        ${fa(faPencilAlt)}
       </button>
     ` : this.html`
       ${await super.templateItem(index, textValue)}
       <button class="button" onclick="${() => { this.expanded.set(index, false); this.render() }}">
-        <i class="fas fa-check"></i>
+        ${fa(faCheck)}
       </button>
       ${this.searchSuggestions.length ? this.html`
       <ul classy:searchSuggestions="search-suggestions">

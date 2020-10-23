@@ -1,7 +1,6 @@
 /**
  * A custom element that shows a HTML form from a turtle file.
  */
-import { dom } from '@fortawesome/fontawesome-svg-core'
 import { OntologyRepository } from './OntologyRepository'
 import { FormElementRegistry } from './FormElementRegistry'
 import { expandAll, jsonLdToFormDefinition } from './jsonLdToFormDefinition'
@@ -74,9 +73,6 @@ export class RdfForm extends HTMLElement {
     this.removeAttribute('proxy')
 
     this.shadow = this.attachShadow({ mode: 'open' })
-
-    /** @ts-ignore */
-    dom.watch({ observeMutationsRoot: this.shadow })
 
     Promise.all(promises).then(() => {
       this.render()

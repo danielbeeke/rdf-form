@@ -1,7 +1,8 @@
 import { newEngine } from '@comunica/actor-init-sparql'
 import { parse as ttl2jsonld } from '@frogcat/ttl2jsonld'
 import * as N3 from 'n3'
-import { html } from 'uhtml'
+import { icon } from '@fortawesome/fontawesome-svg-core'
+import {Hole} from 'uhtml';
 
 export const findInSet = (pred, set) => {
   for (let item of set) if (pred(item)) return item
@@ -197,4 +198,14 @@ export async function fetchObjectByPredicates (flexPath, language, predicates) {
     if (!value) value = await flexPath[predicate]
     if (value) return value.toString()
   }
+}
+
+class FaIcon extends Hole {
+  constructor(icon) {
+    /** @ts-ignore */
+    super('svg', [icon], []);
+  }
+}
+export function fa (iconInput) {
+  return new FaIcon(icon(iconInput).html[0])
 }
