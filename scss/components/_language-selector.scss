@@ -1,0 +1,11 @@
+.language-selector {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  option {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

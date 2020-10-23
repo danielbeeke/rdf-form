@@ -1,6 +1,7 @@
 /**
  * A custom element that shows a HTML form from a turtle file.
  */
+import { dom } from '@fortawesome/fontawesome-svg-core'
 import { OntologyRepository } from './OntologyRepository'
 import { FormElementRegistry } from './FormElementRegistry'
 import { expandAll, jsonLdToFormDefinition } from './jsonLdToFormDefinition'
@@ -16,7 +17,7 @@ import { I14n } from './i14n'
 
 import {attributeToJsonLd, selectCorrectGraph} from './Helpers'
 import { render, html } from 'uhtml'
-import '../scss/style.scss'
+import style from '../scss/style.scss'
 
 export class RdfForm extends HTMLElement {
 
@@ -34,6 +35,7 @@ export class RdfForm extends HTMLElement {
   public formDefinition: Map<any, any> = new Map()
   public data: object
   public expandedData: object
+  public shadow: any
 
   /**
    * When the element loads, fetch the quads from the resource,
@@ -71,13 +73,22 @@ export class RdfForm extends HTMLElement {
     this.removeAttribute('ui-languages')
     this.removeAttribute('proxy')
 
+    this.shadow = this.attachShadow({ mode: 'open' })
+
+    /** @ts-ignore */
+    dom.watch({ observeMutationsRoot: this.shadow })
+
     Promise.all(promises).then(() => {
       this.render()
     })
   }
 
   async render () {
-    render(this, Classy`
+    render(this.shadow, Classy`
+      <style>
+        ${style}
+      </style>
+
       <div class="actions top">
         ${await this.languageSwitcher()}
       </div>
@@ -117,4 +128,3 @@ export class RdfForm extends HTMLElement {
 }
 
 customElements.define('rdf-form', RdfForm);
-

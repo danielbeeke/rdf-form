@@ -15,10 +15,11 @@ export class Reference extends FormElementBase implements FormElement {
     await super.init();
 
     this.addEventListener('keyup', debounce(async (event: any) => {
-      const value = event.detail.originalEvent.target.value
-      if (value.substr(0, 4) !== 'http') {
+      const value = event.detail?.originalEvent?.originalTarget?.value
+
+      if (value && value.substr(0, 4) !== 'http') {
         this.searchSuggestions = []
-        this.field.autoCompleteQuery ? await this.sparqlQuery(value) : await this.dbpediaSuggestions(value)
+        this.field.autoCompleteQuery ? await this.prepareSparqlQuery(value) : await this.dbpediaSuggestions(value)
         this.render()
       }
     }, 400))
@@ -32,11 +33,6 @@ export class Reference extends FormElementBase implements FormElement {
     })
 
     this.updateMetas().then(() => this.render())
-
-    // if there is an autocomplete query and the query does not contain the SEARCH_TERM token.
-    if (typeof this.field.autoCompleteQuery === 'string' && !this.field.autoCompleteQuery.includes('SEARCH_TERM')) {
-      await this.sparqlQuery()
-    }
   }
 
   /**
@@ -64,10 +60,14 @@ export class Reference extends FormElementBase implements FormElement {
         <i class="fas fa-check"></i>
       </button>
       ${this.searchSuggestions.length ? this.html`
-      <ul classy:referencePreviewSearchSuggestions="search-suggestions">
-        ${this.searchSuggestions.map(suggestion => this.html`<li onclick="${async () => {
+      <ul classy:searchSuggestions="search-suggestions">
+        ${this.searchSuggestions.map(suggestion => this.html`
+        <li classy:searchSuggestion="search-suggestion" onclick="${async () => {
           await this.selectSuggestion(suggestion.uri, index); this.render()
-        }}">${suggestion.label}</li>`)}
+        }}">
+          ${suggestion.image ? this.html`<img src="${suggestion.image}">` : ''}
+          <span>${suggestion.label}</span>
+        </li>`)}
       </ul>
       ` : ''}
     `

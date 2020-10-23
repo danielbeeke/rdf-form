@@ -21,7 +21,6 @@ const { PathFactory } = require('../../../LDflex/lib/index.js');
 const { default: ComunicaEngine } = require('../../../LDflex-Comunica');
 const { namedNode } = require('@rdfjs/data-model');
 
-dom.watch()
 library.add(faTimes, faQuestionCircle, faPlus, faLanguage, faCog)
 
 export class FormElementBase extends EventTarget {
@@ -39,7 +38,8 @@ export class FormElementBase extends EventTarget {
 
   private menuIsOpen: boolean = false
   private pathContext = {
-    "db": "http://dbpedia.org/ontology/",
+    "schema": "http://schema.org/",
+    "dbo": "http://dbpedia.org/ontology/",
     "dbp": "http://dbpedia.org/property/",
     "foaf": "http://xmlns.com/foaf/0.1/",
     "dc": "http://purl.org/dc/terms/",
@@ -125,7 +125,9 @@ export class FormElementBase extends EventTarget {
 
   addItem () {
     if (typeof this.values[0] === 'object') {
-      this.values.push(Object.assign({}, this.values[0], { '@value': '' }))
+      const newItem = Object.assign({}, this.values[0], { '@value': '' })
+      if (newItem['@id']) newItem['@id'] = ''
+      this.values.push(newItem)
     }
     else {
       this.values.push('')
@@ -204,15 +206,14 @@ export class FormElementBase extends EventTarget {
     }))
   }
 
-  async sparqlQuery (searchTerm: string = '') {
-    let query: string = this.field.autoCompleteQuery
+  async searchSuggestionsSparqlQuery (query, searchTerm, source) {
     query = query.replace(/LANGUAGE/g, this.form.language)
     query = query.replace(/SEARCH_TERM/g, searchTerm)
 
     const config = {}
     if (this.form.proxy) config['httpProxyHandler'] = this.form.proxy
     const myEngine = newEngine();
-    const result = await myEngine.query(query, Object.assign({ sources: [this.field.autoCompleteSource] }, config));
+    const result = await myEngine.query(query, Object.assign({ sources: [source] }, config));
 
     /** @ts-ignore */
     const bindings = await result.bindings()
@@ -221,28 +222,36 @@ export class FormElementBase extends EventTarget {
       let label = binding.get('?label')?.id
       if (label.split('"').length > 1) label = label.split('"')[1]
       const uri = binding.get('?uri')?.id
-      this.searchSuggestions.push({ label, uri })
+      let image = binding.get('?image')?.id
+      this.searchSuggestions.push({ label, uri, image })
     }
   }
 
+  async prepareSparqlQuery (searchTerm: string = '') {
+    const query: string = this.field.autoCompleteQuery
+    const source = this.field.autoCompleteSource.replace(/SEARCH_TERM/g, searchTerm)
+    return this.searchSuggestionsSparqlQuery(query, searchTerm, source)
+  }
+
   async dbpediaSuggestions (searchTerm: string) {
-    const response = await fetch(`https://lookup.dbpedia.org/api/prefix?query=${searchTerm}`)
-    const xml = await response.text();
+    const query = `
+    select (?s2 as ?c1)  where
+      {
+        quad map virtrdf:DefaultQuadMap
+        {
+          graph ?g
+          {
+             ?s1 ?s1textp ?o1 .
+            ?o1 bif:contains  '(${searchTerm.toUpperCase()})'  .
 
-    const parser = new DOMParser();
-    const dom: any = parser.parseFromString(xml, 'application/xml')
+          }
+         }
+        ?s1 <http://dbpedia.org/ontology/thumbnail> ?s2 .
 
-    this.searchSuggestions = []
-
-    for (const result of dom.querySelectorAll('Result')) {
-      const label = result.querySelector('Label').textContent
-      const uri = result.querySelector('URI').textContent
-
-      // Dedup languages.
-      if (uri.substr(0, 18) === 'http://dbpedia.org') {
-        this.searchSuggestions.push({ label, uri })
       }
-    }
+    group by (?s2) order by desc (<LONG::IRI_RANK> (?s2))  limit 500  offset 0`
+
+    return this.searchSuggestionsSparqlQuery(query, searchTerm, 'http://dbpedia.org/sparql?default-graph-uri=&query=')
   }
 
   async updateMetas () {
@@ -288,7 +297,7 @@ export class FormElementBase extends EventTarget {
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
       type="text"
-      .value="${textValue}"
+      value="${textValue}"
       required="${this.isRequired(index)}"
     >`
   }
@@ -317,11 +326,14 @@ export class FormElementBase extends EventTarget {
 
   async templateReferenceLabel (flexPath) {
     const waiterId = await flexPath.toString() + '@' + this.form.language
-    const labelPromise = fetchObjectByPredicates(flexPath, this.form.language, ['rdfs:label', 'foaf:name'])
-    const label = waiter(waiterId, labelPromise, this.render)
+    const labelPromise = fetchObjectByPredicates(flexPath, this.form.language, ['rdfs:label', 'foaf:name', 'schema:name'])
+    const thumbnailPromise = fetchObjectByPredicates(flexPath, this.form.language, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'])
+    const label = waiter(waiterId + 'label', labelPromise, this.render)
+    const thumbnail = waiter(waiterId + 'thumbnail', thumbnailPromise, this.render)
 
     return this.html`
       <div classy:referenceLabel="reference-label">
+        ${thumbnail.loading ? '' : this.html`<img src="${thumbnail}">`}
         ${label.loading ? this.form.t.direct('Loading...') : label}
       </div>
     `

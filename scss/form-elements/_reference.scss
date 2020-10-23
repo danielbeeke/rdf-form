@@ -1,0 +1,36 @@
+
+.form-element[type="reference"] {
+  .items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .item {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    align-items: center;
+
+    &[expanded="true"] {
+      flex: 1 1 100%;
+    }
+
+    .button {
+      padding: 5px;
+    }
+  }
+
+  .reference-label {
+    display: flex;
+    align-items: center;
+
+    img {
+      width: 30px;
+      height: 30px;
+      object-fit: cover;
+      object-position: center;
+      margin-right: 10px;
+    }
+  }
+}

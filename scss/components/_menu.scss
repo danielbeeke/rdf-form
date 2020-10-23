@@ -1,0 +1,33 @@
+.menu-button {
+  float: right;
+  margin-left: auto;
+}
+
+.menu-wrapper {
+  margin-left: auto;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  position: relative;
+}
+
+.menu {
+  opacity: 0;
+  visibility: hidden;
+  display: block;
+  pointer-events: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 0;
+
+  li:first-child {
+    margin-top: 10px;
+  }
+
+  &[open=true] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+  }
+}

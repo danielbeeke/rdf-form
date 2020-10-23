@@ -1,0 +1,29 @@
+.button {
+  padding: 10px;
+  border-radius: var(--radius);
+  background: var(--button-color);
+  cursor: pointer;
+  border: none;
+
+  &.add {
+    background: var(--add-button-color);
+  }
+
+  &.remove {
+    background: var(--remove-button-color);
+
+    svg path {
+      fill: white;
+    }
+  }
+
+  svg {
+    display: block;
+  }
+
+  .svg-inline--fa {
+    &.fa-w-11 { width: 11px; }
+    &.fa-w-16 { width: 16px; }
+    &.fa-w-16 { width: 16px; }
+  }
+}

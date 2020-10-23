@@ -1,0 +1,11 @@
+.actions {
+  display: flex;
+  gap : 10px;
+
+  &.top {
+    > .language-switcher {
+      flex: 0 0 130px;
+      margin-left: auto;
+    }
+  }
+}

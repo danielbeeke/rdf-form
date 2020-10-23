@@ -4,6 +4,7 @@ const { SourceMapDevToolPlugin } = require('webpack')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const isDevelopment = process.env.NODE_ENV === 'development'
+const globImporter = require('node-sass-glob-importer');
 
 let htmlPageNames = ['prayer', 'recipe']
 let multipleHtmlPlugins = htmlPageNames.map(name => {
@@ -30,34 +31,16 @@ module.exports = {
         loader: 'awesome-typescript-loader'
       },
       {
-        test: /\.module\.s(a|c)ss$/,
-        loader: [
-          isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
-          {
-            loader: 'css-loader',
-            options: {
-              modules: true,
-              sourceMap: isDevelopment
-            }
-          },
-          {
-            loader: 'sass-loader',
-            options: {
-              sourceMap: isDevelopment
-            }
-          }
-        ]
-      },
-      {
         test: /\.s(a|c)ss$/,
-        exclude: /\.module.(s(a|c)ss)$/,
         loader: [
-          isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
-          'css-loader',
+          'raw-loader',
           {
             loader: 'sass-loader',
             options: {
-              sourceMap: isDevelopment
+              sourceMap: isDevelopment,
+              sassOptions: {
+                importer: globImporter()
+              }
             }
           }
         ]

@@ -1,0 +1,23 @@
+.items {
+  padding: 5px;
+  margin-bottom: 10px;
+  background: var(--background-color);
+  border-radius: var(--radius);
+}
+
+.item {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 5px;
+  justify-items: flex-start;
+  align-items: flex-start;
+
+  &:not(:last-child) {
+    border-bottom: 1px dashed var(--border-color);
+  }
+}
+
+.item-footer {
+  flex: 0 0 100%;
+}
