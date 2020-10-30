@@ -12,8 +12,6 @@ export class Reference extends FormElementBase implements FormElement {
   static type: string = 'reference'
   public ourTemplateRemoveButton: any
 
-  public isLoadingSuggestions = new Map()
-
   async init(): Promise<void> {
     await super.init();
 
@@ -26,13 +24,17 @@ export class Reference extends FormElementBase implements FormElement {
       const index = event.detail?.index
 
       if (value && value.substr(0, 4) !== 'http') {
-        this.isLoadingSuggestions.set(index, true)
+        this.isLoading.set(index, true)
         this.searchSuggestions = []
-        this.render()
-        const refreshPromise = this.field.autoCompleteQuery ? this.prepareSparqlQuery(value) : this.dbpediaSuggestions(value)
-        refreshPromise.then(() => {
+        this.render();
+
+        (this.field.autoCompleteQuery ?
+          this.searchSuggestionsSparqlQuery(value) :
+          this.dbpediaSuggestions(value)
+        )
+        .then(() => {
           this.render()
-          this.isLoadingSuggestions.set(index, false)
+          this.isLoading.set(index, false)
         })
         this.render()
       }
@@ -49,6 +51,13 @@ export class Reference extends FormElementBase implements FormElement {
     this.updateMetas().then(() => this.render())
   }
 
+  shouldShowExpanded (index) {
+    return this.expanded.get(index) ||
+      !this.values[index] ||
+      this.isLoading.get(index) ||
+      this.values[index]?.['@id']?.substr(0, 4) !== 'http'
+  }
+
   /**
    * This template has a couple of states:
    *
@@ -61,11 +70,11 @@ export class Reference extends FormElementBase implements FormElement {
    */
   async templateItem (index, value) {
     const textValue = value?.['@id'] ?? ''
+
     const meta = this.metas.get(textValue)
 
     return this.html`
       ${textValue.substr(0, 4) === 'http' ? await this.templateReferenceLabel(meta) : ''}
-      ${this.isLoadingSuggestions.get(index) ? this.form.t.direct('Loading...') : ''}
       ${meta && !this.expanded.get(index) ? this.html`
       <button class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
         ${fa(faPencilAlt)}

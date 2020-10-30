@@ -35,7 +35,7 @@ function mixString (a, b, asCodeString) {
   return string;
 }
 
-export async function I14n (language, possibleLanguageCodes) {
+export async function I10n (language, possibleLanguageCodes) {
   let translations = {};
   translations[language] = {};
   if (possibleLanguageCodes.includes(language)) {

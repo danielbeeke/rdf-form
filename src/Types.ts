@@ -18,7 +18,9 @@ export interface fieldPrototype {
   name: null,
   label: {},
   input: null
-  autoCompleteSource: '',
-  autoCompleteQuery: '',
+  autoCompleteSource: string,
+  autoCompleteQuery: string,
+  optionsSource: string,
+  optionsQuery: string,
 }
 

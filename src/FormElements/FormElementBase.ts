@@ -1,6 +1,6 @@
 /**
  * This is the base class for every form element.
- * You can extend this class and only overwrite the template methods that you want to change.
+ * You can extend this class and overwrite the template methods that you want to change.
  *
  * Also if you only want to change css classes you can use the following:
  * - Inspect the template and search for classy:IDENTIFIER="DEFAULT_CLASSES"
@@ -35,6 +35,7 @@ export class FormElementBase extends EventTarget {
   public searchSuggestions = []
   public metas = new Map()
   public render: any
+  public isLoading = new Map()
 
   private menuIsOpen: boolean = false
   private pathContext = {
@@ -84,16 +85,26 @@ export class FormElementBase extends EventTarget {
 
   get anotherTranslationIsPossible () {
     const usedLanguagesCount = this.values.map(value => value['@language']).length
-    const i14nLanguagesCount = Object.keys(this.form.i14nLanguages).length
-    return this.hasTranslations && usedLanguagesCount < i14nLanguagesCount
+    const i10nLanguagesCount = Object.keys(this.form.i10nLanguages).length
+    return this.hasTranslations && usedLanguagesCount < i10nLanguagesCount
   }
 
   showRemoveButton (index) {
     return index > 0
   }
 
+  shouldShowExpanded (index) {
+    return this.expanded.get(index) ||
+      !this.values[index] ||
+      this.isLoading.get(index)
+  }
+
   isRequired (index) {
     return index === 0 && this.field.required
+  }
+
+  isRemovable (index) {
+    return true
   }
 
   getMenuButtons () {
@@ -110,13 +121,17 @@ export class FormElementBase extends EventTarget {
     return buttons
   }
 
+  serialize () {
+    return this.values
+  }
+
   /************************************************************************
    * Mutators.
    ************************************************************************/
 
   addTranslation () {
     let usedLanguages = this.values.map(value => value['@language'])
-    let unusedLanguages = Object.keys(this.form.i14nLanguages).filter(language => !usedLanguages.includes(language))
+    let unusedLanguages = Object.keys(this.form.i10nLanguages).filter(language => !usedLanguages.includes(language))
 
     if (unusedLanguages.length) {
       this.values.push({ '@value': '', '@language': unusedLanguages.shift() })
@@ -207,12 +222,7 @@ export class FormElementBase extends EventTarget {
     }))
   }
 
-  async searchSuggestionsSparqlQuery (query, searchTerm, source) {
-    if (!searchTerm || searchTerm.length < 4) return
-
-    query = query.replace(/LANGUAGE/g, this.form.language)
-    query = query.replace(/SEARCH_TERM/g, searchTerm)
-
+  async sparqlQuery (query, source) {
     const config = {}
     if (this.form.proxy) config['httpProxyHandler'] = this.form.proxy
     const myEngine = newEngine();
@@ -221,19 +231,27 @@ export class FormElementBase extends EventTarget {
     /** @ts-ignore */
     const bindings = await result.bindings()
 
+    const items = []
+
     for (const binding of bindings) {
       let label = binding.get('?label')?.id
       if (label.split('"').length > 1) label = label.split('"')[1]
       const uri = binding.get('?uri')?.id
       let image = binding.get('?image')?.id
-      this.searchSuggestions.push({ label, uri, image })
+      items.push({ label, uri, image })
     }
+
+    return items
   }
 
-  async prepareSparqlQuery (searchTerm: string = '') {
-    const query: string = this.field.autoCompleteQuery
+  async searchSuggestionsSparqlQuery (searchTerm: string = '') {
+    if (searchTerm === '' || (searchTerm.length < 4)) return
+    let query: string = this.field.autoCompleteQuery
     const source = this.field.autoCompleteSource.replace(/SEARCH_TERM/g, searchTerm)
-    return this.searchSuggestionsSparqlQuery(query, searchTerm, source)
+
+    query = query.replace(/LANGUAGE/g, this.form.language)
+    query = query.replace(/SEARCH_TERM/g, searchTerm)
+    this.searchSuggestions = await this.sparqlQuery(query, source)
   }
 
   async dbpediaSuggestions (searchTerm: string) {
@@ -307,16 +325,16 @@ export class FormElementBase extends EventTarget {
   async templateLanguageSelector (index, value) {
     const selectedLanguage = value['@language']
     let usedLanguages = this.values.map(value => value['@language'])
-    let unusedLanguages = Object.keys(this.form.i14nLanguages).filter(language => !usedLanguages.includes(language))
+    let unusedLanguages = Object.keys(this.form.i10nLanguages).filter(language => !usedLanguages.includes(language))
     unusedLanguages.push(selectedLanguage)
 
     return this.html`
     <select onchange="${event => this.values[index]['@language'] = event.target.value}" classy:languageSelector="language-selector">
     ${unusedLanguages.map((language) => {
       return language === selectedLanguage ? this.html`
-        <option value="${language}" selected>${this.form.i14nLanguages[language]}</option>
+        <option value="${language}" selected>${this.form.i10nLanguages[language]}</option>
         ` : this.html`
-        <option value="${language}">${this.form.i14nLanguages[language]}</option>
+        <option value="${language}">${this.form.i10nLanguages[language]}</option>
         `
     })}
     </select>`
@@ -403,10 +421,10 @@ export class FormElementBase extends EventTarget {
           const templateItemFooter = await this.templateItemFooter(index, value)
 
           return this.html`
-          <div classy:item="item" expanded="${this.expanded.get(index)}">
+          <div classy:item="item" expanded="${this.shouldShowExpanded(index)}" loading="${this.isLoading.get(index)}">
             ${await this.templateItem(index, value)}
             ${this.values[index]?.['@language'] ? await this.templateLanguageSelector(index, value) : ''}
-            ${await this.templateRemoveButton(index)}
+            ${this.isRemovable(index) ? await this.templateRemoveButton(index) : ''}
             ${templateItemFooter ? this.html`<div classy:item-footer="item-footer">${templateItemFooter}</div>` : ''}
           </div>
         `}))}

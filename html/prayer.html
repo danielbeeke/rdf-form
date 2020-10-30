@@ -9,12 +9,20 @@
 <body>
 
 <rdf-form
-    data="http://rdf.danielbeeke.nl/prayer/prayer.example.ttl#PrayerForThePowerOfTheHolySpiritSaintAugustineOfHippo"
+    id="my-form"
     form="http://rdf.danielbeeke.nl/prayer/prayer.form.ttl"
     selected-language="en"
-    i14n-languages='{"en": "English", "nl": "Nederlands", "fr": "Français"}'
+    i10n-languages='{"en": "English", "nl": "Nederlands", "fr": "Français"}'
     ui-languages='{"en": "English", "nl": "Nederlands"}'
     proxy="https://thingproxy.freeboard.io/fetch/">
 </rdf-form>
+
+<script>
+    const myForm = document.querySelector('#my-form')
+    myForm.addEventListener('save', (event) => {
+      console.log(event.detail)
+    })
+</script>
+
 </body>
 </html>

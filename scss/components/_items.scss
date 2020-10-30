@@ -16,6 +16,10 @@
   &:not(:last-child) {
     border-bottom: 1px dashed var(--border-color);
   }
+
+  &[loading="true"] {
+    background: red;
+  }
 }
 
 .item-footer {

@@ -6,7 +6,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const isDevelopment = process.env.NODE_ENV === 'development'
 const globImporter = require('node-sass-glob-importer');
 
-let htmlPageNames = ['prayer', 'recipe']
+let htmlPageNames = isDevelopment ? ['prayer', 'recipe'] : []
 let multipleHtmlPlugins = htmlPageNames.map(name => {
   return new HtmlWebpackPlugin({
     template: `./html/${name}.html`,

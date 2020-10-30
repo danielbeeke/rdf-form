@@ -117,7 +117,12 @@ async function attributeToText (element, name, required = false): Promise<string
  */
 export async function attributeToJsonLd (element, name, required = false): Promise<Array<any>> {
   const text = await attributeToText(element, name, required)
-  return text ? ttl2jsonld(text) : []
+  try {
+    return JSON.parse(text)
+  }
+  catch (e) {
+    return text ? ttl2jsonld(text) : []
+  }
 }
 
 export async function attributeToQuads (element, name, required = false): Promise<Array<any>> {
