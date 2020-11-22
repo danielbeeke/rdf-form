@@ -10,6 +10,7 @@
   gap: 10px;
   flex-wrap: wrap;
   padding: 5px;
+  position: relative;
   justify-items: flex-start;
   align-items: flex-start;
 
@@ -19,6 +20,13 @@
 
   &[loading="true"] {
     background: red;
+  }
+
+  .button {
+    height: 35px;
+    width: 35px;
+    display: flex;
+    justify-content: center;
   }
 }
 

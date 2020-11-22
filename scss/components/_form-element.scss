@@ -2,11 +2,11 @@
   display: flex;
   position: relative;
   flex-direction: column;
+  margin-bottom: 20px;
 }
 
-.form-element > .label {
+.label {
   font-weight: bold;
-  text-transform: capitalize;
   padding-bottom: 10px;
   display: flex;
   align-items: flex-end;

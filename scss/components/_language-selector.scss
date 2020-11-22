@@ -1,11 +1,35 @@
+.language-selector-wrapper {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
 .language-selector {
-  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-left: auto;
 
   option {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+}
+
+.item .language-selector {
+  max-width: 150px;
+}
+
+.language-selector-inner {
+  position: relative;
+
+  select {
+    width: 100%;
+
+    + svg {
+      right: 15px;
+      top: 9px;
+    }
   }
 }

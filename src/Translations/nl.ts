@@ -6,4 +6,5 @@ export let Translations = {
   'Create translation': 'Vertalen',
   'Remove item': 'Verwijder onderdeel',
   'Loading...': 'Laden...',
+  'Interface language': 'Interface taal'
 }

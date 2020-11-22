@@ -1,5 +1,7 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
+import { fa } from '../Helpers'
+import { faCaretDown } from '@fortawesome/free-solid-svg-icons'
 
 export class Dropdown extends FormElementBase implements FormElement {
 
@@ -41,7 +43,8 @@ export class Dropdown extends FormElementBase implements FormElement {
         ` : this.html`
           <option value="${option.uri}">${option.label?.[this.form.language] ?? option.label}</option>
         `)}
-    </select>`
+    </select>
+    ${fa(faCaretDown)}`
   }
 
 }

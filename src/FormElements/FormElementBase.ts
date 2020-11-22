@@ -12,7 +12,7 @@
 import { newEngine } from '@comunica/actor-init-sparql'
 import { RdfForm } from '../RdfForm'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faTimes, faQuestionCircle, faPlus, faLanguage, faCog } from '@fortawesome/free-solid-svg-icons'
+import { faTimes, faQuestionCircle, faPlus, faLanguage, faCog, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 import { fieldPrototype } from '../Types'
 import {debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'
@@ -20,8 +20,6 @@ import { Classy } from '../Classy'
 const { PathFactory } = require('../../../LDflex/lib/index.js');
 const { default: ComunicaEngine } = require('../../../LDflex-Comunica');
 const { namedNode } = require('@rdfjs/data-model');
-
-library.add(faTimes, faQuestionCircle, faPlus, faLanguage, faCog)
 
 export class FormElementBase extends EventTarget {
 
@@ -241,12 +239,12 @@ export class FormElementBase extends EventTarget {
     const items: Map<string, any> = new Map()
 
     for (const binding of bindings) {
-      let label = binding.get('?label')?.id
+      let label = binding.get('?label')?.id ?? binding.get('?label')?.value
       const valueAndLanguage = label.split('@')
 
       if (valueAndLanguage.length > 1) {
         label = {}
-        label[valueAndLanguage[1].trim('"')] = valueAndLanguage[0].slice(1,-1)
+        label[valueAndLanguage[1].trim('"')] = valueAndLanguage[0].slice(1, -1)
       }
 
       const uri = binding.get('?uri')?.value
@@ -368,7 +366,8 @@ export class FormElementBase extends EventTarget {
         <option value="${language}">${this.form.i10nLanguages[language]}</option>
         `
     })}
-    </select>`
+    </select>
+    ${fa(faCaretDown)}`
   }
 
   async templateItemFooter (index, value) {
@@ -423,7 +422,7 @@ export class FormElementBase extends EventTarget {
         await this.selectSuggestion(suggestion.uri, index); this.render()
       }}">
         ${suggestion.image ? this.html`<img src="${suggestion.image}">` : ''}
-        <span classy:suggestionTitle="title">${suggestion.label}</span>
+        <span classy:suggestionTitle="title">${suggestion.label?.[this.form.language] ?? suggestion.label}</span>
       </li>`)}
     </ul>
       ` : ''

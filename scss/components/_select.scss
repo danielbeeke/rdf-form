@@ -1,0 +1,16 @@
+select {
+  appearance: none;
+  cursor: pointer;
+  background: white;
+
+  + svg {
+    width: 12px;
+    position: absolute;
+    right: 20px;
+    top: 14px;
+
+    path {
+      fill: var(--focus-color);
+    }
+  }
+}

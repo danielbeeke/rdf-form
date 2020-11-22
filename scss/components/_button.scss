@@ -5,6 +5,7 @@
   cursor: pointer;
   border: none;
 
+  &.save,
   &.add {
     background: var(--add-button-color);
   }
@@ -15,6 +16,7 @@
 
   &.remove {
     background: var(--remove-button-color);
+    color: white;
 
     svg path {
       fill: white;

@@ -28,10 +28,11 @@
   .reference-label {
     display: flex;
     align-items: center;
+    height: 35px;
 
     img {
-      width: 30px;
-      height: 30px;
+      width: 35px;
+      height: 35px;
       object-fit: cover;
       object-position: center;
       margin-right: 10px;
