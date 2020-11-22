@@ -222,9 +222,9 @@ export class FormElementBase extends EventTarget {
     }))
   }
 
-  async sparqlQuery (query, source) {
+  async sparqlQuery (query, source, disabledProxy = false) {
     const config = {}
-    if (this.form.proxy) config['httpProxyHandler'] = this.form.proxy
+    if (this.form.proxy && !disabledProxy) config['httpProxyHandler'] = this.form.proxy
     const myEngine = newEngine();
     const result = await myEngine.query(query, Object.assign({ sources: [source] }, config));
 
@@ -234,10 +234,10 @@ export class FormElementBase extends EventTarget {
     const items = []
 
     for (const binding of bindings) {
-      let label = binding.get('?label')?.id
+      let label = binding.get('?label')?.value
       if (label.split('"').length > 1) label = label.split('"')[1]
-      const uri = binding.get('?uri')?.id
-      let image = binding.get('?image')?.id
+      const uri = binding.get('?uri')?.value
+      let image = binding.get('?image')?.value
       items.push({ label, uri, image })
     }
 
@@ -247,31 +247,35 @@ export class FormElementBase extends EventTarget {
   async searchSuggestionsSparqlQuery (searchTerm: string = '') {
     if (searchTerm === '' || (searchTerm.length < 4)) return
     let query: string = this.field.autoCompleteQuery
-    const source = this.field.autoCompleteSource.replace(/SEARCH_TERM/g, searchTerm)
+    const source = this.field.autoCompleteSource ? this.field.autoCompleteSource.replace(/SEARCH_TERM/g, searchTerm) : { type: 'sparql', value: 'http://dbpedia.org/sparql' }
 
     query = query.replace(/LANGUAGE/g, this.form.language)
     query = query.replace(/SEARCH_TERM/g, searchTerm)
-    this.searchSuggestions = await this.sparqlQuery(query, source)
+
+    this.searchSuggestions = await this.sparqlQuery(query, source, !this.field.autoCompleteSource)
   }
 
   async dbpediaSuggestions (searchTerm: string) {
-    const response = await fetch(`https://lookup.dbpedia.org/api/prefix?query=${searchTerm}`)
-    const xml = await response.text();
+    // Add the following if you want to filter by dbpedia class: ?o dbo:ingredient ?uri .
 
-    const parser = new DOMParser();
-    const dom: any = parser.parseFromString(xml, 'application/xml')
+    const query = `
 
-    this.searchSuggestions = []
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX dbo:  <http://dbpedia.org/ontology/>
+    PREFIX bif: <bif:>
 
-    for (const result of dom.querySelectorAll('Result')) {
-      const label = result.querySelector('Label').textContent
-      const uri = result.querySelector('URI').textContent
+    SELECT DISTINCT ?uri ?label ?image {
 
-      // Dedup languages.
-      if (uri.substr(0, 18) === 'http://dbpedia.org') {
-        this.searchSuggestions.push({ label, uri })
-      }
+      ?uri rdfs:label ?label .
+      OPTIONAL { ?uri dbo:thumbnail ?image } .
+
+      filter(bif:contains(?label, "${searchTerm}"))
+      filter langMatches(lang(?label), "${this.form.language}")
     }
+
+    LIMIT 10`
+
+    this.searchSuggestions = await this.sparqlQuery(query, { type: 'sparql', value: 'http://dbpedia.org/sparql' }, true)
   }
 
   async updateMetas () {
