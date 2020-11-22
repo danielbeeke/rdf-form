@@ -24,8 +24,18 @@
   li:first-child {
     margin-top: 10px;
   }
+}
 
-  &[open=true] {
+.menu-wrapper[open=true] {
+  .menu-button {
+    background: var(--focus-color);
+
+    path {
+      fill: white;
+    }
+  }
+
+  .menu {
     opacity: 1;
     visibility: visible;
     pointer-events: all;

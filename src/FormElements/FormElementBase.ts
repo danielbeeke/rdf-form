@@ -104,7 +104,7 @@ export class FormElementBase extends EventTarget {
   }
 
   isRemovable (index) {
-    return true
+    return !(this.field.required && this.values.length < 2)
   }
 
   getMenuButtons () {
@@ -165,10 +165,17 @@ export class FormElementBase extends EventTarget {
         }
       }
     }
+
+    if (!this.values.length) {
+      this.values[0] = {
+        '@value': '',
+        '@language': this.form.language
+      }
+    }
   }
 
   removeTranslations () {
-    if (this.values?.[0]?.['@language'] && this.values?.[0]?.['@value']) {
+    if (this.values?.[0]?.['@language']) {
       this.values = [this.values?.[0]?.['@value']]
     }
   }
@@ -231,21 +238,38 @@ export class FormElementBase extends EventTarget {
     /** @ts-ignore */
     const bindings = await result.bindings()
 
-    const items = []
+    const items: Map<string, any> = new Map()
 
     for (const binding of bindings) {
-      let label = binding.get('?label')?.value
-      if (label.split('"').length > 1) label = label.split('"')[1]
+      let label = binding.get('?label')?.id
+      const valueAndLanguage = label.split('@')
+
+      if (valueAndLanguage.length > 1) {
+        label = {}
+        label[valueAndLanguage[1].trim('"')] = valueAndLanguage[0].slice(1,-1)
+      }
+
       const uri = binding.get('?uri')?.value
       let image = binding.get('?image')?.value
-      items.push({ label, uri, image })
+
+      if (!items.get(uri)) {
+        items.set(uri, { label, uri, image })
+      }
+      else {
+        const existingItem = items.get(uri)
+        Object.assign(existingItem.label, label)
+        items.set(uri, existingItem)
+      }
     }
 
-    return items
+    return [...items.values()]
   }
 
   async searchSuggestionsSparqlQuery (searchTerm: string = '') {
     if (searchTerm === '' || (searchTerm.length < 4)) return
+    searchTerm = searchTerm.trim()
+    if (searchTerm.length > 4) searchTerm += '*'
+
     let query: string = this.field.autoCompleteQuery
     const source = this.field.autoCompleteSource ? this.field.autoCompleteSource.replace(/SEARCH_TERM/g, searchTerm) : { type: 'sparql', value: 'http://dbpedia.org/sparql' }
 
@@ -257,6 +281,8 @@ export class FormElementBase extends EventTarget {
 
   async dbpediaSuggestions (searchTerm: string) {
     // Add the following if you want to filter by dbpedia class: ?o dbo:ingredient ?uri .
+    searchTerm = searchTerm.trim()
+    if (searchTerm.length > 4) searchTerm += '*'
 
     const query = `
 
@@ -267,13 +293,14 @@ export class FormElementBase extends EventTarget {
     SELECT DISTINCT ?uri ?label ?image {
 
       ?uri rdfs:label ?label .
-      OPTIONAL { ?uri dbo:thumbnail ?image } .
+      ?uri dbo:thumbnail ?image .
 
-      filter(bif:contains(?label, "${searchTerm}"))
+      ?label bif:contains "'${searchTerm}'" .
+
       filter langMatches(lang(?label), "${this.form.language}")
     }
 
-    LIMIT 10`
+    LIMIT 60`
 
     this.searchSuggestions = await this.sparqlQuery(query, { type: 'sparql', value: 'http://dbpedia.org/sparql' }, true)
   }
@@ -367,11 +394,11 @@ export class FormElementBase extends EventTarget {
     const buttons = this.getMenuButtons()
 
     return buttons.length ? this.html`
-      <div classy:menu-wrapper="menu-wrapper">
+      <div classy:menu-wrapper="menu-wrapper" open="${this.menuIsOpen}">
         <button classy:menuButton="menu-button button" onclick="${() => {this.menuIsOpen = !this.menuIsOpen; this.render()}}">
             ${fa(faCog)}
         </button>
-        <ul onclick="${() => {this.menuIsOpen = false; this.render()}}" open="${this.menuIsOpen}" classy:menu="menu">
+        <ul onclick="${() => {this.menuIsOpen = false; this.render()}}" classy:menu="menu">
           ${buttons.map(button => this.html`<li>${button}</li>`)}
         </ul>
       </div>

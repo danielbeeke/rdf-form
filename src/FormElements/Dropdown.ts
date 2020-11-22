@@ -14,7 +14,13 @@ export class Dropdown extends FormElementBase implements FormElement {
     }
 
     const query = this.field.optionsQuery.replace(/LANGUAGE/g, this.form.language)
-    this.options = await this.sparqlQuery(query, this.field.optionsSource)
+
+    const options = await this.sparqlQuery(query, this.field.optionsSource)
+    this.options = [{
+      label: this.field.emptyText ? this.field.emptyText : this.form.t`- Select a value -`,
+      uri: null,
+      image: null
+    }, ...options]
   }
 
   isRemovable (index) {
@@ -31,9 +37,9 @@ export class Dropdown extends FormElementBase implements FormElement {
     >
         ${!this.field.required ? this.html`<option value="">${this.form.t.direct('- Select -')}</option>` : ''}
         ${this.options.map(option => option.uri === idValue ? this.html`
-          <option value="${option.uri}" selected>${option.label}</option>
+          <option value="${option.uri}" selected>${option.label?.[this.form.language] ?? option.label}</option>
         ` : this.html`
-          <option value="${option.uri}">${option.label}</option>
+          <option value="${option.uri}">${option.label?.[this.form.language] ?? option.label}</option>
         `)}
     </select>`
   }

@@ -22,5 +22,6 @@ export interface fieldPrototype {
   autoCompleteQuery: string,
   optionsSource: string,
   optionsQuery: string,
+  emptyText: string,
 }
 
