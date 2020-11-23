@@ -11,8 +11,7 @@
 
 import { newEngine } from '@comunica/actor-init-sparql'
 import { RdfForm } from '../RdfForm'
-import { library } from '@fortawesome/fontawesome-svg-core'
-import { faTimes, faQuestionCircle, faPlus, faLanguage, faCog, faCaretDown } from '@fortawesome/free-solid-svg-icons'
+import { faTimes, faCog, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 import { fieldPrototype } from '../Types'
 import {debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'
@@ -68,6 +67,11 @@ export class FormElementBase extends EventTarget {
    * Getters and setters.
    ************************************************************************/
 
+  getType () {
+    /** @ts-ignore */
+    return this.constructor.type.toLowerCase()
+  }
+
   get label () {
     const label = this.field.label[this.form.language]
     return label ? label.charAt(0).toUpperCase() + label.slice(1) : ''
@@ -98,7 +102,7 @@ export class FormElementBase extends EventTarget {
   }
 
   isRequired (index) {
-    return index === 0 && this.field.required
+    return index === 0 && this.field.required ? true : null
   }
 
   isRemovable (index) {
@@ -210,7 +214,7 @@ export class FormElementBase extends EventTarget {
    ************************************************************************/
 
   createButton (buttonClass, method, label) {
-    return this.html`<button class="${'button ' + buttonClass}" onclick="${() => {
+    return this.html`<button type="button" class="${'button ' + buttonClass}" onclick="${() => {
       this[method]()
       this.render()
     }}">${this.form.t.direct(label)}</button>`
@@ -359,15 +363,10 @@ export class FormElementBase extends EventTarget {
 
     return this.html`
     <select onchange="${event => this.values[index]['@language'] = event.target.value}" classy:languageSelector="language-selector">
-    ${unusedLanguages.map((language) => {
-      return language === selectedLanguage ? this.html`
-        <option value="${language}" selected>${this.form.i10nLanguages[language]}</option>
-        ` : this.html`
-        <option value="${language}">${this.form.i10nLanguages[language]}</option>
-        `
-    })}
-    </select>
-    ${fa(faCaretDown)}`
+    ${unusedLanguages.map((language) => this.html`
+      <option value="${language}" selected="${language === selectedLanguage ? true : null}">${this.form.i10nLanguages[language]}</option>
+    `)}
+    </select>`
   }
 
   async templateItemFooter (index, value) {
@@ -394,7 +393,7 @@ export class FormElementBase extends EventTarget {
 
     return buttons.length ? this.html`
       <div classy:menu-wrapper="menu-wrapper" open="${this.menuIsOpen}">
-        <button classy:menuButton="menu-button button" onclick="${() => {this.menuIsOpen = !this.menuIsOpen; this.render()}}">
+        <button type="button" classy:menuButton="menu-button button" onclick="${() => {this.menuIsOpen = !this.menuIsOpen; this.render()}}">
             ${fa(faCog)}
         </button>
         <ul onclick="${() => {this.menuIsOpen = false; this.render()}}" classy:menu="menu">
@@ -406,7 +405,7 @@ export class FormElementBase extends EventTarget {
 
   async templateRemoveButton (index) {
     return this.html`
-    <button class="button remove" onclick="${() => {
+    <button type="button" class="button remove" onclick="${() => {
       this.removeItem(index)
       this.render()
       }}">
@@ -441,7 +440,7 @@ export class FormElementBase extends EventTarget {
     }
 
     return this.html`
-    <div classy:wrapper="form-element" type="${this.constructor.name.toLowerCase()}">
+    <div classy:wrapper="form-element" type="${this.getType()}">
 
       ${await this.templateLabel()}
 
@@ -464,12 +463,12 @@ export class FormElementBase extends EventTarget {
       ${await this.templateDescription()}
 
       <div classy:actions="actions">
-        ${this.field.translatable && this.anotherTranslationIsPossible && this.hasTranslations ? this.html`<button class="button add" onclick="${() => {
+        ${this.field.translatable && this.anotherTranslationIsPossible && this.hasTranslations ? this.html`<button type="button" class="button add" onclick="${() => {
           this.addTranslation()
           this.render()
         }}">${this.form.t.direct('Add translation')}</button>` : ''}
 
-        ${this.field.multiple ? this.html`<button class="button add" onclick="${() => {
+        ${this.field.multiple ? this.html`<button type="button" class="button add" onclick="${() => {
           this.addItem()
           this.render()
         }}">${this.form.t.direct('Add item')}</button>` : ''}

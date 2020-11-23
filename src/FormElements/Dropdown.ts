@@ -17,12 +17,7 @@ export class Dropdown extends FormElementBase implements FormElement {
 
     const query = this.field.optionsQuery.replace(/LANGUAGE/g, this.form.language)
 
-    const options = await this.sparqlQuery(query, this.field.optionsSource)
-    this.options = [{
-      label: this.field.emptyText ? this.field.emptyText : this.form.t`- Select a value -`,
-      uri: null,
-      image: null
-    }, ...options]
+    this.options = await this.sparqlQuery(query, this.field.optionsSource)
   }
 
   isRemovable (index) {
@@ -37,14 +32,13 @@ export class Dropdown extends FormElementBase implements FormElement {
     required="${this.isRequired(index)}"
     onchange="${event => this.on(event, index)}"
     >
-        ${!this.field.required ? this.html`<option value="">${this.form.t.direct('- Select -')}</option>` : ''}
-        ${this.options.map(option => option.uri === idValue ? this.html`
-          <option value="${option.uri}" selected>${option.label?.[this.form.language] ?? option.label}</option>
-        ` : this.html`
-          <option value="${option.uri}">${option.label?.[this.form.language] ?? option.label}</option>
+        <option disabled selected value>${this.field.emptyText ? (this.field.emptyText?.[this.form.language] ?? this.field.emptyText) : this.form.t`- Select a value -`}</option>
+        ${this.options.map(option => this.html`
+            <option value="${option.uri}" selected="${option.uri === idValue ? true : null}">
+                ${option.label?.[this.form.language] ?? option.label}
+              </option>
         `)}
-    </select>
-    ${fa(faCaretDown)}`
+    </select>`
   }
 
 }

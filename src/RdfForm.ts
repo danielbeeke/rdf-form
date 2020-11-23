@@ -124,14 +124,11 @@ export class RdfForm extends HTMLElement {
               ${Object.entries(this.uiLanguages).map((language) => {
             const code = language[0]
             const label = language[1]
-            return code === this.language ? html`
-                  <option value="${code}" selected>${label}</option>
-                  ` : html`
-                  <option value="${code}">${label}</option>
-                `
+            return html`
+            <option value="${code}" selected="${code === this.language ? true : null}">${label}</option>
+            `
           })}
           </select>
-          ${fa(faCaretDown)}
         </div>
       </div>
     ` : ''

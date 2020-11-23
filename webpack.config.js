@@ -1,12 +1,12 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const { SourceMapDevToolPlugin } = require('webpack')
+const { SourceMapDevToolPlugin, optimize } = require('webpack')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const isDevelopment = process.env.NODE_ENV === 'development'
 const globImporter = require('node-sass-glob-importer');
 
-let htmlPageNames = isDevelopment ? ['prayer', 'recipe'] : []
+let htmlPageNames = isDevelopment ? ['prayer', 'recipe', 'index'] : []
 let multipleHtmlPlugins = htmlPageNames.map(name => {
   return new HtmlWebpackPlugin({
     template: `./html/${name}.html`,
@@ -22,7 +22,7 @@ module.exports = {
   devtool: false,
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: 'bundle.min.js'
+    filename: 'RdfForm.js'
   },
   module: {
     rules: [
@@ -48,25 +48,26 @@ module.exports = {
     ]
   },
   plugins: [
-    new CopyWebpackPlugin({
-      patterns: [
-        {
-          from: 'public',
-          to: '.'
-        },
-
-      ],
+    new optimize.LimitChunkCountPlugin({
+      maxChunks: 1
     }),
     new MiniCssExtractPlugin({
       filename: isDevelopment ? '[name].css' : '[name].[hash].css',
       chunkFilename: isDevelopment ? '[id].css' : '[id].[hash].css'
     }),
-    new SourceMapDevToolPlugin({
-      filename: '[file].map'
-    }),
-    new HtmlWebpackPlugin({
-      template: './html/index.html',
-      chunks: ['main']
-    })
   ].concat(multipleHtmlPlugins)
+}
+
+if (isDevelopment) {
+  module.exports.plugins.push(new SourceMapDevToolPlugin({
+      filename: '[file].map'
+    })
+  )
+
+  module.exports.plugins.push(    new CopyWebpackPlugin({
+      patterns: [{
+        from: 'public',
+        to: '.'
+      }]})
+  )
 }
