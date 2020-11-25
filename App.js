@@ -25,8 +25,12 @@ class App {
 
     this.pages = new Map()
 
+    const pattern = location.hostname === 'localhost' ?
+      (chapter) => `/md/${chapter}.md` :
+      (chapter) => `https://raw.githubusercontent.com/danielbeeke/rdf-form/gh-pages/md/${chapter}.md`
+
     for (const chapter of this.chapters) {
-      const markdownResponse = await fetch(`/md/${chapter}.md`)
+      const markdownResponse = await fetch(pattern(chapter))
       const markdown = await markdownResponse.text()
       const markdownSplit = markdown.split('---')
       const frontMatterYaml = markdownSplit[1]
