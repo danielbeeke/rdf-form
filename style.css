@@ -1,0 +1,38 @@
+#app {
+    display: flex;
+    font-family: sans-serif;
+    line-height: 1.8;
+}
+
+ul,
+p {
+    max-width: 800px;
+}
+
+h1, h2, h3 {
+    margin-top: 60px;
+}
+
+h4, h5, h6 {
+    margin-top: 30px;
+}
+
+pre {
+    max-width: 800px;
+}
+
+rdf-form {
+    padding: 0;
+}
+
+.sidebar {
+    flex: 0 0 300px;
+    position: sticky;
+    top: 0;
+    display: block;
+}
+
+.content {
+    max-width: 800px;
+    margin: 0 auto;
+}
