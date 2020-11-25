@@ -373,7 +373,7 @@ export class FormElementBase extends EventTarget {
     return false
   }
 
-  async templateReferenceLabel (flexPath) {
+  async templateReferenceLabel (flexPath, uri) {
     const waiterId = await flexPath.toString() + '@' + this.form.language
     const labelPromise = fetchObjectByPredicates(flexPath, this.form.language, ['rdfs:label', 'foaf:name', 'schema:name'])
     const thumbnailPromise = fetchObjectByPredicates(flexPath, this.form.language, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'])
@@ -383,7 +383,7 @@ export class FormElementBase extends EventTarget {
     return this.html`
       <div classy:referenceLabel="reference-label">
         ${thumbnail.loading ? '' : this.html`<img src="${thumbnail}">`}
-        ${label.loading ? this.form.t.direct('Loading...') : label}
+        ${label.loading ? this.form.t.direct('Loading...') : this.html`<a href="${uri}" target="_blank">${label}</a>`}
       </div>
     `
   }

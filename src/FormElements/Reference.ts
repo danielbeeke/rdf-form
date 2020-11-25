@@ -1,7 +1,7 @@
 import {dom, library } from '@fortawesome/fontawesome-svg-core'
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import {debounce, fa, waiter} from '../Helpers'
+import {debounce, fa } from '../Helpers'
 import { faTimes, faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
 
 dom.watch()
@@ -74,7 +74,7 @@ export class Reference extends FormElementBase implements FormElement {
     const meta = this.metas.get(textValue)
 
     return this.html`
-      ${textValue.substr(0, 4) === 'http' ? await this.templateReferenceLabel(meta) : ''}
+      ${textValue.substr(0, 4) === 'http' ? await this.templateReferenceLabel(meta, textValue) : ''}
       ${meta && !this.expanded.get(index) ? this.html`
       <button class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
         ${fa(faPencilAlt)}

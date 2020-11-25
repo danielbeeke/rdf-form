@@ -12,8 +12,6 @@ import { Subject } from './FormElements/Subject'
 import { Reference } from './FormElements/Reference'
 import { Dropdown } from './FormElements/Dropdown'
 import { Classy } from './Classy'
-import { fa } from './Helpers'
-import { faCaretDown } from '@fortawesome/free-solid-svg-icons'
 
 import { I10n } from './i10n'
 
