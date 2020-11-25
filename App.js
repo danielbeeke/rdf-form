@@ -26,7 +26,7 @@ class App {
     this.pages = new Map()
 
     for (const chapter of this.chapters) {
-      const markdownResponse = await fetch(`/docs/${chapter}.md`)
+      const markdownResponse = await fetch(`/md/${chapter}.md`)
       const markdown = await markdownResponse.text()
       const markdownSplit = markdown.split('---')
       const frontMatterYaml = markdownSplit[1]
