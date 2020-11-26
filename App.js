@@ -83,7 +83,7 @@ class App {
   }
 
   async token_properties () {
-    const formTtlResponse = await fetch('http://rdf.danielbeeke.nl/form/form-dev.ttl')
+    const formTtlResponse = await fetch('https://rdf.danielbeeke.nl/form/form-dev.ttl')
     const formTtl = await formTtlResponse.text()
     const jsonld = parse(formTtl)
     const properties = jsonld['@graph']
@@ -100,7 +100,7 @@ class App {
   }
 
   async token_form_definition () {
-    const formDefinitionTtlResponse = await fetch('http://rdf.danielbeeke.nl/recipe/recipe.form.ttl')
+    const formDefinitionTtlResponse = await fetch('https://rdf.danielbeeke.nl/recipe/recipe.form.ttl')
     const formTtl = await formDefinitionTtlResponse.text()
     return html`<pre><code class="language-turtle">${formTtl}</code></pre>`
   }
