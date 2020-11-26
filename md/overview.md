@@ -44,6 +44,6 @@ Here is how this form looks. Try to change the interface language. Referenced te
     selected-language="en"
     i10n-languages='{"en": "English", "nl": "Nederlands"}'
     ui-languages='{"en": "English", "nl": "Nederlands"}'
-    proxy="https://thingproxy.freeboard.io/fetch/"
+    proxy="https://2i9izrkade.execute-api.eu-central-1.amazonaws.com/dev?url="
     >
 </rdf-form>
