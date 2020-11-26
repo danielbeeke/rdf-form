@@ -1,4 +1,4 @@
-import {FormElementRegistry} from "./FormElementRegistry.js";
+import { FormElementRegistry } from './FormElementRegistry'
 
 export const expand = (text, context) => {
   const textSplit = text.split(':')

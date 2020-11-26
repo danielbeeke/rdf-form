@@ -1,7 +1,6 @@
 /**
  * A custom element that shows a HTML form from a turtle file.
  */
-import { OntologyRepository } from './OntologyRepository'
 import { FormElementRegistry } from './FormElementRegistry'
 import { expandAll, jsonLdToFormDefinition } from './jsonLdToFormDefinition'
 import * as ActorHttpProxy from '@comunica/actor-http-proxy'
@@ -21,7 +20,6 @@ import style from '../scss/style.scss'
 
 export class RdfForm extends HTMLElement {
 
-  public ontologyRepository: OntologyRepository
   public formElementRegistry: FormElementRegistry
 
   public jsonLdContext: object
@@ -52,7 +50,6 @@ export class RdfForm extends HTMLElement {
     this.t = await I10n(this.language, Object.keys(this.i10nLanguages))
 
     this.formElementRegistry = new FormElementRegistry(this)
-    this.ontologyRepository = new OntologyRepository(this)
 
     this.formElementRegistry.register(String, Textarea, Subject, Reference, Dropdown)
 

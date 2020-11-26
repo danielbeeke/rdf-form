@@ -15,6 +15,7 @@ import { faTimes, faCog, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 import { fieldPrototype } from '../Types'
 import {debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'
+import {IActorInitSparqlArgs} from "@comunica/actor-init-sparql/lib/ActorInitSparql-browser";
 
 const { PathFactory } = require('../../../LDflex/lib/index.js');
 const { default: ComunicaEngine } = require('../../../LDflex-Comunica');
@@ -273,7 +274,7 @@ export class FormElementBase extends EventTarget {
     if (searchTerm.length > 4) searchTerm += '*'
 
     let query: string = this.field.autoCompleteQuery
-    const source = this.field.autoCompleteSource ? this.field.autoCompleteSource.replace(/SEARCH_TERM/g, searchTerm) : { type: 'sparql', value: 'http://dbpedia.org/sparql' }
+    const source = this.field.autoCompleteSource ? this.field.autoCompleteSource.replace(/SEARCH_TERM/g, searchTerm) : { type: 'sparql', value: 'https://dbpedia.org/sparql' }
 
     query = query.replace(/LANGUAGE/g, this.form.language)
     query = query.replace(/SEARCH_TERM/g, searchTerm)
@@ -310,7 +311,7 @@ export class FormElementBase extends EventTarget {
 
     LIMIT 60`
 
-    const searchSuggestions = await this.sparqlQuery(query, { type: 'sparql', value: 'http://dbpedia.org/sparql' }, true)
+    const searchSuggestions = await this.sparqlQuery(query, { type: 'sparql', value: 'https://dbpedia.org/sparql' }, true)
 
     this.searchSuggestions = searchSuggestions.length ? searchSuggestions : [{
       label: this.form.t`Nothing found`,
@@ -327,6 +328,14 @@ export class FormElementBase extends EventTarget {
         const queryEngine = new ComunicaEngine(uri, {
           'httpProxyHandler': this.form.proxy
         });
+
+        /**
+         * Temporary workaround for:
+         * https://github.com/LDflex/LDflex/issues/70
+         */
+        const myEngine = newEngine();
+        if (this.form.proxy) myEngine['httpProxyHandler'] = this.form.proxy
+        queryEngine._engine = myEngine
 
         const path = new PathFactory({ context: this.pathContext, queryEngine });
         this.metas.set(uri, path.create({ subject: namedNode(uri) }))
