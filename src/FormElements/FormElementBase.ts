@@ -278,7 +278,13 @@ export class FormElementBase extends EventTarget {
     query = query.replace(/LANGUAGE/g, this.form.language)
     query = query.replace(/SEARCH_TERM/g, searchTerm)
 
-    this.searchSuggestions = await this.sparqlQuery(query, source, !this.field.autoCompleteSource)
+    const searchSuggestions = await this.sparqlQuery(query, source, !this.field.autoCompleteSource)
+
+    this.searchSuggestions = searchSuggestions.length ? searchSuggestions : [{
+      label: this.form.t`Nothing found`,
+      uri: null,
+      image: null
+    }]
   }
 
   async dbpediaSuggestions (searchTerm: string) {
@@ -304,7 +310,13 @@ export class FormElementBase extends EventTarget {
 
     LIMIT 60`
 
-    this.searchSuggestions = await this.sparqlQuery(query, { type: 'sparql', value: 'http://dbpedia.org/sparql' }, true)
+    const searchSuggestions = await this.sparqlQuery(query, { type: 'sparql', value: 'http://dbpedia.org/sparql' }, true)
+
+    this.searchSuggestions = searchSuggestions.length ? searchSuggestions : [{
+      label: this.form.t`Nothing found`,
+      uri: null,
+      image: null
+    }]
   }
 
   async updateMetas () {
@@ -417,9 +429,9 @@ export class FormElementBase extends EventTarget {
     return this.searchSuggestions.length ? this.html`
     <ul classy:searchSuggestions="search-suggestions">
       ${this.searchSuggestions.map(suggestion => this.html`
-      <li classy:searchSuggestion="search-suggestion" onclick="${async () => {
+      <li classy:searchSuggestion="search-suggestion" onclick="${suggestion.uri ? async () => {
         await this.selectSuggestion(suggestion.uri, index); this.render()
-      }}">
+      } : () => ''}">
         ${suggestion.image ? this.html`<img src="${suggestion.image}">` : ''}
         <span classy:suggestionTitle="title">${suggestion.label?.[this.form.language] ?? suggestion.label}</span>
       </li>`)}

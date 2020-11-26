@@ -51,6 +51,11 @@ export class Reference extends FormElementBase implements FormElement {
     this.updateMetas().then(() => this.render())
   }
 
+  addItem () {
+    this.values.push({ '@id': '' })
+    this.expanded.set(this.values.length - 1, true)
+  }
+
   shouldShowExpanded (index) {
     return this.expanded.get(index) ||
       !this.values[index] ||
@@ -76,13 +81,13 @@ export class Reference extends FormElementBase implements FormElement {
     return this.html`
       ${textValue.substr(0, 4) === 'http' ? await this.templateReferenceLabel(meta, textValue) : ''}
       ${meta && !this.expanded.get(index) ? this.html`
-      <button class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
+      <button type="button" class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
         ${fa(faPencilAlt)}
       </button>
       ${await this.ourTemplateRemoveButton(index)}
     ` : this.html`
       ${await super.templateItem(index, textValue)}
-      <button class="button" onclick="${() => { this.expanded.set(index, false); this.render() }}">
+      <button type="button" class="button" onclick="${() => { this.expanded.set(index, false); this.render() }}">
         ${fa(faCheck)}
       </button>
       ${await this.ourTemplateRemoveButton(index)}
