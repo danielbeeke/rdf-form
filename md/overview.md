@@ -15,14 +15,16 @@ You give it a couple of attributes:
 - selected-language: The language to load when the widget starts.
 - i10n-languages: The languages to which you want to translate the content to.
 - ui-languages: The UI languages you want to show. At the moment it is only translated from English to Dutch.
-
+- proxy: A CORS proxy url for example: `https://thingproxy.freeboard.io/fetch/`
 ```html
 <rdf-form
     data="https://rdf.danielbeeke.nl/recipe/tomato-soup.ttl"
     form="https://rdf.danielbeeke.nl/recipe/recipe.form.ttl"
     selected-language="en"
     i10n-languages='{"en": "English", "nl": "Nederlands"}'
-    ui-languages='{"en": "English", "nl": "Nederlands"}'>
+    ui-languages='{"en": "English", "nl": "Nederlands"}'
+    proxy="https://thingproxy.freeboard.io/fetch/"
+>
 </rdf-form>
 ```
 
@@ -41,5 +43,7 @@ Here is how this form looks. Try to change the interface language. Referenced te
     form="https://rdf.danielbeeke.nl/recipe/recipe.form.ttl"
     selected-language="en"
     i10n-languages='{"en": "English", "nl": "Nederlands"}'
-    ui-languages='{"en": "English", "nl": "Nederlands"}'>
+    ui-languages='{"en": "English", "nl": "Nederlands"}'
+    proxy="https://thingproxy.freeboard.io/fetch/"
+    >
 </rdf-form>
