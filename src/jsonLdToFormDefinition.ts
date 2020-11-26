@@ -50,7 +50,9 @@ const fieldPrototype = {
   name: null,
   label: null,
   input: null,
-  emptyText: null
+  emptyText: null,
+  placeholder: '',
+  description: ''
 }
 
 export async function jsonLdToFormDefinition (jsonLd, formElementRegistry: FormElementRegistry) {

@@ -78,7 +78,7 @@ export class FormElementBase extends EventTarget {
   }
 
   get description () {
-    return ''
+    return this.field.description[this.form.language] ?? this.field.description
   }
 
   get hasTranslations () {
@@ -362,6 +362,7 @@ export class FormElementBase extends EventTarget {
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
       type="text"
+      placeholder="${this.field.placeholder}"
       value="${textValue}"
       required="${this.isRequired(index)}"
     >`

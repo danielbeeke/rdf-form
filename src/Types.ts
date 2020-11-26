@@ -23,5 +23,7 @@ export interface fieldPrototype {
   optionsSource: string,
   optionsQuery: string,
   emptyText: string,
+  placeholder: string,
+  description: string
 }
 

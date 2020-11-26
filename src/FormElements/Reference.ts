@@ -87,9 +87,15 @@ export class Reference extends FormElementBase implements FormElement {
       ${await this.ourTemplateRemoveButton(index)}
     ` : this.html`
       ${await super.templateItem(index, textValue)}
-      <button type="button" class="button" onclick="${() => { this.expanded.set(index, false); this.render() }}">
+      ${textValue.substr(0, 4) === 'http' ? this.html`
+      <button type="button" class="button" onclick="${() => {
+        this.expanded.set(index, false);
+        this.searchSuggestions = []
+        this.render();
+      }}">
         ${fa(faCheck)}
       </button>
+      ` : ''}
       ${await this.ourTemplateRemoveButton(index)}
       ${await this.templateSearchSuggestions(index)}
     `}

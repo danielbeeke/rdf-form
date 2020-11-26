@@ -3,6 +3,14 @@
   position: relative;
   flex-direction: column;
   margin-bottom: 20px;
+
+  .description {
+    font-size: 14px;
+    margin-bottom: 10px;
+    line-height: 22px;
+    font-style: italic;
+    color: var(--secondary-text);
+  }
 }
 
 .label {
