@@ -16,6 +16,7 @@ You give it a couple of attributes:
 - i10n-languages: The languages to which you want to translate the content to.
 - ui-languages: The UI languages you want to show. At the moment it is only translated from English to Dutch.
 - proxy: A CORS proxy url for example: `https://thingproxy.freeboard.io/fetch/`
+
 ```html
 <rdf-form
     data="https://rdf.danielbeeke.nl/recipe/tomato-soup.ttl"
