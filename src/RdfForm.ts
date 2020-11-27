@@ -81,7 +81,8 @@ export class RdfForm extends HTMLElement {
   }
 
   async render () {
-    render(this.shadow, Classy`
+    try {
+      render(this.shadow, Classy`
       <style>
         ${style}
       </style>
@@ -102,6 +103,10 @@ export class RdfForm extends HTMLElement {
 
       </form>
     `)
+    }
+    catch (e) {
+      console.error(e)
+    }
   }
 
   async languageSwitcher () {

@@ -206,6 +206,13 @@ export class FormElementBase extends EventTarget {
     await this.updateMetas()
   }
 
+  async selectValue (value, index) {
+    if (!this.values[index]?.['@value']) this.values[index] = { '@value': '' }
+    this.values[index]['@value'] = value
+    this.expanded.set(index, false)
+    this.searchSuggestions = []
+  }
+
   removeReference (index) {
     this.values[index]['@id'] = ''
   }
@@ -270,28 +277,29 @@ export class FormElementBase extends EventTarget {
 
   async searchSuggestionsSparqlQuery (searchTerm: string = '') {
     if (searchTerm === '' || (searchTerm.length < 4)) return
-    searchTerm = searchTerm.trim()
-    if (searchTerm.length > 4) searchTerm += '*'
+    let querySearchTerm = searchTerm.trim()
+    if (querySearchTerm.length > 4) querySearchTerm += '*'
 
     let query: string = this.field.autoCompleteQuery
-    const source = this.field.autoCompleteSource ? this.field.autoCompleteSource.replace(/SEARCH_TERM/g, searchTerm) : { type: 'sparql', value: 'https://dbpedia.org/sparql' }
+    const source = this.field.autoCompleteSource ? this.field.autoCompleteSource.replace(/SEARCH_TERM/g, querySearchTerm) : { type: 'sparql', value: 'https://dbpedia.org/sparql' }
 
     query = query.replace(/LANGUAGE/g, this.form.language)
-    query = query.replace(/SEARCH_TERM/g, searchTerm)
+    query = query.replace(/SEARCH_TERM/g, querySearchTerm)
 
     const searchSuggestions = await this.sparqlQuery(query, source, !this.field.autoCompleteSource)
 
-    this.searchSuggestions = searchSuggestions.length ? searchSuggestions : [{
-      label: this.form.t`Nothing found`,
-      uri: null,
-      image: null
-    }]
+    searchSuggestions.push({
+      label: this.form.t`Add <strong>${{searchTerm}}</strong> as text without reference.`,
+      value: searchTerm
+    })
+
+    this.searchSuggestions = searchSuggestions
   }
 
   async dbpediaSuggestions (searchTerm: string) {
     // Add the following if you want to filter by dbpedia class: ?o dbo:ingredient ?uri .
-    searchTerm = searchTerm.trim()
-    if (searchTerm.length > 4) searchTerm += '*'
+    let querySearchTerm = searchTerm.trim()
+    if (querySearchTerm.length > 4) querySearchTerm += '*'
 
     const query = `
 
@@ -304,20 +312,21 @@ export class FormElementBase extends EventTarget {
       ?uri rdfs:label ?label .
       ?uri dbo:thumbnail ?image .
 
-      ?label bif:contains "'${searchTerm}'" .
+      ?label bif:contains "'${querySearchTerm}'" .
 
       filter langMatches(lang(?label), "${this.form.language}")
     }
 
-    LIMIT 60`
+    LIMIT 10`
 
     const searchSuggestions = await this.sparqlQuery(query, { type: 'sparql', value: 'https://dbpedia.org/sparql' }, true)
 
-    this.searchSuggestions = searchSuggestions.length ? searchSuggestions : [{
-      label: this.form.t`Nothing found`,
-      uri: null,
-      image: null
-    }]
+    searchSuggestions.push({
+      label: this.form.t`Add <strong>${{searchTerm}}</strong> as text without reference.`,
+      value: searchTerm
+    })
+
+    this.searchSuggestions = searchSuggestions
   }
 
   async updateMetas () {
@@ -363,7 +372,7 @@ export class FormElementBase extends EventTarget {
     </small>` : ''
   }
 
-  async templateItem (index, value) {
+  async templateItem (index, value, placeholder = null) {
     const textValue = value?.['@value'] ?? value
 
     return this.html`
@@ -371,7 +380,7 @@ export class FormElementBase extends EventTarget {
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
       type="text"
-      placeholder="${this.field.placeholder?.[this.form.language] ?? this.field.placeholder}"
+      placeholder="${placeholder ?? (this.field.placeholder?.[this.form.language] ?? this.field.placeholder)}"
       value="${textValue}"
       required="${this.isRequired(index)}"
     >`
@@ -436,12 +445,24 @@ export class FormElementBase extends EventTarget {
   }
 
   async templateSearchSuggestions (index) {
+    const hasResults = !(this.searchSuggestions[0]?.value)
+
     return this.searchSuggestions.length ? this.html`
     <ul classy:searchSuggestions="search-suggestions">
+      ${!hasResults ? this.html`<li classy:searchSuggestionNoResults="search-suggestion no-results">
+        <span classy:suggestionTitle="title">${this.form.t`Nothing found`}</span>
+      </li>` : ''}
       ${this.searchSuggestions.map(suggestion => this.html`
-      <li classy:searchSuggestion="search-suggestion" onclick="${suggestion.uri ? async () => {
-        await this.selectSuggestion(suggestion.uri, index); this.render()
-      } : () => ''}">
+      <li classy:searchSuggestion="search-suggestion" onclick="${async () => {
+        if (suggestion.uri) {
+          await this.selectSuggestion(suggestion.uri, index);
+        }
+        else if (suggestion.value) {
+          await this.selectValue(suggestion.value, index);
+        }
+
+        this.render()
+      }}">
         ${suggestion.image ? this.html`<img src="${suggestion.image}">` : ''}
         <span classy:suggestionTitle="title">${suggestion.label?.[this.form.language] ?? suggestion.label}</span>
       </li>`)}

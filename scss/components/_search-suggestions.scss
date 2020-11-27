@@ -22,9 +22,13 @@
       padding: 10px;
     }
 
-    &:hover {
+    &:not(.no-results):hover {
       cursor: pointer;
       background: var(--background-color);
+    }
+
+    &.no-results {
+      cursor: default;
     }
   }
 
