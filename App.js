@@ -3,10 +3,14 @@ import { render, html, Hole } from './vendor/uhtml.js'
 import marked from './vendor/marked.js'
 import { yaml } from './vendor/yaml.js'
 import './vendor/RdfForm.js'
+import * as Sentry from './vendor/@sentry/browser.js';
+import { Integrations } from './vendor/@sentry/tracing.js';
 
 Sentry.init({
   dsn: 'https://7450d9272d8749629e5afba226a35d25@o483393.ingest.sentry.io/5535017',
-
+  integrations: [
+    new Integrations.BrowserTracing(),
+  ],
   // We recommend adjusting this value in production, or using tracesSampler
   // for finer control
   tracesSampleRate: 1.0,
