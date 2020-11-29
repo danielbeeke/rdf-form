@@ -6,6 +6,25 @@ import './vendor/RdfForm.js'
 import * as Sentry from './vendor/@sentry/browser.js';
 import { Integrations } from './vendor/@sentry/tracing.js';
 
+/**
+ * String.prototype.replaceAll() polyfill
+ * https://gomakethings.com/how-to-replace-a-section-of-a-string-with-another-one-with-vanilla-js/
+ * @author Chris Ferdinandi
+ * @license MIT
+ */
+if (!String.prototype.replaceAll) {
+  String.prototype.replaceAll = function(str, newStr){
+
+    // If a regex pattern
+    if (Object.prototype.toString.call(str).toLowerCase() === '[object regexp]') {
+      return this.replace(str, newStr);
+    }
+
+    // If a string
+    return this.replace(new RegExp(str, 'g'), newStr);
+  };
+}
+
 Sentry.init({
   dsn: 'https://7450d9272d8749629e5afba226a35d25@o483393.ingest.sentry.io/5535017',
   integrations: [
@@ -102,7 +121,7 @@ class App {
 
     return html`
     <div class="properties">
-      ${properties.filter(property => property?.['rdf:type']?.['@id'] === 'rdf:Property').map(property => html`
+      ${properties.filter(property => property && property['rdf:type'] && property['rdf:type']['@id'] === 'rdf:Property').map(property => html`
         <div class="property">
           <h4>${property['@id'].split(':')[1]}</h4>
           <p>${new Hole('html', [marked(property?.['rdfs:comment']?.['@value'])], []) ?? ''}</p>
