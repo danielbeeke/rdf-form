@@ -9,7 +9,7 @@ export class Subject extends FormElementBase implements FormElement {
 
   async init () {
     this.inputField = Array.from(this.form.formDefinition.values())
-      .find(formElement => formElement.field.binding === this.field.input)
+      .find(formElement => formElement.field.binding === this.Field.input)
 
     this.inputField.addEventListener('keyup', () => {
       this.transformValue()

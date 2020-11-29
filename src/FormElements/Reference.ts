@@ -1,7 +1,8 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import {debounce, fa } from '../Helpers'
+import {debounce, fa, searchSuggestionsSparqlQuery, dbpediaSuggestions, sparqlQueryToList } from '../Helpers'
 import { faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
+import { t } from '../LanguageService'
 
 export class Reference extends FormElementBase implements FormElement {
 
@@ -21,17 +22,23 @@ export class Reference extends FormElementBase implements FormElement {
 
       if (value && value.substr(0, 4) !== 'http') {
         this.isLoading.set(index, true)
-        this.searchSuggestions = []
+        this.searchSuggestions.set(index, [])
         this.render();
 
-        (this.field.autoCompleteQuery ?
-          this.searchSuggestionsSparqlQuery(value) :
-          this.dbpediaSuggestions(value)
-        )
-        .then(() => {
-          this.render()
-          this.isLoading.set(index, false)
+        const { query, source } = this.Field.autoCompleteQuery ?
+            searchSuggestionsSparqlQuery(this.Field.autoCompleteQuery, this.Field.autoCompleteSource, value) :
+            dbpediaSuggestions(value)
+
+        sparqlQueryToList(query, source, this.form.proxy).then(searchSuggestions => {
+          searchSuggestions.push({
+            label: t`Add <strong>${{searchTerm: value}}</strong> as text without reference.`,
+            value: value
+          })
+
+          this.searchSuggestions.set(index, searchSuggestions)
         })
+
+        this.isLoading.set(index, false)
         this.render()
       }
     }, 400))
@@ -47,18 +54,14 @@ export class Reference extends FormElementBase implements FormElement {
     this.updateMetas().then(() => this.render())
   }
 
-  addItem () {
-    this.values.push({ '@id': '' })
-    this.expanded.set(this.values.length - 1, true)
-  }
-
   shouldShowExpanded (index) {
-    const type = this.values[index]?.['@value'] ? 'text' : 'reference'
+    const currentValue = this.Values.get(index)
+    const type = currentValue?.['@value'] ? 'text' : 'reference'
 
     return this.expanded.get(index) ||
-      !this.values[index] ||
+      !this.Values.get(index) ||
       this.isLoading.get(index) ||
-      type === 'reference' && this.values[index]?.['@id']?.substr(0, 4) !== 'http'
+      type === 'reference' && currentValue['@id']?.substr(0, 4) !== 'http'
   }
 
   /**
@@ -84,7 +87,7 @@ export class Reference extends FormElementBase implements FormElement {
 
     const acceptButton = () => this.html`<button type="button" class="button" onclick="${() => {
       this.expanded.set(index, false);
-      this.searchSuggestions = []
+      this.searchSuggestions.set(index, [])
       this.render();
     }}">
       ${fa(faCheck)}

@@ -11,8 +11,7 @@ import { Subject } from './FormElements/Subject'
 import { Reference } from './FormElements/Reference'
 import { Dropdown } from './FormElements/Dropdown'
 import { Classy } from './Classy'
-
-import { I10n } from './i10n'
+import { Language, t } from './LanguageService'
 
 import {attributeToJsonLd, selectCorrectGraph} from './Helpers'
 import { render, html } from 'uhtml'
@@ -24,10 +23,7 @@ export class RdfForm extends HTMLElement {
 
   public jsonLdContext: object
   public proxy: string
-  public i10nLanguages: object
-  public uiLanguages: object
   public language: string
-  public t: any
 
   public formJsonLd: Object = {}
   public formDefinition: Map<any, any> = new Map()
@@ -43,14 +39,12 @@ export class RdfForm extends HTMLElement {
     const proxyUrl = this.getAttribute('proxy')
     this.proxy = proxyUrl ? new (<any> ActorHttpProxy).ProxyHandlerStatic(proxyUrl) : null;
     const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? { 'en': 'English' }
-    this.i10nLanguages = JSON.parse(this.getAttribute('i10n-languages')) ?? defaultLanguages
-    this.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
 
-    this.language = this.getAttribute('selected-language') ?? 'en'
-    this.t = await I10n(this.language, Object.keys(this.i10nLanguages))
+    Language.i10nLanguages = JSON.parse(this.getAttribute('i10n-languages')) ?? defaultLanguages
+    Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
+    await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     this.formElementRegistry = new FormElementRegistry(this)
-
     this.formElementRegistry.register(String, Textarea, Subject, Reference, Dropdown)
 
     this.data = await attributeToJsonLd(this, 'data')
@@ -60,9 +54,7 @@ export class RdfForm extends HTMLElement {
     delete this.data['@context']
 
     this.formJsonLd = await attributeToJsonLd(this, 'form');
-
     this.jsonLdContext = {...this.jsonLdContext, ...this.formJsonLd['@context']}
-
     this.formDefinition = await jsonLdToFormDefinition(this.formJsonLd, this.formElementRegistry);
 
     const promises = Array.from(this.formDefinition.values()).map(formElement => formElement.init())
@@ -110,22 +102,21 @@ export class RdfForm extends HTMLElement {
   }
 
   async languageSwitcher () {
-    return Object.keys(this.uiLanguages).length > 1 ? Classy`
+    return Object.keys(Language.uiLanguages).length > 1 ? Classy`
       <div classy:language-selector-wrapper="language-selector-wrapper">
-        <label classy:label="label">${this.t`Interface language`}</label>
+        <label classy:label="label">${t`Interface language`}</label>
 
         <div classy:language-selector-inner="language-selector-inner">
           <select onchange="${async event => {
-            this.language = event.target.value;
+            await Language.setCurrent(event.target.value)
             this.dispatchEvent(new CustomEvent('language-change'))
-            this.t = await I10n(this.language, Object.keys(this.i10nLanguages))
             await this.render()
           }}" class="language-switcher">
-              ${Object.entries(this.uiLanguages).map((language) => {
+              ${Object.entries(Language.uiLanguages).map((language) => {
             const code = language[0]
             const label = language[1]
             return html`
-            <option value="${code}" selected="${code === this.language ? true : null}">${label}</option>
+            <option value="${code}" selected="${code === Language.current ? true : null}">${label}</option>
             `
           })}
           </select>
@@ -135,7 +126,7 @@ export class RdfForm extends HTMLElement {
   }
 
   async actions () {
-    return Classy`<button classy:save-button="button save">${this.t.direct('Save')}</button>`
+    return Classy`<button classy:save-button="button save">${t.direct('Save')}</button>`
   }
 
   async serialize () {

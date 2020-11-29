@@ -1,12 +1,9 @@
-import { newEngine } from '@comunica/actor-init-sparql'
 import { parse as ttl2jsonld } from '@frogcat/ttl2jsonld'
 import * as N3 from 'n3'
 import { icon } from '@fortawesome/fontawesome-svg-core'
-import {Hole} from 'uhtml';
-
-export const findInSet = (pred, set) => {
-  for (let item of set) if (pred(item)) return item
-}
+import { Hole } from 'uhtml';
+import {Language} from "./LanguageService";
+import {newEngine} from "@comunica/actor-init-sparql";
 
 export const filterInSet = (pred, set) => {
   let found = []
@@ -27,72 +24,6 @@ export function debounce(func, wait, immediate = false) {
     timeout = setTimeout(later, wait);
     if (callNow) func.apply(context, args);
   };
-}
-
-export async function cachePromiseOutput(callback, time = 3600, ...parameters) {
-  const cache = localStorage?.['cache_' + callback.name] ? JSON.parse(localStorage['cache_' + callback.name]) : null
-  if (cache && cache.timestamp > (Date.now() / 1000)) return cache.value
-  const output = await callback(...parameters)
-
-  localStorage['cache_' + callback.name] = JSON.stringify({
-    value: output,
-    timestamp: (Date.now() / 1000) + time
-  })
-
-  return output
-}
-
-/**
- * Fetches a list of languages.
- * @param form
- */
-export async function getLanguages (form) {
-  return getWikidataKeyLabel(form, 'wdt:P218')
-}
-
-/**
- * Fetches a list of countries.
- * @param form
- */
-export async function getCountries (form) {
-  return getWikidataKeyLabel(form, 'wdt:P297')
-}
-
-/**
- * Returns a key-label(s) object by a property like: wdt:P297
- * @param form
- * @param property
- */
-async function getWikidataKeyLabel(form, property) {
-  let list = {}
-
-  const comunica = newEngine();
-  const wikidataQuery = `
-    PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-
-    SELECT ?key ?label WHERE {
-      ?object ${property} ?key .
-      ?object rdfs:label ?label ;
-      FILTER (lang(?label) = '${form.language}')
-    }
-    ORDER BY ASC(?label)
-  `
-
-  const result = await comunica.query(wikidataQuery, {
-    sources: [{ value: 'https://query.wikidata.org/sparql', type: 'sparql' }],
-  });
-
-  /** @ts-ignore */
-  const items = await result.bindings()
-
-  for (const item of items) {
-    const key = item.get('?key').value
-    const label = item.get('?label').value
-    if (!list[key]) list[key] = []
-    list[key].push(label)
-  }
-
-  return list
 }
 
 async function attributeToText (element, name, required = false): Promise<string> {
@@ -129,25 +60,6 @@ export async function attributeToQuads (element, name, required = false): Promis
   const text = await attributeToText(element, name, required)
   const parser = new N3.Parser();
   return text ? parser.parse(text) : []
-}
-
-export function getObjectOfQuadByPredicate (predicates, uri, quads, language = null) {
-  for (const predicate of predicates) {
-    let quad = quads.find(quad => quad.predicate.value === predicate &&
-      (quad.object.language === language || language === null || !quad.object?.language) &&
-      quad.subject.value === uri
-    )
-
-    if (quad && (quad.object?.value ?? quad.object?.id)) {
-      return quad.object?.value ?? quad.object?.id
-    }
-  }
-}
-
-export function sortFormElements (a, b) {
-  let aWeight = a.uiSettings?.order ?? 0
-  let bWeight = b.uiSettings?.order ?? 0
-  return aWeight - bWeight
 }
 
 /**
@@ -213,4 +125,98 @@ class FaIcon extends Hole {
 }
 export function fa (iconInput) {
   return new FaIcon(icon(iconInput).html[0])
+}
+
+/**
+ *
+ * @param query
+ * @param source
+ * @param searchTerm
+ */
+export function searchSuggestionsSparqlQuery (query, source = null, searchTerm: string = '') {
+  if (searchTerm === '' || (searchTerm.length < 4)) return
+  let querySearchTerm = searchTerm.trim()
+  if (querySearchTerm.length > 4) querySearchTerm += '*'
+
+  if (!source) source = { type: 'sparql', value: 'https://dbpedia.org/sparql' }
+
+  query = query.replace(/LANGUAGE/g, Language.current)
+  query = query.replace(/SEARCH_TERM/g, querySearchTerm)
+
+  return { query, source }
+}
+
+/**
+ * @param searchTerm
+ */
+export function dbpediaSuggestions (searchTerm: string) {
+  // Add the following if you want to filter by dbpedia class: ?o dbo:ingredient ?uri .
+  let querySearchTerm = searchTerm.trim()
+  if (querySearchTerm.length > 4) querySearchTerm += '*'
+
+  const query = `
+
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX dbo:  <http://dbpedia.org/ontology/>
+    PREFIX bif: <bif:>
+
+    SELECT DISTINCT ?uri ?label ?image {
+
+      ?uri rdfs:label ?label .
+      ?uri dbo:thumbnail ?image .
+
+      ?label bif:contains "'${querySearchTerm}'" .
+
+      filter langMatches(lang(?label), "${Language.current}")
+    }
+
+    LIMIT 10`
+
+  return { query, source: { type: 'sparql', value: 'https://dbpedia.org/sparql' }}
+}
+
+
+/**
+ * @param query
+ * @param source
+ * @param proxy
+ */
+export async function sparqlQueryToList (query, source, proxy) {
+  const config = {}
+  const disabledProxy = source.value === 'https://dbpedia.org/sparql'
+  if (proxy && !disabledProxy) config['httpProxyHandler'] = proxy
+  const myEngine = newEngine();
+
+  // TODO maybe use tokens that will less likely collide.
+  query = query.replace(/LANGUAGE/g, Language.current)
+  const result = await myEngine.query(query, Object.assign({ sources: [source] }, config));
+
+  /** @ts-ignore */
+  const bindings = await result.bindings()
+
+  const items: Map<string, any> = new Map()
+
+  for (const binding of bindings) {
+    let label = binding.get('?label')?.id ?? binding.get('?label')?.value
+    const valueAndLanguage = label.split('@')
+
+    if (valueAndLanguage.length > 1) {
+      label = {}
+      label[valueAndLanguage[1].trim('"')] = valueAndLanguage[0].slice(1, -1)
+    }
+
+    const uri = binding.get('?uri')?.value
+    let image = binding.get('?image')?.value
+
+    if (!items.get(uri)) {
+      items.set(uri, { label, uri, image })
+    }
+    else {
+      const existingItem = items.get(uri)
+      Object.assign(existingItem.label, label)
+      items.set(uri, existingItem)
+    }
+  }
+
+  return [...items.values()]
 }

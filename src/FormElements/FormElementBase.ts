@@ -11,26 +11,29 @@
 
 import { newEngine } from '@comunica/actor-init-sparql'
 import { RdfForm } from '../RdfForm'
-import { faTimes, faCog, faCaretDown } from '@fortawesome/free-solid-svg-icons'
-import { fieldPrototype } from '../Types'
-import {debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
+import { faTimes, faCog } from '@fortawesome/free-solid-svg-icons'
+import { FieldDefinitionOptions } from '../Types'
+import { debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'
-import {IActorInitSparqlArgs} from "@comunica/actor-init-sparql/lib/ActorInitSparql-browser";
 
 const { PathFactory } = require('../../../LDflex/lib/index.js');
 const { default: ComunicaEngine } = require('../../../LDflex-Comunica');
 const { namedNode } = require('@rdfjs/data-model');
+import { FieldValues } from '../FieldValues'
+import { FieldDefinition } from '../FieldDefinition'
+import { Language, t } from '../LanguageService'
 
 export class FormElementBase extends EventTarget {
 
   static type: string = 'base'
 
   public expanded = new Map()
-  public field: fieldPrototype
   public form: RdfForm
   public values: Array<any> = []
+  public Values: FieldValues
+  public Field: FieldDefinition
   public html: any
-  public searchSuggestions = []
+  public searchSuggestions: Map<string, Array<any>> = new Map()
   public metas = new Map()
   public render: any
   public isLoading = new Map()
@@ -45,20 +48,13 @@ export class FormElementBase extends EventTarget {
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
   }
 
-  constructor (field, rdfForm: RdfForm) {
+  constructor (field: FieldDefinitionOptions, rdfForm: RdfForm) {
     super()
     this.html = Classy
     this.form = rdfForm
-    this.field = field
-
-    this.pathContext['@language'] = this.form.language
-
-    this.values = this.form.expandedData[this.field.binding] ? (
-      Array.isArray(this.form.expandedData[this.field.binding]) ?
-      this.form.expandedData[this.field.binding] :
-      [this.form.expandedData[this.field.binding]]
-    ) : []
-
+    this.Field = FieldDefinition(field)
+    this.pathContext['@language'] = Language.current
+    this.Values = new FieldValues(this.form.expandedData[this.Field.binding])
     this.render = debounce(() => this.form.render(), 100)
   }
 
@@ -73,163 +69,67 @@ export class FormElementBase extends EventTarget {
     return this.constructor.type.toLowerCase()
   }
 
-  get label () {
-    const label = this.field.label[this.form.language]
-    return label ? label.charAt(0).toUpperCase() + label.slice(1) : ''
-  }
-
-  get description () {
-    return this.field.description?.[this.form.language] ?? this.field.description
-  }
-
-  get hasTranslations () {
-    return !!this.values?.[0]?.['@language']
-  }
-
-  get anotherTranslationIsPossible () {
-    const usedLanguagesCount = this.values.map(value => value['@language']).length
-    const i10nLanguagesCount = Object.keys(this.form.i10nLanguages).length
-    return this.hasTranslations && usedLanguagesCount < i10nLanguagesCount
-  }
-
-  showRemoveButton (index) {
-    return index > 0
-  }
-
   shouldShowExpanded (index) {
-    return this.expanded.get(index) ||
-      !this.values[index] ||
+     return this.expanded.get(index) ||
+      !this.Values.get(index) ||
       this.isLoading.get(index)
   }
 
   isRequired (index) {
-    return index === 0 && this.field.required ? true : null
+    return index === 0 && this.Field.required ? true : null
   }
 
   isRemovable (index) {
-    return !(this.field.required && this.values.length < 2)
+    return !(this.Field.required && this.Values.length < 2)
   }
 
   getMenuButtons () {
     const buttons = []
 
-    if (this.field.translatable && !this.hasTranslations) {
-      buttons.push(this.createButton('add', 'enableTranslations', 'Create translation'))
+    const createButton = (buttonClass, method, label) => {
+      return this.html`<button type="button" class="${'button ' + buttonClass}" onclick="${() => {
+        method()
+        this.render()
+      }}">${t.direct(label)}</button>`
     }
 
-    if (this.field.translatable && this.hasTranslations) {
-      buttons.push(this.createButton('remove', 'removeTranslations', 'Remove translations'))
+    if (this.Field.translatable && !this.Values.hasTranslations) {
+      buttons.push(createButton('add', () => this.Values.enableTranslations(), 'Create translation'))
+    }
+
+    if (this.Field.translatable && this.Values.hasTranslations) {
+      buttons.push(createButton('remove', () => this.Values.removeTranslations(), 'Remove translations'))
     }
 
     return buttons
   }
 
   serialize () {
-    return this.values
+    return this.Values.getAll()
   }
 
-  /************************************************************************
+  /*****************************************************************************************************************
    * Mutators.
-   ************************************************************************/
-
-  addTranslation () {
-    let usedLanguages = this.values.map(value => value['@language'])
-    let unusedLanguages = Object.keys(this.form.i10nLanguages).filter(language => !usedLanguages.includes(language))
-
-    if (unusedLanguages.length) {
-      this.values.push({ '@value': '', '@language': unusedLanguages.shift() })
-    }
-  }
-
-  addItem () {
-    if (typeof this.values[0] === 'object') {
-      const newItem = Object.assign({}, this.values[0], { '@value': '' })
-      if (newItem['@id']) newItem['@id'] = ''
-      this.values.push(newItem)
-    }
-    else {
-      this.values.push('')
-    }
-  }
-
-  removeItem (index) {
-    this.values.splice(index, 1)
-  }
-
-  enableTranslations () {
-    for (const [index, value] of this.values.entries()) {
-      if (typeof value === 'object') {
-        this.values[index]['@language'] = this.form.language
-      }
-      else {
-        this.values[index] = {
-          '@value': this.values[index],
-          '@language': this.form.language
-        }
-      }
-    }
-
-    if (!this.values.length) {
-      this.values[0] = {
-        '@value': '',
-        '@language': this.form.language
-      }
-    }
-  }
-
-  removeTranslations () {
-    if (this.values?.[0]?.['@language']) {
-      this.values = [this.values?.[0]?.['@value']]
-    }
-  }
-
-  setValue (event, index) {
-    if (!event?.target?.value) return
-    if (typeof this.values[index]?.['@value'] !== 'undefined') {
-      this.values[index]['@value'] = event.target.value
-    }
-    else if (typeof this.values[index]?.['@id'] !== 'undefined') {
-      this.values[index]['@id'] = event.target.value
-    }
-    else {
-      this.values[index] = event.target.value
-    }
-  }
+   *****************************************************************************************************************/
 
   async selectSuggestion (suggestionUrl, index) {
-    this.searchSuggestions = []
-    if (!this.values[index]?.['@id']) {
-      this.values[index] = { '@id': '' }
-    }
-    this.values[index]['@id'] = suggestionUrl
+    this.searchSuggestions.set(index, [])
+    this.Values.set(index, { '@id': suggestionUrl })
     this.expanded.set(index, false)
     await this.updateMetas()
   }
 
   async selectValue (value, index) {
-    if (!this.values[index]?.['@value']) this.values[index] = { '@value': '' }
-    this.values[index]['@value'] = value
+    this.Values.set(index, { '@value': value })
     this.expanded.set(index, false)
-    this.searchSuggestions = []
-  }
-
-  removeReference (index) {
-    this.values[index]['@id'] = ''
-  }
-
-  /************************************************************************
-   * Helpers.
-   ************************************************************************/
-
-  createButton (buttonClass, method, label) {
-    return this.html`<button type="button" class="${'button ' + buttonClass}" onclick="${() => {
-      this[method]()
-      this.render()
-    }}">${this.form.t.direct(label)}</button>`
+    this.searchSuggestions.set(index, [])
   }
 
   on (event, index) {
-    this.setValue(event, index)
+    if (event.type in ['keyup', 'change']) {
+      this.Values.setValue(event?.target?.value, index)
+    }
+
     this.dispatchEvent(new CustomEvent(event.type, {
       detail: {
         originalEvent: event,
@@ -239,101 +139,11 @@ export class FormElementBase extends EventTarget {
     }))
   }
 
-  async sparqlQuery (query, source, disabledProxy = false) {
-    const config = {}
-    if (this.form.proxy && !disabledProxy) config['httpProxyHandler'] = this.form.proxy
-    const myEngine = newEngine();
-    const result = await myEngine.query(query, Object.assign({ sources: [source] }, config));
-
-    /** @ts-ignore */
-    const bindings = await result.bindings()
-
-    const items: Map<string, any> = new Map()
-
-    for (const binding of bindings) {
-      let label = binding.get('?label')?.id ?? binding.get('?label')?.value
-      const valueAndLanguage = label.split('@')
-
-      if (valueAndLanguage.length > 1) {
-        label = {}
-        label[valueAndLanguage[1].trim('"')] = valueAndLanguage[0].slice(1, -1)
-      }
-
-      const uri = binding.get('?uri')?.value
-      let image = binding.get('?image')?.value
-
-      if (!items.get(uri)) {
-        items.set(uri, { label, uri, image })
-      }
-      else {
-        const existingItem = items.get(uri)
-        Object.assign(existingItem.label, label)
-        items.set(uri, existingItem)
-      }
-    }
-
-    return [...items.values()]
-  }
-
-  async searchSuggestionsSparqlQuery (searchTerm: string = '') {
-    if (searchTerm === '' || (searchTerm.length < 4)) return
-    let querySearchTerm = searchTerm.trim()
-    if (querySearchTerm.length > 4) querySearchTerm += '*'
-
-    let query: string = this.field.autoCompleteQuery
-    const source = this.field.autoCompleteSource ? this.field.autoCompleteSource.replace(/SEARCH_TERM/g, querySearchTerm) : { type: 'sparql', value: 'https://dbpedia.org/sparql' }
-
-    query = query.replace(/LANGUAGE/g, this.form.language)
-    query = query.replace(/SEARCH_TERM/g, querySearchTerm)
-
-    const searchSuggestions = await this.sparqlQuery(query, source, !this.field.autoCompleteSource)
-
-    searchSuggestions.push({
-      label: this.form.t`Add <strong>${{searchTerm}}</strong> as text without reference.`,
-      value: searchTerm
-    })
-
-    this.searchSuggestions = searchSuggestions
-  }
-
-  async dbpediaSuggestions (searchTerm: string) {
-    // Add the following if you want to filter by dbpedia class: ?o dbo:ingredient ?uri .
-    let querySearchTerm = searchTerm.trim()
-    if (querySearchTerm.length > 4) querySearchTerm += '*'
-
-    const query = `
-
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX dbo:  <http://dbpedia.org/ontology/>
-    PREFIX bif: <bif:>
-
-    SELECT DISTINCT ?uri ?label ?image {
-
-      ?uri rdfs:label ?label .
-      ?uri dbo:thumbnail ?image .
-
-      ?label bif:contains "'${querySearchTerm}'" .
-
-      filter langMatches(lang(?label), "${this.form.language}")
-    }
-
-    LIMIT 10`
-
-    const searchSuggestions = await this.sparqlQuery(query, { type: 'sparql', value: 'https://dbpedia.org/sparql' }, true)
-
-    searchSuggestions.push({
-      label: this.form.t`Add <strong>${{searchTerm}}</strong> as text without reference.`,
-      value: searchTerm
-    })
-
-    this.searchSuggestions = searchSuggestions
-  }
-
   async updateMetas () {
-    for (const value of this.values) {
+    for (const value of this.Values.getAll()) {
       const uri = value?.['@id']
 
-      if (!this.metas.get(uri)) {
+      if (uri && !this.metas.get(uri)) {
         const queryEngine = new ComunicaEngine(uri, {
           'httpProxyHandler': this.form.proxy
         });
@@ -341,6 +151,8 @@ export class FormElementBase extends EventTarget {
         /**
          * Temporary workaround for:
          * https://github.com/LDflex/LDflex/issues/70
+         *
+         * TODO Would it be a good idea to only use on Comunica engine for the whole form, does it improve caching?
          */
         const myEngine = newEngine();
         if (this.form.proxy) myEngine['httpProxyHandler'] = this.form.proxy
@@ -357,18 +169,18 @@ export class FormElementBase extends EventTarget {
    ************************************************************************/
 
   async templateLabel () {
-    return this.label ? this.html`
+    return this.Field.label ? this.html`
     <label classy:label="label">
-      ${this.label}
-      ${this.field.required ? this.html`<span>*</span>` : ''}
+      ${this.Field.label}
+      ${this.Field.required ? this.html`<span>*</span>` : ''}
       ${await this.templateFieldMenu()}
     </label>` : ''
   }
 
   async templateDescription () {
-    return this.description ? this.html`
+    return this.Field.description ? this.html`
     <small classy:description="description">
-      ${this.description}
+      ${this.Field.description}
     </small>` : ''
   }
 
@@ -380,7 +192,7 @@ export class FormElementBase extends EventTarget {
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
       type="text"
-      placeholder="${placeholder ?? (this.field.placeholder?.[this.form.language] ?? this.field.placeholder)}"
+      placeholder="${placeholder ?? this.Field.placeholder}"
       value="${textValue}"
       required="${this.isRequired(index)}"
     >`
@@ -388,14 +200,14 @@ export class FormElementBase extends EventTarget {
 
   async templateLanguageSelector (index, value) {
     const selectedLanguage = value['@language']
-    let usedLanguages = this.values.map(value => value['@language'])
-    let unusedLanguages = Object.keys(this.form.i10nLanguages).filter(language => !usedLanguages.includes(language))
+    let usedLanguages = this.Values.getAll().map(value => value['@language'])
+    let unusedLanguages = Object.keys(Language.i10nLanguages).filter(language => !usedLanguages.includes(language))
     unusedLanguages.push(selectedLanguage)
 
     return this.html`
-    <select onchange="${event => this.values[index]['@language'] = event.target.value}" classy:languageSelector="language-selector">
+    <select onchange="${event => this.Values.get(index)['@language'] = event.target.value}" classy:languageSelector="language-selector">
     ${unusedLanguages.map((language) => this.html`
-      <option value="${language}" selected="${language === selectedLanguage ? true : null}">${this.form.i10nLanguages[language]}</option>
+      <option value="${language}" selected="${language === selectedLanguage ? true : null}">${Language.i10nLanguages[language]}</option>
     `)}
     </select>`
   }
@@ -405,16 +217,16 @@ export class FormElementBase extends EventTarget {
   }
 
   async templateReferenceLabel (flexPath, uri) {
-    const waiterId = await flexPath.toString() + '@' + this.form.language
-    const labelPromise = fetchObjectByPredicates(flexPath, this.form.language, ['rdfs:label', 'foaf:name', 'schema:name'])
-    const thumbnailPromise = fetchObjectByPredicates(flexPath, this.form.language, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'])
+    const waiterId = await flexPath.toString() + '@' + Language.current
+    const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name'])
+    const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'])
     const label = waiter(waiterId + 'label', labelPromise, this.render)
     const thumbnail = waiter(waiterId + 'thumbnail', thumbnailPromise, this.render)
 
     return this.html`
       <div classy:referenceLabel="reference-label">
         ${thumbnail.loading ? '' : this.html`<img src="${thumbnail}">`}
-        ${label.loading ? this.form.t.direct('Loading...') : this.html`<a href="${uri}" target="_blank">${label}</a>`}
+        ${label.loading ? t.direct('Loading...') : this.html`<a href="${uri}" target="_blank">${label}</a>`}
       </div>
     `
   }
@@ -437,7 +249,7 @@ export class FormElementBase extends EventTarget {
   async templateRemoveButton (index) {
     return this.html`
     <button type="button" class="button remove" onclick="${() => {
-      this.removeItem(index)
+      this.Values.removeItem(index)
       this.render()
       }}">
       ${fa(faTimes)}
@@ -445,14 +257,15 @@ export class FormElementBase extends EventTarget {
   }
 
   async templateSearchSuggestions (index) {
-    const hasResults = !(this.searchSuggestions[0]?.value)
+    const searchSuggestions = this.searchSuggestions.get(index) ?? []
+    const hasResults = !(searchSuggestions[0]?.value)
 
-    return this.searchSuggestions.length ? this.html`
+    return searchSuggestions.length ? this.html`
     <ul classy:searchSuggestions="search-suggestions">
       ${!hasResults ? this.html`<li classy:searchSuggestionNoResults="search-suggestion no-results">
-        <span classy:suggestionTitle="title">${this.form.t`Nothing found`}</span>
+        <span classy:suggestionTitle="title">${t`Nothing found`}</span>
       </li>` : ''}
-      ${this.searchSuggestions.map(suggestion => this.html`
+      ${searchSuggestions.map(suggestion => this.html`
       <li classy:searchSuggestion="search-suggestion" onclick="${async () => {
         if (suggestion.uri) {
           await this.selectSuggestion(suggestion.uri, index);
@@ -464,7 +277,7 @@ export class FormElementBase extends EventTarget {
         this.render()
       }}">
         ${suggestion.image ? this.html`<img src="${suggestion.image}">` : ''}
-        <span classy:suggestionTitle="title">${suggestion.label?.[this.form.language] ?? suggestion.label}</span>
+        <span classy:suggestionTitle="title">${suggestion.label?.[Language.current] ?? suggestion.label}</span>
       </li>`)}
     </ul>
       ` : ''
@@ -475,11 +288,11 @@ export class FormElementBase extends EventTarget {
    * @see RdfForm.render()
    */
   async templateWrapper () {
-    const countToRender = this.values.length ? this.values.length : 1
+    const countToRender = this.Values.length ? this.Values.length : 1
 
     const itemsToRender = []
     for (let i = 0; i < countToRender; i++) {
-      itemsToRender.push(this.values[i] ? this.values[i] : null)
+      itemsToRender.push(this.Values.get(i) ? this.Values.get(i) : null)
     }
 
     return this.html`
@@ -495,7 +308,7 @@ export class FormElementBase extends EventTarget {
           return this.html`
           <div classy:item="item" expanded="${this.shouldShowExpanded(index)}" loading="${this.isLoading.get(index)}">
             ${await this.templateItem(index, value)}
-            ${this.values[index]?.['@language'] ? await this.templateLanguageSelector(index, value) : ''}
+            ${this.Values.get(index) && this.Values.get(index)['@language'] ? await this.templateLanguageSelector(index, value) : ''}
             ${this.isRemovable(index) ? await this.templateRemoveButton(index) : ''}
             ${templateItemFooter ? this.html`<div classy:item-footer="item-footer">${templateItemFooter}</div>` : ''}
           </div>
@@ -506,15 +319,15 @@ export class FormElementBase extends EventTarget {
       ${await this.templateDescription()}
 
       <div classy:actions="actions">
-        ${this.field.translatable && this.anotherTranslationIsPossible && this.hasTranslations ? this.html`<button type="button" class="button add" onclick="${() => {
-          this.addTranslation()
+        ${this.Field.translatable && this.Values.anotherTranslationIsPossible && this.Values.hasTranslations ? this.html`<button type="button" class="button add" onclick="${() => {
+          this.Values.addTranslation()
           this.render()
-        }}">${this.form.t.direct('Add translation')}</button>` : ''}
+        }}">${t.direct('Add translation')}</button>` : ''}
 
-        ${this.field.multiple ? this.html`<button type="button" class="button add" onclick="${() => {
-          this.addItem()
+        ${this.Field.multiple ? this.html`<button type="button" class="button add" onclick="${() => {
+          this.Values.addItem()
           this.render()
-        }}">${this.form.t.direct('Add item')}</button>` : ''}
+        }}">${t.direct('Add item')}</button>` : ''}
       </div>
     </div>`
   }

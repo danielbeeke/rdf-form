@@ -1,7 +1,7 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import { fa } from '../Helpers'
-import { faCaretDown } from '@fortawesome/free-solid-svg-icons'
+import { sparqlQueryToList } from '../Helpers'
+import { Language, t } from '../LanguageService'
 
 export class Dropdown extends FormElementBase implements FormElement {
 
@@ -11,17 +11,15 @@ export class Dropdown extends FormElementBase implements FormElement {
   async init(): Promise<void> {
     await super.init();
 
-    if (!this.field.optionsQuery || !this.field.optionsSource) {
+    if (!this.Field.optionsQuery || !this.Field.optionsSource) {
       throw new Error('optionsQuery and optionsSource are needed for the field dropdown. Please improve the form definition.')
     }
 
-    const query = this.field.optionsQuery.replace(/LANGUAGE/g, this.form.language)
-
-    this.options = await this.sparqlQuery(query, this.field.optionsSource)
+    this.options = await sparqlQueryToList(this.Field.optionsQuery, this.Field.optionsSource, this.form.proxy)
   }
 
   isRemovable (index) {
-    return !this.field.required
+    return !this.Field.required
   }
 
   async templateItem (index, value) {
@@ -32,10 +30,10 @@ export class Dropdown extends FormElementBase implements FormElement {
     required="${this.isRequired(index)}"
     onchange="${event => this.on(event, index)}"
     >
-        <option disabled selected value>${this.field.emptyText ? (this.field.emptyText?.[this.form.language] ?? this.field.emptyText) : this.form.t`- Select a value -`}</option>
+        <option disabled selected value>${this.Field.emptyText ? (this.Field.emptyText?.[Language.current] ?? this.Field.emptyText) : t`- Select a value -`}</option>
         ${this.options.map(option => this.html`
             <option value="${option.uri}" selected="${option.uri === idValue ? true : null}">
-                ${option.label?.[this.form.language] ?? option.label}
+                ${option.label?.[Language.current] ?? option.label}
               </option>
         `)}
     </select>`

@@ -5,7 +5,7 @@ export interface OntoLogyMeta {
   quads: Array<any>
 }
 
-export interface fieldPrototype {
+export interface FieldDefinitionOptions {
   required: false,
   multiple: false,
   fieldWidget: null,
