@@ -19,7 +19,7 @@
   }
 
   &[loading="true"] {
-    background: red;
+    background: red !important;
   }
 
   .button {
@@ -28,6 +28,20 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    align-self: flex-end;
+  }
+
+  .sub-item {
+    flex: 1 1 10%;
+
+    select {
+      width: 100%;
+    }
+
+    input {
+      box-sizing: content-box;
+      width: calc(100% - 20px);
+    }
   }
 }
 

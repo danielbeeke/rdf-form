@@ -7,5 +7,12 @@ export let Translations = {
   'Remove item': 'Verwijder onderdeel',
   'Loading...': 'Laden...',
   'Interface language': 'Interface taal',
-  'Add <strong>{searchTerm}</strong> as text without reference.': 'Voeg <strong>{searchTerm}</strong> toe als tekst zonder een referentie.'
+  'Hours': 'Uren',
+  'Minutes': 'Minuten',
+  'Seconds': 'Seconden',
+  'Years': 'Jaren',
+  'Weeks': 'Weken',
+  'Days': 'Dagen',
+  'Months': 'Maanden',
+  'Add <strong>{searchTerm}</strong> as text without reference.': 'Voeg <strong>{searchTerm}</strong> toe als tekst zonder een referentie.',
 }

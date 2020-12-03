@@ -1,4 +1,3 @@
-import { html } from 'uhtml'
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
 

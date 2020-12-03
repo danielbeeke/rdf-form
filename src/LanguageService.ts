@@ -40,8 +40,10 @@ class LanguageService {
     return uiLanguages
   }
 
-  multilingualValue (value) {
-    return value?.[this.current] ?? value?.[this.fallback] ?? value
+  multilingualValue (values) {
+    const currentLanguageMatch = values.find(value => value['@language'] === this.current)
+    const fallbackLanguageMatch = values.find(value => value['@language'] === this.fallback)
+    return currentLanguageMatch?.['@value'] ?? fallbackLanguageMatch?.['@value'] ?? values
   }
 }
 

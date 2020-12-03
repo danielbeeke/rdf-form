@@ -4,6 +4,7 @@ import { icon } from '@fortawesome/fontawesome-svg-core'
 import { Hole } from 'uhtml';
 import {Language} from "./LanguageService";
 import {newEngine} from "@comunica/actor-init-sparql";
+import {IDuration} from "./Types";
 
 export const filterInSet = (pred, set) => {
   let found = []
@@ -219,4 +220,43 @@ export async function sparqlQueryToList (query, source, proxy) {
   }
 
   return [...items.values()]
+}
+
+export function jsonLdValue(value) {
+  if (Array.isArray(value) && value[0]?.['@language']) {
+    return Language.multilingualValue(value)
+  }
+  else if (Array.isArray(value)) {
+    return value.map(item => item['@value'] ?? item['@id'])
+  }
+  else if (value?.['@id'] || value?.['@value']) {
+    return value?.['@id'] ?? value?.['@value']
+  }
+  else {
+    return value ?? ''
+  }
+}
+
+export function asArray (value) {
+  return Array.isArray(value) ? value : [value]
+}
+
+const iso8601DurationRegex = /(-)?P(?:([.,\d]+)Y)?(?:([.,\d]+)M)?(?:([.,\d]+)W)?(?:([.,\d]+)D)?T(?:([.,\d]+)H)?(?:([.,\d]+)M)?(?:([.,\d]+)S)?/;
+export function parseISO8601Duration (iso8601Duration = '') {
+  const matches = iso8601Duration.match(iso8601DurationRegex)
+
+  return {
+    sign: matches?.[1] === undefined ? '+' : '-',
+    years: matches?.[2] ? parseInt(matches[2]) : 0,
+    months: matches?.[3] ? parseInt(matches[3]) : 0,
+    weeks: matches?.[4] ? parseInt(matches[4]) : 0,
+    days: matches?.[5] ? parseInt(matches[5]) : 0,
+    hours: matches?.[6] ? parseInt(matches[6]) : 0,
+    minutes: matches?.[7] ? parseInt(matches[7]) : 0,
+    seconds: matches?.[8] ? parseInt(matches[8]) : 0
+  }
+}
+
+export function serializeISO9601Duration (duration: IDuration) {
+  console.log(duration)
 }

@@ -2,19 +2,20 @@
  * A custom element that shows a HTML form from a turtle file.
  */
 import { FormElementRegistry } from './FormElementRegistry'
-import { expandAll, jsonLdToFormDefinition } from './jsonLdToFormDefinition'
+import { jsonLdToFormElements } from './jsonLdToFormElements'
 import * as ActorHttpProxy from '@comunica/actor-http-proxy'
 import { JsonLdProcessor } from 'jsonld'
 import { String } from './FormElements/String'
 import { Textarea } from './FormElements/Textarea'
 import { Subject } from './FormElements/Subject'
 import { Reference } from './FormElements/Reference'
+import { Duration } from './FormElements/Duration'
 import { Dropdown } from './FormElements/Dropdown'
 import { Classy } from './Classy'
 import { Language, t } from './LanguageService'
 
-import {attributeToJsonLd, selectCorrectGraph} from './Helpers'
-import { render, html } from 'uhtml'
+import { attributeToJsonLd, selectCorrectGraph } from './Helpers'
+import { render } from 'uhtml'
 import style from '../scss/style.scss'
 
 export class RdfForm extends HTMLElement {
@@ -24,9 +25,10 @@ export class RdfForm extends HTMLElement {
   public jsonLdContext: object
   public proxy: string
   public language: string
+  public html: any
 
   public formJsonLd: Object = {}
-  public formDefinition: Map<any, any> = new Map()
+  public formElements: Map<any, any> = new Map()
   public data: object
   public expandedData: object
   public shadow: any
@@ -40,24 +42,26 @@ export class RdfForm extends HTMLElement {
     this.proxy = proxyUrl ? new (<any> ActorHttpProxy).ProxyHandlerStatic(proxyUrl) : null;
     const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? { 'en': 'English' }
 
+    this.html = Classy
     Language.i10nLanguages = JSON.parse(this.getAttribute('i10n-languages')) ?? defaultLanguages
     Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     this.formElementRegistry = new FormElementRegistry(this)
-    this.formElementRegistry.register(String, Textarea, Subject, Reference, Dropdown)
+    this.formElementRegistry.register(String, Textarea, Subject, Reference, Dropdown, Duration)
 
     this.data = await attributeToJsonLd(this, 'data')
     this.jsonLdContext = this.data['@context']
     this.data = selectCorrectGraph(this.data, this.getAttribute('data'))
-    this.expandedData = expandAll(this.data, this.jsonLdContext)
+    this.expandedData = await JsonLdProcessor.expand(this.data)
+    if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
     delete this.data['@context']
 
     this.formJsonLd = await attributeToJsonLd(this, 'form');
     this.jsonLdContext = {...this.jsonLdContext, ...this.formJsonLd['@context']}
-    this.formDefinition = await jsonLdToFormDefinition(this.formJsonLd, this.formElementRegistry);
+    this.formElements = await jsonLdToFormElements(this.formJsonLd, this.formElementRegistry);
 
-    const promises = Array.from(this.formDefinition.values()).map(formElement => formElement.init())
+    const promises = Array.from(this.formElements.values()).map(formElement => formElement.init())
     this.removeAttribute('data')
     this.removeAttribute('form')
     this.removeAttribute('selected-language')
@@ -74,7 +78,7 @@ export class RdfForm extends HTMLElement {
 
   async render () {
     try {
-      render(this.shadow, Classy`
+      render(this.shadow, this.html`
       <style>
         ${style}
       </style>
@@ -85,7 +89,7 @@ export class RdfForm extends HTMLElement {
 
       <form onsubmit="${event => { event.preventDefault(); this.serialize() }}">
 
-      ${await Promise.all(Array.from(this.formDefinition.values())
+      ${await Promise.all(Array.from(this.formElements.values())
         .map(async (formElement) => await formElement.templateWrapper())
       )}
 
@@ -102,7 +106,7 @@ export class RdfForm extends HTMLElement {
   }
 
   async languageSwitcher () {
-    return Object.keys(Language.uiLanguages).length > 1 ? Classy`
+    return Object.keys(Language.uiLanguages).length > 1 ? this.html`
       <div classy:language-selector-wrapper="language-selector-wrapper">
         <label classy:label="label">${t`Interface language`}</label>
 
@@ -115,7 +119,7 @@ export class RdfForm extends HTMLElement {
               ${Object.entries(Language.uiLanguages).map((language) => {
             const code = language[0]
             const label = language[1]
-            return html`
+            return this.html`
             <option value="${code}" selected="${code === Language.current ? true : null}">${label}</option>
             `
           })}
@@ -126,14 +130,14 @@ export class RdfForm extends HTMLElement {
   }
 
   async actions () {
-    return Classy`<button classy:save-button="button save">${t.direct('Save')}</button>`
+    return this.html`<button classy:save-button="button save">${t.direct('Save')}</button>`
   }
 
   async serialize () {
     const jsonLd = {
       '@context': {...this.jsonLdContext}
     }
-    const formElements = Array.from(this.formDefinition.values())
+    const formElements = Array.from(this.formElements.values())
     for (const formElement of formElements) {
       const binding = formElement.field.binding
       jsonLd[binding] = formElement.serialize()

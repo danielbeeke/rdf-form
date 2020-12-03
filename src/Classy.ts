@@ -1,9 +1,24 @@
 import { html } from 'uhtml'
+import { StringProxy } from "./FieldDefinition";
 
 const classReplacements = new Map()
 const known = new WeakMap;
 
 export const Classy = function (templates, ...values) {
+  const convertStringsToPrimitives = (values) => {
+    for (let [index, value] of values.entries()) {
+      if (value instanceof String || value instanceof StringProxy) {
+        values[index] = value.valueOf()
+      }
+
+      if (value && typeof value === 'object' && value.values && Array.isArray(value.values)) {
+        convertStringsToPrimitives(value.values)
+      }
+    }
+  }
+
+  convertStringsToPrimitives(values)
+
   if (known.has(templates))
     /** @ts-ignore */
     return html(known.get(templates), ...values)

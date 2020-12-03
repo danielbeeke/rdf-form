@@ -16,3 +16,7 @@ input[readonly] {
 :host > * {
   margin-bottom: 25px;
 }
+
+* {
+  box-sizing: border-box;
+}

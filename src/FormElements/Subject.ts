@@ -8,7 +8,7 @@ export class Subject extends FormElementBase implements FormElement {
   public inputField: any
 
   async init () {
-    this.inputField = Array.from(this.form.formDefinition.values())
+    this.inputField = Array.from(this.form.formElements.values())
       .find(formElement => formElement.field.binding === this.Field.input)
 
     this.inputField.addEventListener('keyup', () => {

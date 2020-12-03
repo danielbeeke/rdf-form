@@ -26,7 +26,7 @@ export class Reference extends FormElementBase implements FormElement {
         this.render();
 
         const { query, source } = this.Field.autoCompleteQuery ?
-            searchSuggestionsSparqlQuery(this.Field.autoCompleteQuery, this.Field.autoCompleteSource, value) :
+            searchSuggestionsSparqlQuery(this.Field.autoCompleteQuery.toString(), this.Field.autoCompleteSource.toString(), value) :
             dbpediaSuggestions(value)
 
         sparqlQueryToList(query, source, this.form.proxy).then(searchSuggestions => {

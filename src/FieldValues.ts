@@ -1,102 +1,133 @@
 import { Language } from './LanguageService'
+import { asArray } from './Helpers'
 
 export class FieldValues {
 
-  private values: Array<any>
+  private bindingValues = new Map<string, any>()
+  private bindings: Array<any>
+  private defaultBinding: string
 
-  constructor (initialValues) {
-    this.values = Array.isArray(initialValues) ? initialValues : [initialValues]
+  constructor (initialValues, binding) {
+    this.bindings = asArray(binding)
+    this.defaultBinding = this.bindings[0].toString()
+
+    for (const binding of this.bindings) {
+      this.bindingValues.set(binding.toString(), asArray(initialValues[binding]) ?? [])
+    }
   }
 
   get (index = 0) {
-    return this.values?.[index]
+    return this.bindingValues.get(this.defaultBinding)[index]
   }
 
   get hasTranslations () {
-    return !!this.values?.[0]?.['@language']
+    return !!this.bindingValues.get(this.defaultBinding)[0]?.['@language']
   }
 
   set (index, value) {
-    this.values[index] = value
+    const values = this.bindingValues.get(this.defaultBinding) ?? []
+    values[index] = value
+    this.bindingValues.set(this.defaultBinding, values)
   }
 
   get anotherTranslationIsPossible () {
-    const usedLanguagesCount = this.values.map(value => value?.['@language']).length
+    const usedLanguagesCount = this.bindingValues.get(this.defaultBinding).map(value => value?.['@language']).length
     const i10nLanguagesCount = Object.keys(Language.i10nLanguages).length
     return this.hasTranslations && usedLanguagesCount < i10nLanguagesCount
   }
 
   get length () {
-    return this.values.length
+    return this.bindingValues.get(this.defaultBinding).length
   }
 
   getAll () {
-    return this.values
+    return this.bindingValues.get(this.defaultBinding)
   }
 
   addTranslation () {
-    let usedLanguages = this.values.map(value => value['@language'])
+    let usedLanguages = this.bindingValues.get(this.defaultBinding).map(value => value['@language'])
     let unusedLanguages = Object.keys(Language.i10nLanguages).filter(language => !usedLanguages.includes(language))
 
     if (unusedLanguages.length) {
-      this.values.push({ '@value': '', '@language': unusedLanguages.shift() })
+      const values = this.bindingValues.get(this.defaultBinding)
+      values.push({ '@value': '', '@language': unusedLanguages.shift() })
+      this.bindingValues.set(this.defaultBinding, values)
     }
   }
 
   addItem () {
-    if (typeof this.values[0] === 'object') {
-      const newItem = Object.assign({}, this.values[0], { '@value': '' })
+    const values = this.bindingValues.get(this.defaultBinding)
+
+    if (typeof this.bindingValues[0] === 'object') {
+      const newItem = Object.assign({}, this.bindingValues[0], { '@value': '' })
       if (newItem['@id']) newItem['@id'] = ''
-      this.values.push(newItem)
+      values.push(newItem)
     }
     else {
-      this.values.push('')
+      values.push('')
     }
+    this.bindingValues.set(this.defaultBinding, values)
   }
 
   removeItem (index) {
-    this.values.splice(index, 1)
+    const values = this.bindingValues.get(this.defaultBinding)
+    values.splice(index, 1)
+    this.bindingValues.set(this.defaultBinding, values)
   }
 
   enableTranslations () {
-    for (const [index, value] of this.values.entries()) {
+    const values = this.bindingValues.get(this.defaultBinding) ?? []
+    for (const [index, value] of values.entries()) {
       if (typeof value === 'object') {
-        this.values[index]['@language'] = Language.current
+        values[index]['@language'] = Language.current
       }
       else {
-        this.values[index] = {
-          '@value': this.values[index],
+        values[index] = {
+          '@value': this.bindingValues[index],
           '@language': Language.current
         }
       }
     }
 
-    if (!this.values.length) {
-      this.values[0] = {
+    if (!values.length) {
+      this.bindingValues[0] = {
         '@value': '',
         '@language': Language.current
       }
     }
+
+    this.bindingValues.set(this.defaultBinding, values)
   }
 
   removeTranslations () {
-    if (this.values?.[0]?.['@language']) {
-      this.values = [this.values?.[0]?.['@value']]
+    let values = this.bindingValues.get(this.defaultBinding)
+    if (values?.[0]?.['@language']) {
+      values = [values?.[0]?.['@value']]
     }
+
+    this.bindingValues.set(this.defaultBinding, values)
   }
 
+  /**
+   * TODO problematic.. maybe split up into setId and setValue
+   * @param value
+   * @param index
+   */
   setValue (value, index) {
+    const values = this.bindingValues.get(this.defaultBinding)
     if (!value) return
 
-    if (typeof this.values[index]?.['@value'] !== 'undefined') {
-      this.values[index]['@value'] = value
+    if (typeof values[index]?.['@value'] !== 'undefined') {
+      values[index]['@value'] = value
     }
-    else if (typeof this.values[index]?.['@id'] !== 'undefined') {
-      this.values[index]['@id'] = value
+    else if (typeof this.bindingValues[index]?.['@id'] !== 'undefined') {
+      values[index]['@id'] = value
     }
     else {
-      this.values[index] = value
+      values[index] = value
     }
+
+    this.bindingValues.set(this.defaultBinding, values)
   }
 
 }

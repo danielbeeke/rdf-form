@@ -13,7 +13,7 @@ import { newEngine } from '@comunica/actor-init-sparql'
 import { RdfForm } from '../RdfForm'
 import { faTimes, faCog } from '@fortawesome/free-solid-svg-icons'
 import { FieldDefinitionOptions } from '../Types'
-import { debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
+import {debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'
 
 const { PathFactory } = require('../../../LDflex/lib/index.js');
@@ -31,7 +31,7 @@ export class FormElementBase extends EventTarget {
   public form: RdfForm
   public values: Array<any> = []
   public Values: FieldValues
-  public Field: FieldDefinition
+  public Field: FieldDefinitionOptions
   public html: any
   public searchSuggestions: Map<string, Array<any>> = new Map()
   public metas = new Map()
@@ -52,9 +52,9 @@ export class FormElementBase extends EventTarget {
     super()
     this.html = Classy
     this.form = rdfForm
-    this.Field = FieldDefinition(field)
+    this.Field = FieldDefinition(field, this.form.jsonLdContext['form'])
     this.pathContext['@language'] = Language.current
-    this.Values = new FieldValues(this.form.expandedData[this.Field.binding])
+    this.Values = new FieldValues(this.form.expandedData, this.Field.binding)
     this.render = debounce(() => this.form.render(), 100)
   }
 
@@ -83,22 +83,22 @@ export class FormElementBase extends EventTarget {
     return !(this.Field.required && this.Values.length < 2)
   }
 
+  createButton (buttonClass, method, label) {
+    return this.html`<button type="button" class="${'button ' + buttonClass}" onclick="${() => {
+      method()
+      this.render()
+    }}">${typeof label === 'object' ? label : t.direct(label)}</button>`
+  }
+
   getMenuButtons () {
     const buttons = []
 
-    const createButton = (buttonClass, method, label) => {
-      return this.html`<button type="button" class="${'button ' + buttonClass}" onclick="${() => {
-        method()
-        this.render()
-      }}">${t.direct(label)}</button>`
-    }
-
     if (this.Field.translatable && !this.Values.hasTranslations) {
-      buttons.push(createButton('add', () => this.Values.enableTranslations(), 'Create translation'))
+      buttons.push(this.createButton('add', () => this.Values.enableTranslations(), 'Create translation'))
     }
 
     if (this.Field.translatable && this.Values.hasTranslations) {
-      buttons.push(createButton('remove', () => this.Values.removeTranslations(), 'Remove translations'))
+      buttons.push(this.createButton('remove', () => this.Values.removeTranslations(), 'Remove translations'))
     }
 
     return buttons
@@ -126,7 +126,7 @@ export class FormElementBase extends EventTarget {
   }
 
   on (event, index) {
-    if (event.type in ['keyup', 'change']) {
+    if (['keyup', 'change'].includes(event.type)) {
       this.Values.setValue(event?.target?.value, index)
     }
 
