@@ -1,10 +1,9 @@
 .children {
-  padding-left: 20px;
-  margin-left: 6px;
-  border-left: 2px solid var(--border-color);
+  .child {
+    display: flex;
 
-  .form-element > .label {
-    font-weight: 300;
-    font-style: italic;
+    .form-element {
+      flex: 1 1 auto;
+    }
   }
 }

@@ -1,10 +1,7 @@
 export interface FormElement extends EventTarget {
-  init ()
-}
-
-export interface OntoLogyMeta {
-  promise: Promise<any>,
-  quads: Array<any>
+  init ():  Promise<any>;
+  templateWrapper(): Promise<Promise<any>>;
+  Field: FieldDefinitionOptions
 }
 
 export interface FieldDefinitionOptions {
@@ -28,6 +25,7 @@ export interface FieldDefinitionOptions {
   placeholder: string | Array<any>
   description: string | Array<any>
   range: string
+  fieldGroup: string
 }
 
 export interface FieldDefinitionProxy extends FieldDefinitionOptions {

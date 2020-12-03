@@ -25,6 +25,7 @@ export class Duration extends FormElementBase implements FormElement {
   private allowedUnits = []
 
   async init () {
+    await super.init()
     const rangePeriods = this.Field.range.split('T')[0]
     const rangeTime = this.Field.range.split('T')[1]
 

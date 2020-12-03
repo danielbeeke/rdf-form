@@ -11,6 +11,8 @@ import { Subject } from './FormElements/Subject'
 import { Reference } from './FormElements/Reference'
 import { Duration } from './FormElements/Duration'
 import { Dropdown } from './FormElements/Dropdown'
+import { Number } from './FormElements/Number'
+import { Group } from './FormElements/Group'
 import { Classy } from './Classy'
 import { Language, t } from './LanguageService'
 
@@ -48,7 +50,7 @@ export class RdfForm extends HTMLElement {
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     this.formElementRegistry = new FormElementRegistry(this)
-    this.formElementRegistry.register(String, Textarea, Subject, Reference, Dropdown, Duration)
+    this.formElementRegistry.register(String, Textarea, Subject, Reference, Dropdown, Duration, Number, Group)
 
     this.data = await attributeToJsonLd(this, 'data')
     this.jsonLdContext = this.data['@context']
@@ -59,9 +61,8 @@ export class RdfForm extends HTMLElement {
 
     this.formJsonLd = await attributeToJsonLd(this, 'form');
     this.jsonLdContext = {...this.jsonLdContext, ...this.formJsonLd['@context']}
-    this.formElements = await jsonLdToFormElements(this.formJsonLd, this.formElementRegistry);
+    this.formElements = await jsonLdToFormElements(this.formJsonLd, this.formElementRegistry, this.expandedData);
 
-    const promises = Array.from(this.formElements.values()).map(formElement => formElement.init())
     this.removeAttribute('data')
     this.removeAttribute('form')
     this.removeAttribute('selected-language')
@@ -70,10 +71,7 @@ export class RdfForm extends HTMLElement {
     this.removeAttribute('proxy')
 
     this.shadow = this.attachShadow({ mode: 'open' })
-
-    Promise.all(promises).then(() => {
-      this.render()
-    })
+    this.render()
   }
 
   async render () {

@@ -1,4 +1,6 @@
 import { RdfForm } from './RdfForm'
+import {FieldDefinitionOptions} from "./Types";
+import {FieldValues} from "./FieldValues";
 
 /**
  * Keeps track of all the possible FormElements.
@@ -16,9 +18,9 @@ export class FormElementRegistry {
     this.elements.push(...formElements)
   }
 
-  get (type: string, field) {
+  get (type: string, field, children: Map<string, FieldDefinitionOptions>, values: FieldValues) {
     const formElement = this.elements.find(element => element.type === type)
-    if (formElement) return new formElement(field, this.form)
+    if (formElement) return new formElement(field, this.form, values, children)
     else console.error('Could not find FormElement: ' + type)
   }
 

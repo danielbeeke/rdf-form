@@ -9,13 +9,20 @@
     display: flex;
     align-items: center;
 
-    img {
+    .image {
       width: 40px;
       height: 40px;
-      object-fit: cover;
-      object-position: center;
       display: block;
       margin-right: 10px;
+      background: var(--button-color);
+
+      img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        object-position: center;
+        display: block;
+      }
     }
 
     .title {

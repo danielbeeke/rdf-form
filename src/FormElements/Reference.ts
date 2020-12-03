@@ -1,19 +1,17 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
 import {debounce, fa, searchSuggestionsSparqlQuery, dbpediaSuggestions, sparqlQueryToList } from '../Helpers'
-import { faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
+import {faPencilAlt, faCheck, faTimes} from '@fortawesome/free-solid-svg-icons'
 import { t } from '../LanguageService'
 
 export class Reference extends FormElementBase implements FormElement {
 
   static type: string = 'reference'
-  public ourTemplateRemoveButton: any
   private searchTerms: Map<string, string> = new Map<string, string>()
 
   async init(): Promise<void> {
     await super.init();
 
-    this.ourTemplateRemoveButton = this.templateRemoveButton
     this.templateRemoveButton = async () => {}
 
     this.addEventListener('keyup', debounce(async (event: any) => {
@@ -64,6 +62,17 @@ export class Reference extends FormElementBase implements FormElement {
     this.updateMetas().then(() => this.render())
   }
 
+  async ourTemplateRemoveButton (index) {
+    return !this.parent ? this.html`
+    <button type="button" class="button remove" onclick="${() => {
+      this.Values.removeItem(index)
+      this.searchTerms.delete(index)
+      this.searchSuggestions.delete(index)
+      this.render()
+    }}">
+      ${fa(faTimes)}
+    </button>` : ''
+  }
 
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
@@ -137,7 +146,7 @@ export class Reference extends FormElementBase implements FormElement {
 
     return this.html.for(this.values, index)`
       ${type === 'reference' ? this.html.for(this.values, index)`
-        ${hrefValue.substr(0, 4) === 'http' ? await this.templateReferenceLabel(meta, hrefValue) : ''}
+        ${hrefValue.substr(0, 4) === 'http' && meta ? await this.templateReferenceLabel(meta, hrefValue, index) : ''}
         ${(hrefValue && meta) && !this.expanded.get(index) ? this.html`
         ${editButton()}
         ${await this.ourTemplateRemoveButton(index)}
@@ -152,7 +161,7 @@ export class Reference extends FormElementBase implements FormElement {
           ${await super.templateItem(index, textValue, '')}
           ${acceptButton()}
         ` : this.html`
-          <div classy:referenceLabel="reference-label">${textValue}</div>
+          <div type="${type}" classy:referenceLabel="reference-label">${textValue}</div>
           ${editButton()}
         `}
         ${await this.ourTemplateRemoveButton(index)}

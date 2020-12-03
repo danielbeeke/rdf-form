@@ -1,11 +1,9 @@
 import { FormElementRegistry } from './FormElementRegistry'
 import { JsonLdProcessor } from 'jsonld';
+import { lastPart } from "./Helpers";
+import {FieldValues} from "./FieldValues";
 
-const lastPart = (text) => {
-  return text.split(/\:|\/|\,|\#/).pop()
-}
-
-export async function jsonLdToFormElements (jsonLd, formElementRegistry: FormElementRegistry) {
+export async function jsonLdToFormElements (jsonLd, formElementRegistry: FormElementRegistry, formData) {
   const expandedJsonLd = await JsonLdProcessor.expand(jsonLd);
   const fieldsArray = []
   const fields: Map<any, any> = new Map()
@@ -15,15 +13,43 @@ export async function jsonLdToFormElements (jsonLd, formElementRegistry: FormEle
     fieldsArray.push(field)
   }
 
-  fieldsArray.sort((a, b) => {
-    return a['form:order'] - b['form:order']
+  const firstLevelFields = fieldsArray.filter(field => !field?.[formPrefix + 'fieldGroup'])
+
+  firstLevelFields.sort((a, b) => {
+    return a[formPrefix + 'order'] - b[formPrefix + 'order']
   })
 
-  for (const field of fieldsArray) {
-    const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field)
+  const createFormElement = async (field, fieldValues) => {
+    const fieldName = lastPart(field['@id'])
+    const childFields = field[formPrefix + 'fieldWidget'][0]['@value'] === 'group' ? fieldsArray.filter(field => field?.[formPrefix + 'fieldGroup']?.[0]?.['@value'] === fieldName) : []
+    const children = new Map()
+
+    const values = new FieldValues(fieldValues, field[formPrefix + 'binding'][0]['@id'])
+
+    for (const childField of childFields) {
+      const childFieldName = lastPart(childField['@id'])
+      const childValues = {}
+      childValues[childField[formPrefix + 'binding'][0]['@id']] = values.getAll().flatMap(groupItem => groupItem[childField[formPrefix + 'binding'][0]['@id']])
+      const childFormElement = await createFormElement(childField, childValues)
+      children.set(childFieldName, childFormElement)
+    }
+
+    const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field, children, values)
+
+    await formElement.init()
+
+    for (const child of formElement.children.values()) {
+      child.parent = formElement
+    }
+
+    return formElement
+  }
+
+  for (const field of firstLevelFields) {
+    const formElement = await createFormElement(field, formData)
+    const fieldName = lastPart(field['@id'])
 
     if (formElement) {
-      const fieldName = lastPart(field['@id'])
       fields.set(fieldName, formElement)
     }
   }

@@ -241,22 +241,6 @@ export function asArray (value) {
   return Array.isArray(value) ? value : [value]
 }
 
-const iso8601DurationRegex = /(-)?P(?:([.,\d]+)Y)?(?:([.,\d]+)M)?(?:([.,\d]+)W)?(?:([.,\d]+)D)?T(?:([.,\d]+)H)?(?:([.,\d]+)M)?(?:([.,\d]+)S)?/;
-export function parseISO8601Duration (iso8601Duration = '') {
-  const matches = iso8601Duration.match(iso8601DurationRegex)
-
-  return {
-    sign: matches?.[1] === undefined ? '+' : '-',
-    years: matches?.[2] ? parseInt(matches[2]) : 0,
-    months: matches?.[3] ? parseInt(matches[3]) : 0,
-    weeks: matches?.[4] ? parseInt(matches[4]) : 0,
-    days: matches?.[5] ? parseInt(matches[5]) : 0,
-    hours: matches?.[6] ? parseInt(matches[6]) : 0,
-    minutes: matches?.[7] ? parseInt(matches[7]) : 0,
-    seconds: matches?.[8] ? parseInt(matches[8]) : 0
-  }
-}
-
-export function serializeISO9601Duration (duration: IDuration) {
-  console.log(duration)
+export const lastPart = (text) => {
+  return text.split(/\:|\/|\,|\#/).pop()
 }

@@ -1,5 +1,6 @@
 import { FieldDefinitionOptions, FieldDefinitionProxy } from './Types'
 import { Language } from "./LanguageService";
+import { lastPart } from "./Helpers";
 
 export class StringProxy extends String {
   private _values: Array<any> = []
@@ -29,6 +30,11 @@ const booleanFields = [
 export function FieldDefinition(definition: any, formPrefix: string) : FieldDefinitionProxy {
   return new Proxy(definition, {
     get: function(definition: FieldDefinitionProxy, prop: keyof FieldDefinitionOptions, receiver: any) {
+
+      if (prop === 'name') {
+        return lastPart(definition['@id'])
+      }
+
       const value = definition[formPrefix + prop]
       const firstValue = value?.[0]?.['@language'] ? Language.multilingualValue(value) : value?.[0]?.['@value'] ?? value?.[0]?.['@id'] ?? (booleanFields.includes(prop) ? false : '')
       return typeof firstValue === 'string' ? new StringProxy(firstValue, value) : firstValue

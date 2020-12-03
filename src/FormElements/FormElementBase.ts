@@ -12,7 +12,7 @@
 import { newEngine } from '@comunica/actor-init-sparql'
 import { RdfForm } from '../RdfForm'
 import { faTimes, faCog } from '@fortawesome/free-solid-svg-icons'
-import { FieldDefinitionOptions } from '../Types'
+import {FieldDefinitionOptions, FormElement} from '../Types'
 import {debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'
 
@@ -33,10 +33,12 @@ export class FormElementBase extends EventTarget {
   public Values: FieldValues
   public Field: FieldDefinitionOptions
   public html: any
+  public parent: any
   public searchSuggestions: Map<string, Array<any>> = new Map()
   public metas = new Map()
   public render: any
   public isLoading = new Map()
+  public children: Map<string, FormElement> = null
 
   private menuIsOpen: boolean = false
   private pathContext = {
@@ -48,13 +50,18 @@ export class FormElementBase extends EventTarget {
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
   }
 
-  constructor (field: FieldDefinitionOptions, rdfForm: RdfForm) {
+  constructor (field: FieldDefinitionOptions, rdfForm: RdfForm, values: FieldValues, children: Map<string, FormElement> = null) {
     super()
     this.html = Classy
     this.form = rdfForm
     this.Field = FieldDefinition(field, this.form.jsonLdContext['form'])
     this.pathContext['@language'] = Language.current
-    this.Values = new FieldValues(this.form.expandedData, this.Field.binding)
+    this.Values = values
+
+    if (children) {
+      this.children = children
+    }
+
     this.render = debounce(() => this.form.render(), 100)
   }
 
@@ -216,7 +223,7 @@ export class FormElementBase extends EventTarget {
     return false
   }
 
-  async templateReferenceLabel (flexPath, uri) {
+  async templateReferenceLabel (flexPath, uri, index) {
     const waiterId = await flexPath.toString() + '@' + Language.current
     const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name'])
     const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'])
@@ -247,13 +254,13 @@ export class FormElementBase extends EventTarget {
   }
 
   async templateRemoveButton (index) {
-    return this.html`
+    return !this.parent ? this.html`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.render()
       }}">
       ${fa(faTimes)}
-    </button>`
+    </button>` : ''
   }
 
   async templateSearchSuggestions (index) {
@@ -276,11 +283,23 @@ export class FormElementBase extends EventTarget {
 
         this.render()
       }}">
-        ${suggestion.image ? this.html`<img src="${suggestion.image}">` : ''}
+        ${suggestion.image ? this.html`<div classy:suggestionImage="image"><img src="${suggestion.image}"></div>` : ''}
         <span classy:suggestionTitle="title">${suggestion.label?.[Language.current] ?? suggestion.label}</span>
       </li>`)}
     </ul>
       ` : ''
+  }
+
+  async templateChildren () {
+    return this.children.size ? this.html`
+    <div classy:children="children">
+      <div classy:child="child">
+        ${await Promise.all(Array.from(this.children.values())
+          .map(async (formElement) => await formElement.templateWrapper())
+        )}
+      </div>
+    </div>
+    ` : ''
   }
 
   /**
@@ -288,7 +307,8 @@ export class FormElementBase extends EventTarget {
    * @see RdfForm.render()
    */
   async templateWrapper () {
-    const countToRender = this.Values.length ? this.Values.length : 1
+    let countToRender = this.Values.length ? this.Values.length : 1
+    if (this.getType() === 'group') countToRender = 0
 
     const itemsToRender = []
     for (let i = 0; i < countToRender; i++) {
@@ -313,6 +333,9 @@ export class FormElementBase extends EventTarget {
             ${templateItemFooter ? this.html`<div classy:item-footer="item-footer">${templateItemFooter}</div>` : ''}
           </div>
         `}))}
+
+        ${await this.templateChildren()}
+
         </div>
       `}
 
@@ -329,6 +352,7 @@ export class FormElementBase extends EventTarget {
           this.render()
         }}">${t.direct('Add item')}</button>` : ''}
       </div>
+
     </div>`
   }
 
