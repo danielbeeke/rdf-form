@@ -139,7 +139,7 @@ export class RdfForm extends HTMLElement {
     }
     const formElements = Array.from(this.formElements.values())
     for (const formElement of formElements) {
-      const binding = formElement.field.binding
+      const binding = formElement.Field.binding
       jsonLd[binding] = formElement.serialize()
     }
 

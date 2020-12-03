@@ -20,12 +20,18 @@ export class StringProxy extends String {
   }
 }
 
+const booleanFields = [
+  'multiple',
+  'disabled',
+  'translatable'
+]
+
 export function FieldDefinition(definition: any, formPrefix: string) : FieldDefinitionProxy {
   return new Proxy(definition, {
     get: function(definition: FieldDefinitionProxy, prop: keyof FieldDefinitionOptions, receiver: any) {
       const value = definition[formPrefix + prop]
-      const firstValue = value?.[0]?.['@language'] ? Language.multilingualValue(value) : value?.[0]?.['@value'] ?? value?.[0]?.['@id'] ?? ''
-      return new StringProxy(firstValue, value)
+      const firstValue = value?.[0]?.['@language'] ? Language.multilingualValue(value) : value?.[0]?.['@value'] ?? value?.[0]?.['@id'] ?? (booleanFields.includes(prop) ? false : '')
+      return typeof firstValue === 'string' ? new StringProxy(firstValue, value) : firstValue
     },
     getOwnPropertyDescriptor: function(target, key) {
       return { value: this.get(target, key), enumerable: true, configurable: true };

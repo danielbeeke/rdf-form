@@ -8,26 +8,31 @@ export class Reference extends FormElementBase implements FormElement {
 
   static type: string = 'reference'
   public ourTemplateRemoveButton: any
+  private searchTerms: Map<string, string> = new Map<string, string>()
 
   async init(): Promise<void> {
     await super.init();
 
     this.ourTemplateRemoveButton = this.templateRemoveButton
-    /** @ts-ignore */
-    this.templateRemoveButton = () => {}
+    this.templateRemoveButton = async () => {}
 
     this.addEventListener('keyup', debounce(async (event: any) => {
-      const value = event.detail?.value
       const index = event.detail?.index
+      const value = event.detail?.value
 
-      if (value && value.substr(0, 4) !== 'http') {
+      if (value && value.substr(0, 4) !== 'http' && (!this.Values.get(index) || !this.Values.get(index)['@value'])) {
         this.isLoading.set(index, true)
         this.searchSuggestions.set(index, [])
         this.render();
 
-        const { query, source } = this.Field.autoCompleteQuery ?
-            searchSuggestionsSparqlQuery(this.Field.autoCompleteQuery.toString(), this.Field.autoCompleteSource.toString(), value) :
-            dbpediaSuggestions(value)
+        const querySetting = this.Field.autoCompleteQuery.toString()
+        const sourceSetting = this.Field.autoCompleteSource.toString()
+
+        const {
+          query,
+          source
+        } = querySetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, value) : dbpediaSuggestions(value)
+
 
         sparqlQueryToList(query, source, this.form.proxy).then(searchSuggestions => {
           searchSuggestions.push({
@@ -36,9 +41,14 @@ export class Reference extends FormElementBase implements FormElement {
           })
 
           this.searchSuggestions.set(index, searchSuggestions)
+          this.isLoading.set(index, false)
+          this.render()
+        }).catch(exception => {
+          this.searchSuggestions.delete(index)
+          this.isLoading.set(index, false)
+          this.render()
         })
 
-        this.isLoading.set(index, false)
         this.render()
       }
     }, 400))
@@ -54,6 +64,26 @@ export class Reference extends FormElementBase implements FormElement {
     this.updateMetas().then(() => this.render())
   }
 
+
+  on (event, index) {
+    if (['keyup', 'change'].includes(event.type)) {
+      if (event?.target?.value && event?.target?.value.substr(0, 4) === 'http' || this.Values.get(index) && this.Values.get(index)['@value']) {
+        this.Values.setValue(event?.target?.value, index)
+      }
+      else {
+        this.searchTerms.set(index, event?.target?.value)
+      }
+    }
+
+    this.dispatchEvent(new CustomEvent(event.type, {
+      detail: {
+        originalEvent: event,
+        index: index,
+        value: event.target.value
+      }
+    }))
+  }
+
   shouldShowExpanded (index) {
     const currentValue = this.Values.get(index)
     const type = currentValue?.['@value'] ? 'text' : 'reference'
@@ -62,6 +92,16 @@ export class Reference extends FormElementBase implements FormElement {
       !this.Values.get(index) ||
       this.isLoading.get(index) ||
       type === 'reference' && currentValue['@id']?.substr(0, 4) !== 'http'
+  }
+
+  async selectSuggestion (suggestionUrl, index) {
+    this.searchTerms.delete(index)
+    await super.selectSuggestion(suggestionUrl, index)
+  }
+
+  async selectValue (value, index) {
+    this.searchTerms.delete(index)
+    await super.selectValue(value, index)
   }
 
   /**
@@ -75,7 +115,8 @@ export class Reference extends FormElementBase implements FormElement {
    * @param value
    */
   async templateItem (index, value) {
-    const hrefValue = value?.['@id'] ?? ''
+    const searchTerm = this.searchTerms.get(index)
+    const hrefValue = searchTerm ? searchTerm : value?.['@id'] ?? ''
     const textValue = value?.['@value'] ?? ''
     const type = textValue ? 'text' : 'reference'
 
@@ -88,6 +129,7 @@ export class Reference extends FormElementBase implements FormElement {
     const acceptButton = () => this.html`<button type="button" class="button" onclick="${() => {
       this.expanded.set(index, false);
       this.searchSuggestions.set(index, [])
+      this.searchTerms.delete(index)
       this.render();
     }}">
       ${fa(faCheck)}

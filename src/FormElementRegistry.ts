@@ -19,7 +19,7 @@ export class FormElementRegistry {
   get (type: string, field) {
     const formElement = this.elements.find(element => element.type === type)
     if (formElement) return new formElement(field, this.form)
-    else throw new Error('Could not find FormElement: ' + type)
+    else console.error('Could not find FormElement: ' + type)
   }
 
 }

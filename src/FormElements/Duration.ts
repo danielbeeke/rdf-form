@@ -83,8 +83,7 @@ export class Duration extends FormElementBase implements FormElement {
         this.duration[type] = parseInt(event.target.value)
       }
 
-      console.log(serialize(this.duration))
-      // this.Values.setValue(serializeISO9601Duration(this.duration), index)
+      this.Values.setValue(serialize(this.duration), index)
     }
 
     this.dispatchEvent(new CustomEvent(event.type, {

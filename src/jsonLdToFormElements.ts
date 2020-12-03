@@ -21,8 +21,11 @@ export async function jsonLdToFormElements (jsonLd, formElementRegistry: FormEle
 
   for (const field of fieldsArray) {
     const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field)
-    const fieldName = lastPart(field['@id'])
-    fields.set(fieldName, formElement)
+
+    if (formElement) {
+      const fieldName = lastPart(field['@id'])
+      fields.set(fieldName, formElement)
+    }
   }
 
   return fields;

@@ -9,6 +9,7 @@
 <body>
 
 <rdf-form
+    id="my-form"
     data="https://rdf.danielbeeke.nl/recipe/tomato-soup.ttl"
     form="https://rdf.danielbeeke.nl/recipe/recipe.form.ttl"
     selected-language="nl"
@@ -16,5 +17,13 @@
     ui-languages='{"en": "English", "nl": "Nederlands"}'
     proxy="https://thingproxy.freeboard.io/fetch/">
 </rdf-form>
+
+<script>
+  const myForm = document.querySelector('#my-form')
+  myForm.addEventListener('save', (event) => {
+    console.log(event.detail)
+  })
+</script>
+
 </body>
 </html>
