@@ -54,7 +54,7 @@
     height: 35px;
 
     &[type="text"] {
-      margin-left: 5px;
+      padding-left: 10px;
     }
 
     .image {
@@ -83,10 +83,12 @@
     }
 
     input {
-      margin-right: 10px;
-
       + .button.remove {
         margin-left: 0;
+      }
+
+      + .button.accept {
+        margin-left: 10px;
       }
     }
   }

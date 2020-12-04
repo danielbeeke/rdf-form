@@ -132,11 +132,11 @@ export class Reference extends FormElementBase implements FormElement {
 
     const meta = hrefValue ? this.metas.get(hrefValue) : null
 
-    const editButton = () => this.html`<button type="button" class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
+    const editButton = () => this.html.for(this.values, index)`<button type="button" class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
       ${fa(faPencilAlt)}
     </button>`
 
-    const acceptButton = () => this.html`<button type="button" class="button" onclick="${() => {
+    const acceptButton = () => this.html`<button type="button" class="button accept" onclick="${() => {
       this.expanded.set(index, false);
       this.searchSuggestions.set(index, [])
       this.searchTerms.delete(index)
