@@ -6,12 +6,12 @@ export class Group extends FormElementBase implements FormElement {
 
   static type: string = 'group'
 
-  async init () {
-    // console.log(this)
-  }
-
-  async templateItem () {
-    return null
+  async templateItem (index, value) {
+    return this.html`
+      ${await Promise.all(Array.from(this.children.values())
+        .map(async (formElement) => await formElement.templateWrapper(index))
+      )}
+    `
   }
 
 }

@@ -185,7 +185,7 @@ export class FormElementBase extends EventTarget {
   }
 
   async templateDescription () {
-    return this.Field.description ? this.html`
+    return this.Field.description.toString() ? this.html`
     <small classy:description="description">
       ${this.Field.description}
     </small>` : ''
@@ -233,7 +233,7 @@ export class FormElementBase extends EventTarget {
     return this.html`
       <div classy:referenceLabel="reference-label">
         ${thumbnail.loading ? '' : this.html`<img src="${thumbnail}">`}
-        ${label.loading ? t.direct('Loading...') : this.html`<a href="${uri}" target="_blank">${label}</a>`}
+        ${label.loading ? this.html`<span classy:referenceLoading="reference-loading">${t.direct('Loading...')}</span>` : this.html`<a href="${uri}" target="_blank">${label}</a>`}
       </div>
     `
   }
@@ -290,29 +290,34 @@ export class FormElementBase extends EventTarget {
       ` : ''
   }
 
-  async templateChildren () {
-    return this.children.size ? this.html`
-    <div classy:children="children">
-      <div classy:child="child">
-        ${await Promise.all(Array.from(this.children.values())
-          .map(async (formElement) => await formElement.templateWrapper())
-        )}
-      </div>
-    </div>
-    ` : ''
-  }
-
   /**
    * Called via the RdfForm
    * @see RdfForm.render()
    */
-  async templateWrapper () {
+  async templateWrapper (childIndex = null) {
     let countToRender = this.Values.length ? this.Values.length : 1
-    if (this.getType() === 'group') countToRender = 0
+    if (childIndex !== null) countToRender = 1 + childIndex
 
     const itemsToRender = []
-    for (let i = 0; i < countToRender; i++) {
-      itemsToRender.push(this.Values.get(i) ? this.Values.get(i) : null)
+    let i = childIndex !== null ? childIndex : 0
+    for (i; i < countToRender; i++) {
+      itemsToRender.push([i, this.Values.get(i) ? this.Values.get(i) : null])
+    }
+
+    const actions = []
+
+    if (this.Field.translatable && this.Values.anotherTranslationIsPossible && this.Values.hasTranslations) {
+      actions.push(this.html`<button type="button" class="button add" onclick="${() => {
+        this.Values.addTranslation()
+        this.render()
+      }}">${t.direct('Add translation')}</button>`)
+    }
+
+    if (this.Field.multiple) {
+      actions.push(this.html`<button type="button" class="button add" onclick="${() => {
+        this.Values.addItem()
+        this.render()
+      }}">${t.direct('Add item')}</button>` )
     }
 
     return this.html`
@@ -322,36 +327,31 @@ export class FormElementBase extends EventTarget {
 
       ${this.html`
         <div classy:items="items">
-        ${await Promise.all(itemsToRender.map(async (value, index) => {
+        ${await Promise.all(itemsToRender.map(async (item) => {
+          const index = item[0]
+          const value = item[1]
+
           const templateItemFooter = await this.templateItemFooter(index, value)
 
           return this.html`
           <div classy:item="item" expanded="${this.shouldShowExpanded(index)}" loading="${this.isLoading.get(index)}">
             ${await this.templateItem(index, value)}
-            ${this.Values.get(index) && this.Values.get(index)['@language'] ? await this.templateLanguageSelector(index, value) : ''}
+            ${value && value['@language'] ? await this.templateLanguageSelector(index, value) : ''}
             ${this.isRemovable(index) ? await this.templateRemoveButton(index) : ''}
             ${templateItemFooter ? this.html`<div classy:item-footer="item-footer">${templateItemFooter}</div>` : ''}
           </div>
         `}))}
-
-        ${await this.templateChildren()}
 
         </div>
       `}
 
       ${await this.templateDescription()}
 
+      ${actions.length ? this.html`
       <div classy:actions="actions">
-        ${this.Field.translatable && this.Values.anotherTranslationIsPossible && this.Values.hasTranslations ? this.html`<button type="button" class="button add" onclick="${() => {
-          this.Values.addTranslation()
-          this.render()
-        }}">${t.direct('Add translation')}</button>` : ''}
-
-        ${this.Field.multiple ? this.html`<button type="button" class="button add" onclick="${() => {
-          this.Values.addItem()
-          this.render()
-        }}">${t.direct('Add item')}</button>` : ''}
+        ${actions}
       </div>
+      ` : ''}
 
     </div>`
   }

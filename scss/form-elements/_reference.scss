@@ -6,10 +6,8 @@
   }
 
   .item {
-    background: white;
-    border-radius: var(--radius);
-    border: 1px solid var(--border-color);
     align-items: center;
+    gap: 0;
 
     &[expanded="true"] {
       flex: 1 1 100%;
@@ -21,11 +19,34 @@
 
     .button {
       padding: 5px;
+
+      &.edit {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+
+        + .button {
+          margin-left: 10px;
+        }
+      }
     }
   }
 
+  .reference-loading {
+    padding-left: 5px;
+    font-size: 12px;
+  }
+
   .reference-label {
+    background: white;
+    border-top-left-radius: var(--radius);
+    border-bottom-left-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    padding-left: 3px;
+    padding-right: 10px;
+
     display: flex;
+    flex: 1 1 auto;
+    width: auto;
     align-items: center;
     height: 35px;
 
@@ -34,8 +55,8 @@
     }
 
     img {
-      width: 35px;
-      height: 35px;
+      width: 30px;
+      height: 30px;
       object-fit: cover;
       object-position: center;
       margin-right: 10px;

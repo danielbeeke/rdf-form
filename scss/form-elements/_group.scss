@@ -1,0 +1,62 @@
+.form-element[type="group"] {
+  display: flex;
+
+  > .items {
+
+    > .item {
+      flex-wrap: nowrap;
+      align-items: flex-end;
+      padding-top: 10px;
+
+      > .button {
+        margin-bottom: 5px;
+      }
+
+      > .form-element {
+        flex: 1 1 auto;
+        margin-bottom: 0;
+        min-width: 80px;
+
+        .label {
+          height: auto;
+          color: var(--text-color-secondary);
+          font-style: italic;
+          padding-bottom: 0;
+          font-size: 14px;
+        }
+
+        > .items {
+          padding: 0;
+          margin-bottom: 0;
+
+          > .item {
+            padding-left: 0;
+            padding-right: 0;
+
+            input, select {
+              min-width: 80px;
+            }
+          }
+        }
+
+        &[type="reference"] {
+          min-width: 300px;
+
+          .item {
+            width: 100%;
+            //gap: 0;
+            //margin-top: 5px;
+            //margin-bottom: 5px;
+            //padding-left: 5px;
+            //padding-right: 5px;
+
+            .button.edit {
+              margin-left: auto;
+            }
+          }
+        }
+      }
+    }
+  }
+
+}
