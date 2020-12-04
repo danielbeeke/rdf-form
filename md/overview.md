@@ -40,7 +40,7 @@ Here is the form definition for the example above. It is the same content as: ht
 Here is how this form looks. Try to change the interface language. Referenced terms that are multilingual will be updated.
 
 <rdf-form
-    data="https://rdf.danielbeeke.nl/recipe/tomato-soup.ttl"
+    data="https://rdf.danielbeeke.nl/recipe/preischotel.ttl"
     form="https://rdf.danielbeeke.nl/recipe/recipe.form.ttl"
     selected-language="en"
     i10n-languages='{"en": "English", "nl": "Nederlands"}'
