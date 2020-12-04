@@ -5,7 +5,20 @@ export class Number extends FormElementBase implements FormElement {
 
   static type: string = 'number'
 
-  // TODO cast to number when saving.
+
+  on (event, index) {
+    if (['keyup', 'change'].includes(event.type)) {
+      this.Values.setValue(parseInt(event?.target?.value), index)
+    }
+
+    this.dispatchEvent(new CustomEvent(event.type, {
+      detail: {
+        originalEvent: event,
+        index: index,
+        value: event.target.value
+      }
+    }))
+  }
 
   async templateItem (index, value, placeholder = null) {
     const itemValue = value?.['@value'] ?? value

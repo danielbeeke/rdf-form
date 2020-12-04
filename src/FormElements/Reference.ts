@@ -3,6 +3,7 @@ import { FormElementBase } from './FormElementBase'
 import {debounce, fa, searchSuggestionsSparqlQuery, dbpediaSuggestions, sparqlQueryToList } from '../Helpers'
 import {faPencilAlt, faCheck, faTimes} from '@fortawesome/free-solid-svg-icons'
 import { t } from '../LanguageService'
+import {text} from "@fortawesome/fontawesome-svg-core";
 
 export class Reference extends FormElementBase implements FormElement {
 
@@ -125,11 +126,11 @@ export class Reference extends FormElementBase implements FormElement {
    */
   async templateItem (index, value) {
     const searchTerm = this.searchTerms.get(index)
-    const hrefValue = searchTerm ? searchTerm : value?.['@id'] ?? ''
+    const hrefValue = value?.['@id'] ?? ''
     const textValue = value?.['@value'] ?? ''
     const type = textValue ? 'text' : 'reference'
 
-    const meta = this.metas.get(hrefValue)
+    const meta = hrefValue ? this.metas.get(hrefValue) : null
 
     const editButton = () => this.html`<button type="button" class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
       ${fa(faPencilAlt)}
@@ -151,7 +152,7 @@ export class Reference extends FormElementBase implements FormElement {
         ${editButton()}
         ${await this.ourTemplateRemoveButton(index)}
       ` : this.html.for(this.values, index)`
-        ${await super.templateItem(index, hrefValue)}
+        ${await super.templateItem(index, hrefValue ?? searchTerm)}
         ${hrefValue.substr(0, 4) === 'http' ? acceptButton() : ''}
         ${await this.ourTemplateRemoveButton(index)}
         ${await this.templateSearchSuggestions(index)}

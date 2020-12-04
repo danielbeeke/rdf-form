@@ -67,15 +67,20 @@
       border-bottom-left-radius: var(--radius);
     }
 
-    + input {
-      margin-top: 10px;
-      margin-right: 10px;
-    }
   }
 
   .item[expanded="true"] {
     .reference-label {
+      margin-bottom: 10px;
       border-radius: var(--radius);
+    }
+
+    input {
+      margin-right: 10px;
+
+      + .button.remove {
+        margin-left: 0;
+      }
     }
   }
 }

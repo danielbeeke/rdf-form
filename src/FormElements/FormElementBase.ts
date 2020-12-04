@@ -121,13 +121,13 @@ export class FormElementBase extends EventTarget {
 
   async selectSuggestion (suggestionUrl, index) {
     this.searchSuggestions.set(index, [])
-    this.Values.set(index, { '@id': suggestionUrl })
+    this.Values.setValue(suggestionUrl, index)
     this.expanded.set(index, false)
     await this.updateMetas()
   }
 
   async selectValue (value, index) {
-    this.Values.set(index, { '@value': value })
+    this.Values.set({ '@value': value }, index)
     this.expanded.set(index, false)
     this.searchSuggestions.set(index, [])
   }

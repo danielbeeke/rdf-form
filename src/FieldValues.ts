@@ -56,13 +56,24 @@ export class FieldValues {
   addItem () {
     const values = this._getValues(this.defaultBinding)
 
-    if (typeof this.bindingValues[0] === 'object') {
-      const newItem = Object.assign({}, this.bindingValues[0], { '@value': '' })
+    const createItem = (value) => {
+      const newItem = Object.assign({}, value)
       if (newItem['@id']) newItem['@id'] = ''
+      if (newItem['@value']) newItem['@value'] = ''
+      return newItem
+    }
+
+    // Needed for group field.
+    if (Array.isArray(values)) {
+      const newItem = {}
+      for (const [binding, value] of Object.entries(values[0])) {
+        newItem[binding] = createItem(value[0])
+      }
       values.push(newItem)
     }
-    else {
-      values.push('')
+
+    else if (typeof values[0] === 'object') {
+      values.push(createItem(values[0]))
     }
   }
 
@@ -100,13 +111,13 @@ export class FieldValues {
     }
   }
 
-  set (index, value) {
+  set (value, index) {
     const values = this._getValues(this.defaultBinding)
     values[index] = value
   }
 
   /**
-   * TODO problematic.. maybe split up into setId and setValue
+   * TODO Maybe problematic.. maybe split up into setId and setValue
    * @param value
    * @param index
    */
@@ -117,7 +128,7 @@ export class FieldValues {
     if (typeof values[index]?.['@value'] !== 'undefined') {
       values[index]['@value'] = value
     }
-    else if (typeof this.bindingValues[index]?.['@id'] !== 'undefined') {
+    else if (typeof values[index]?.['@id'] !== 'undefined') {
       values[index]['@id'] = value
     }
     else {
