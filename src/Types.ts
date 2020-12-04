@@ -24,8 +24,10 @@ export interface FieldDefinitionOptions {
   emptyText: string | Array<any>
   placeholder: string | Array<any>
   description: string | Array<any>
+  option: string | Array<any>
   range: string
   fieldGroup: string
+  prefix: string
 }
 
 export interface FieldDefinitionProxy extends FieldDefinitionOptions {

@@ -7,8 +7,7 @@ export class Textarea extends FormElementBase implements FormElement {
 
   templateItem (index, value) {
     let textValue = value?.['@value'] ?? value ?? ''
-
-    if (textValue) textValue.trim()
+    if (typeof textValue === 'string') textValue.trim()
 
     return this.html`
     <textarea

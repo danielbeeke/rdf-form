@@ -15,8 +15,10 @@ export class StringProxy extends String {
   }
 
   *[Symbol.iterator] (): IterableIterator<string> {
-    for (const value of this._values) {
-      yield value
+    if (this._values) {
+      for (const value of this._values) {
+        yield value
+      }
     }
   }
 }
@@ -30,6 +32,10 @@ const booleanFields = [
 export function FieldDefinition(definition: any, formPrefix: string) : FieldDefinitionProxy {
   return new Proxy(definition, {
     get: function(definition: FieldDefinitionProxy, prop: keyof FieldDefinitionOptions, receiver: any) {
+
+      if (prop === 'prefix') {
+        return formPrefix
+      }
 
       if (prop === 'name') {
         return lastPart(definition['@id'])

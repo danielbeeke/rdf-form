@@ -23,8 +23,12 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
     const fieldName = lastPart(field['@id'])
     const childFields = field[formPrefix + 'fieldWidget'][0]['@value'] === 'group' ? fieldsArray.filter(field => field?.[formPrefix + 'fieldGroup']?.[0]?.['@value'] === fieldName) : []
     const children = new Map()
+    const binding = field[formPrefix + 'binding'][0]['@id']
+    if (!parentValues[binding]) {
+      parentValues[binding] = []
+    }
 
-    const values = new FieldValues(parentValues, field[formPrefix + 'binding'][0]['@id'])
+    const values = new FieldValues(parentValues, binding)
 
     for (const childField of childFields) {
       const childFieldName = lastPart(childField['@id'])

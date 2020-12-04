@@ -55,7 +55,8 @@ export class RdfForm extends HTMLElement {
     this.data = await attributeToJsonLd(this, 'data')
     this.jsonLdContext = this.data['@context']
     this.data = selectCorrectGraph(this.data, this.getAttribute('data'))
-    this.expandedData = await JsonLdProcessor.expand(this.data)
+    this.expandedData = this.data ? await JsonLdProcessor.expand(this.data): {}
+
     if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
     delete this.data['@context']
 
@@ -140,7 +141,6 @@ export class RdfForm extends HTMLElement {
     }
 
     const compacted = await JsonLdProcessor.compact(jsonLd, jsonLd['@context']);
-
     this.dispatchEvent(new CustomEvent('save', {
       detail: compacted
     }))

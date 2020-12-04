@@ -12,7 +12,7 @@
 import { newEngine } from '@comunica/actor-init-sparql'
 import { RdfForm } from '../RdfForm'
 import { faTimes, faCog } from '@fortawesome/free-solid-svg-icons'
-import {FieldDefinitionOptions, FormElement} from '../Types'
+import { FieldDefinitionOptions, FormElement } from '../Types'
 import {debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'
 
@@ -39,6 +39,7 @@ export class FormElementBase extends EventTarget {
   public render: any
   public isLoading = new Map()
   public children: Map<string, FormElement> = null
+  public jsonLdValueType: string = 'value'
 
   private menuIsOpen: boolean = false
   private pathContext = {
@@ -121,7 +122,7 @@ export class FormElementBase extends EventTarget {
 
   async selectSuggestion (suggestionUrl, index) {
     this.searchSuggestions.set(index, [])
-    this.Values.setValue(suggestionUrl, index)
+    this.Values.set({ '@id': suggestionUrl }, index)
     this.expanded.set(index, false)
     await this.updateMetas()
   }
@@ -134,7 +135,12 @@ export class FormElementBase extends EventTarget {
 
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
-      this.Values.setValue(event?.target?.value, index)
+      const value = {}
+      value['@' + this.jsonLdValueType] = event?.target?.value
+      if (this.Values.hasTranslations) {
+        value['@language'] = this.Values.get(index)['@language']
+      }
+      this.Values.set(value, index)
     }
 
     this.dispatchEvent(new CustomEvent(event.type, {
@@ -211,9 +217,15 @@ export class FormElementBase extends EventTarget {
     let unusedLanguages = Object.keys(Language.i10nLanguages).filter(language => !usedLanguages.includes(language))
     unusedLanguages.push(selectedLanguage)
 
+    let options = unusedLanguages
+
+    if (this.Values.getAll().length > Object.keys(Language.i10nLanguages).length) {
+      options = Object.keys(Language.i10nLanguages)
+    }
+
     return this.html`
     <select onchange="${event => this.Values.get(index)['@language'] = event.target.value}" classy:languageSelector="language-selector">
-    ${unusedLanguages.map((language) => this.html`
+    ${options.map((language) => this.html`
       <option value="${language}" selected="${language === selectedLanguage ? true : null}">${Language.i10nLanguages[language]}</option>
     `)}
     </select>`
@@ -232,7 +244,7 @@ export class FormElementBase extends EventTarget {
 
     return this.html`
       <div classy:referenceLabel="reference-label">
-        ${thumbnail.loading ? '' : this.html`<img src="${thumbnail}">`}
+        ${thumbnail.loading ? '' : this.html`<div classy:preloadImage="image"><img src="${thumbnail}"></div>`}
         ${label.loading ? this.html`<span classy:referenceLoading="reference-loading">${t.direct('Loading...')}</span>` : this.html`<a href="${uri}" target="_blank">${label}</a>`}
       </div>
     `
@@ -283,7 +295,7 @@ export class FormElementBase extends EventTarget {
 
         this.render()
       }}">
-        ${suggestion.image ? this.html`<div classy:suggestionImage="image"><img src="${suggestion.image}"></div>` : ''}
+        ${suggestion.image ? this.html`<div classy:preloadImage="image"><img src="${suggestion.image}"></div>` : ''}
         <span classy:suggestionTitle="title">${suggestion.label?.[Language.current] ?? suggestion.label}</span>
       </li>`)}
     </ul>

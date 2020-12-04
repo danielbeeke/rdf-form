@@ -78,7 +78,7 @@ export class Reference extends FormElementBase implements FormElement {
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
       if (event?.target?.value && event?.target?.value.substr(0, 4) === 'http' || this.Values.get(index) && this.Values.get(index)['@value']) {
-        this.Values.setValue(event?.target?.value, index)
+        this.Values.set({'@id': event?.target?.value}, index)
       }
       else {
         this.searchTerms.set(index, event?.target?.value)

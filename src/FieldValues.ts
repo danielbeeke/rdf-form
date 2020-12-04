@@ -1,12 +1,24 @@
 import { Language } from './LanguageService'
 import { asArray } from './Helpers'
 
+/**
+ * This class sits between a field and the RDF JSON ld values.
+ * All mutations to the data happen here.
+ *
+ * TODO the flatMap construction makes it harder to update values.
+ * All the methods that mutate things should be checked
+ */
 export class FieldValues {
 
   private bindingValues = new Map<string, any>()
-  private bindings: Array<any>
-  private defaultBinding: string
+  readonly bindings: Array<any>
+  readonly defaultBinding: string
 
+  /**
+   *
+   * @param parentValues
+   * @param binding
+   */
   constructor (parentValues, binding) {
     this.bindings = asArray(binding)
     this.defaultBinding = this.bindings[0]
@@ -17,22 +29,29 @@ export class FieldValues {
   }
 
   _getValues (binding) {
-    const parentValues = this.bindingValues.get(binding.toString())
+    let parentValues = this.bindingValues.get(binding.toString())
     return Array.isArray(parentValues) ? parentValues.flatMap(groupItem => groupItem[binding]) : parentValues[binding.toString()] ?? []
   }
 
   get (index = 0) {
-    return this._getValues(this.defaultBinding)[index]
+    const values = this._getValues(this.defaultBinding)
+    return values[index]
   }
 
   get hasTranslations () {
-    return !!this._getValues(this.defaultBinding)[0]?.['@language']
+    return !!this._getValues(this.defaultBinding).some(item => item?.['@language'])
   }
 
   get anotherTranslationIsPossible () {
-    const usedLanguagesCount = this._getValues(this.defaultBinding).map(value => value?.['@language']).length
+    function onlyUnique(value, index, self) {
+      return self.indexOf(value) === index;
+    }
+
+    const usedLanguages = this._getValues(this.defaultBinding).map(value => value?.['@language']).filter(onlyUnique)
     const i10nLanguagesCount = Object.keys(Language.i10nLanguages).length
-    return this.hasTranslations && usedLanguagesCount < i10nLanguagesCount
+    const filteredArray = usedLanguages.filter(value => Object.keys(Language.i10nLanguages).includes(value));
+    const usedLanguagesCount = filteredArray.length
+    return this.hasTranslations && (usedLanguagesCount < i10nLanguagesCount || this._getValues(this.defaultBinding).length > i10nLanguagesCount)
   }
 
   get length () {
@@ -46,10 +65,13 @@ export class FieldValues {
   addTranslation () {
     let usedLanguages = this._getValues(this.defaultBinding).map(value => value['@language'])
     let unusedLanguages = Object.keys(Language.i10nLanguages).filter(language => !usedLanguages.includes(language))
+    const values = this._getValues(this.defaultBinding)
 
     if (unusedLanguages.length) {
-      const values = this._getValues(this.defaultBinding)
       values.push({ '@value': '', '@language': unusedLanguages.shift() })
+    }
+    else {
+      values.push({ '@value': '', '@language': usedLanguages[0] })
     }
   }
 
@@ -112,24 +134,10 @@ export class FieldValues {
   }
 
   set (value, index) {
+    const parentValues = this.bindingValues.get(this.defaultBinding)
     const values = this._getValues(this.defaultBinding)
-    values[index] = value
-  }
-
-  /**
-   * TODO Maybe problematic.. maybe split up into setId and setValue
-   * @param value
-   * @param index
-   */
-  setValue (value, index) {
-    const values = this._getValues(this.defaultBinding)
-    if (!value) return
-
-    if (typeof values[index]?.['@value'] !== 'undefined') {
-      values[index]['@value'] = value
-    }
-    else if (typeof values[index]?.['@id'] !== 'undefined') {
-      values[index]['@id'] = value
+    if (Array.isArray(parentValues)) {
+      parentValues[index][this.defaultBinding] = value
     }
     else {
       values[index] = value

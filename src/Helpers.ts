@@ -190,6 +190,8 @@ export async function sparqlQueryToList (query, source, proxy) {
 
   // TODO maybe use tokens that will less likely collide.
   query = query.toString().replace(/LANGUAGE/g, Language.current)
+  if (typeof source === 'object' && source instanceof String) source = source.toString()
+
   const result = await myEngine.query(query, Object.assign({ sources: [source] }, config));
 
   /** @ts-ignore */

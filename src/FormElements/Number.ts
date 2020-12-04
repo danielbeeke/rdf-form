@@ -8,7 +8,7 @@ export class Number extends FormElementBase implements FormElement {
 
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
-      this.Values.setValue(parseInt(event?.target?.value), index)
+      this.Values.set({ '@value': parseInt(event?.target?.value)}, index)
     }
 
     this.dispatchEvent(new CustomEvent(event.type, {

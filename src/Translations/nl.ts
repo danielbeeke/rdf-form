@@ -13,6 +13,7 @@ export let Translations = {
   'Years': 'Jaren',
   'Weeks': 'Weken',
   'Days': 'Dagen',
+  '- Select a value -': '- Selecteer een waarde -',
   'Months': 'Maanden',
   'Add <strong>{searchTerm}</strong> as text without reference.': 'Voeg <strong>{searchTerm}</strong> toe als tekst zonder een referentie.',
 }
