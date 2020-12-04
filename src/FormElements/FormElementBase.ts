@@ -179,7 +179,7 @@ export class FormElementBase extends EventTarget {
     return this.Field.label ? this.html`
     <label classy:label="label">
       ${this.Field.label}
-      ${this.Field.required ? this.html`<span>*</span>` : ''}
+      ${this.Field.required.toString() ? this.html`<span classy:label-required-star="label-required-star">*</span>` : ''}
       ${await this.templateFieldMenu()}
     </label>` : ''
   }
@@ -194,7 +194,7 @@ export class FormElementBase extends EventTarget {
   async templateItem (index, value, placeholder = null) {
     const textValue = value?.['@value'] ?? value
 
-    return this.html`
+    return this.html.for(this, index + JSON.stringify(value))`
     <input
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
@@ -254,7 +254,7 @@ export class FormElementBase extends EventTarget {
   }
 
   async templateRemoveButton (index) {
-    return !this.parent ? this.html`
+    return this.parent === this.form ? this.html.for(this, index)`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.render()
@@ -323,7 +323,7 @@ export class FormElementBase extends EventTarget {
     return this.html`
     <div classy:wrapper="form-element" type="${this.getType()}">
 
-      ${await this.templateLabel()}
+      ${!childIndex ? await this.templateLabel() : ''}
 
       ${this.html`
         <div classy:items="items">

@@ -75,7 +75,7 @@ export class Duration extends FormElementBase implements FormElement {
       `)
     }
 
-    return fields
+    return this.html.for(this.Values)`${fields}`
   }
 
   on (event, index, type = null) {

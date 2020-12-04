@@ -5,8 +5,7 @@ export class Number extends FormElementBase implements FormElement {
 
   static type: string = 'number'
 
-  async init () {
-  }
+  // TODO cast to number when saving.
 
   async templateItem (index, value, placeholder = null) {
     const itemValue = value?.['@value'] ?? value

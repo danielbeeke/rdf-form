@@ -61,7 +61,7 @@ export class RdfForm extends HTMLElement {
 
     this.formJsonLd = await attributeToJsonLd(this, 'form');
     this.jsonLdContext = {...this.jsonLdContext, ...this.formJsonLd['@context']}
-    this.formElements = await jsonLdToFormElements(this.formJsonLd, this.formElementRegistry, this.expandedData);
+    this.formElements = await jsonLdToFormElements(this, this.formJsonLd, this.formElementRegistry, this.expandedData);
 
     this.removeAttribute('data')
     this.removeAttribute('form')
@@ -117,9 +117,7 @@ export class RdfForm extends HTMLElement {
               ${Object.entries(Language.uiLanguages).map((language) => {
             const code = language[0]
             const label = language[1]
-            return this.html`
-            <option value="${code}" selected="${code === Language.current ? true : null}">${label}</option>
-            `
+            return this.html`<option value="${code}" selected="${code === Language.current ? true : null}">${label}</option>`
           })}
           </select>
         </div>

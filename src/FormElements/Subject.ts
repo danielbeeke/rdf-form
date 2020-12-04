@@ -29,11 +29,11 @@ export class Subject extends FormElementBase implements FormElement {
 
   templateItem (index, value) {
     const textValue = value?.['@value'] ?? value
-    return this.html`<input readonly type="text" value="${textValue}" required="${this.isRequired(index)}">`
+    return this.html.for(value)`<input readonly type="text" value="${textValue}" required="${this.isRequired(index)}">`
   }
 
   templateWrapper () {
-    return this.html`
+    return this.html.for(this.Values)`
     <div classy:wrapper="form-element">
 
       ${this.templateLabel()}

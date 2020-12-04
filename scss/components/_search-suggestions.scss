@@ -1,11 +1,15 @@
 .search-suggestions {
   flex: 0 0 100%;
   padding: 0;
+  background: white;
   margin: 0;
+  margin-top: 10px;
   list-style: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  overflow: hidden;
 
   .search-suggestion {
-    border-radius: var(--radius);
     display: flex;
     align-items: center;
 

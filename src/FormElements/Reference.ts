@@ -63,7 +63,7 @@ export class Reference extends FormElementBase implements FormElement {
   }
 
   async ourTemplateRemoveButton (index) {
-    return !this.parent ? this.html`
+    return this.parent === this.form ? this.html`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.searchTerms.delete(index)
@@ -144,7 +144,7 @@ export class Reference extends FormElementBase implements FormElement {
       ${fa(faCheck)}
     </button>`
 
-    return this.html.for(this.values, index)`
+    return this.html`
       ${type === 'reference' ? this.html.for(this.values, index)`
         ${hrefValue.substr(0, 4) === 'http' && meta ? await this.templateReferenceLabel(meta, hrefValue, index) : ''}
         ${(hrefValue && meta) && !this.expanded.get(index) ? this.html`

@@ -1,9 +1,9 @@
 import { FormElementRegistry } from './FormElementRegistry'
 import { JsonLdProcessor } from 'jsonld';
 import { lastPart } from "./Helpers";
-import {FieldValues} from "./FieldValues";
+import { FieldValues } from "./FieldValues";
 
-export async function jsonLdToFormElements (jsonLd, formElementRegistry: FormElementRegistry, formData) {
+export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: FormElementRegistry, formData) {
   const expandedJsonLd = await JsonLdProcessor.expand(jsonLd);
   const fieldsArray = []
   const fields: Map<any, any> = new Map()
@@ -19,18 +19,16 @@ export async function jsonLdToFormElements (jsonLd, formElementRegistry: FormEle
     return a[formPrefix + 'order'] - b[formPrefix + 'order']
   })
 
-  const createFormElement = async (field, fieldValues) => {
+  const createFormElement = async (field, parentValues) => {
     const fieldName = lastPart(field['@id'])
     const childFields = field[formPrefix + 'fieldWidget'][0]['@value'] === 'group' ? fieldsArray.filter(field => field?.[formPrefix + 'fieldGroup']?.[0]?.['@value'] === fieldName) : []
     const children = new Map()
 
-    const values = new FieldValues(fieldValues, field[formPrefix + 'binding'][0]['@id'])
+    const values = new FieldValues(parentValues, field[formPrefix + 'binding'][0]['@id'])
 
     for (const childField of childFields) {
       const childFieldName = lastPart(childField['@id'])
-      const childValues = {}
-      childValues[childField[formPrefix + 'binding'][0]['@id']] = values.getAll().flatMap(groupItem => groupItem[childField[formPrefix + 'binding'][0]['@id']])
-      const childFormElement = await createFormElement(childField, childValues)
+      const childFormElement = await createFormElement(childField, values.getAll())
       children.set(childFieldName, childFormElement)
     }
 
@@ -51,6 +49,7 @@ export async function jsonLdToFormElements (jsonLd, formElementRegistry: FormEle
 
     if (formElement) {
       fields.set(fieldName, formElement)
+      formElement.parent = form
     }
   }
 

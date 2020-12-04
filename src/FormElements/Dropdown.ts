@@ -25,7 +25,7 @@ export class Dropdown extends FormElementBase implements FormElement {
   async templateItem (index, value) {
     const idValue = value?.['@id'] ?? value
 
-    return this.html`
+    return this.html.for(this)`
     <select
     required="${this.isRequired(index)}"
     onchange="${event => this.on(event, index)}"

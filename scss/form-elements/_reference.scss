@@ -28,11 +28,15 @@
           margin-left: 10px;
         }
       }
+
+      &.remove {
+        margin-left: 10px;
+      }
     }
   }
 
   .reference-loading {
-    padding-left: 5px;
+    padding-left: 10px;
     font-size: 12px;
   }
 
@@ -41,7 +45,6 @@
     border-top-left-radius: var(--radius);
     border-bottom-left-radius: var(--radius);
     border: 1px solid var(--border-color);
-    padding-left: 3px;
     padding-right: 10px;
 
     display: flex;
@@ -55,11 +58,24 @@
     }
 
     img {
-      width: 30px;
-      height: 30px;
+      width: 33px;
+      height: 33px;
       object-fit: cover;
       object-position: center;
       margin-right: 10px;
+      border-top-left-radius: var(--radius);
+      border-bottom-left-radius: var(--radius);
+    }
+
+    + input {
+      margin-top: 10px;
+      margin-right: 10px;
+    }
+  }
+
+  .item[expanded="true"] {
+    .reference-label {
+      border-radius: var(--radius);
     }
   }
 }
