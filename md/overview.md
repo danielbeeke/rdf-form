@@ -19,7 +19,7 @@ You give it a couple of attributes:
 
 ```html
 <rdf-form
-    data="https://rdf.danielbeeke.nl/recipe/tomato-soup.ttl"
+    data="https://rdf.danielbeeke.nl/recipe/preischotel.ttl"
     form="https://rdf.danielbeeke.nl/recipe/recipe.form.ttl"
     selected-language="en"
     i10n-languages='{"en": "English", "nl": "Nederlands"}'
