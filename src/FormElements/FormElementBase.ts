@@ -9,11 +9,9 @@
  * - Classy.add('formElement', ['your', 'classes'])
  */
 
-import { newEngine } from '@comunica/actor-init-sparql'
-import { RdfForm } from '../RdfForm'
 import { faTimes, faCog } from '@fortawesome/free-solid-svg-icons'
 import { FieldDefinitionOptions, FormElement } from '../Types'
-import {debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
+import { debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'
 
 const { PathFactory } = require('../../../LDflex/lib/index.js');
@@ -21,14 +19,13 @@ const { default: ComunicaEngine } = require('../../../LDflex-Comunica');
 const { namedNode } = require('@rdfjs/data-model');
 import { FieldValues } from '../FieldValues'
 import { FieldDefinition } from '../FieldDefinition'
-import { Language, t } from '../LanguageService'
+import { t, Language} from '../LanguageService'
 
 export class FormElementBase extends EventTarget {
 
   static type: string = 'base'
 
   public expanded = new Map()
-  public form: RdfForm
   public values: Array<any> = []
   public Values: FieldValues
   public Field: FieldDefinitionOptions
@@ -40,6 +37,7 @@ export class FormElementBase extends EventTarget {
   public isLoading = new Map()
   public children: Map<string, FormElement> = null
   public jsonLdValueType: string = 'value'
+  public comunica
 
   private menuIsOpen: boolean = false
   private pathContext = {
@@ -51,11 +49,11 @@ export class FormElementBase extends EventTarget {
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
   }
 
-  constructor (field: FieldDefinitionOptions, rdfForm: RdfForm, values: FieldValues, children: Map<string, FormElement> = null) {
+  constructor (field: FieldDefinitionOptions, values: FieldValues, children: Map<string, FormElement> = null, renderCallback: any, comunica) {
     super()
     this.html = Classy
-    this.form = rdfForm
-    this.Field = FieldDefinition(field, this.form.jsonLdContext['form'])
+    this.comunica = comunica
+    this.Field = FieldDefinition(field, 'http://rdf.danielbeeke.nl/form/form-dev.ttl#')
     this.pathContext['@language'] = Language.current
     this.Values = values
 
@@ -63,7 +61,9 @@ export class FormElementBase extends EventTarget {
       this.children = children
     }
 
-    this.render = debounce(() => this.form.render(), 100)
+    if (renderCallback) {
+      this.render = debounce(() => renderCallback(), 100)
+    }
   }
 
   async init () {}
@@ -157,19 +157,13 @@ export class FormElementBase extends EventTarget {
       const uri = value?.['@id']
 
       if (uri && !this.metas.get(uri)) {
-        const queryEngine = new ComunicaEngine(uri, {
-          'httpProxyHandler': this.form.proxy
-        });
+        const queryEngine = new ComunicaEngine(uri, {});
 
         /**
          * Temporary workaround for:
          * https://github.com/LDflex/LDflex/issues/70
-         *
-         * TODO Would it be a good idea to only use on Comunica engine for the whole form, does it improve caching?
          */
-        const myEngine = newEngine();
-        if (this.form.proxy) myEngine['httpProxyHandler'] = this.form.proxy
-        queryEngine._engine = myEngine
+        queryEngine._engine = this.comunica
 
         const path = new PathFactory({ context: this.pathContext, queryEngine });
         this.metas.set(uri, path.create({ subject: namedNode(uri) }))
@@ -266,7 +260,7 @@ export class FormElementBase extends EventTarget {
   }
 
   async templateRemoveButton (index) {
-    return this.parent === this.form ? this.html.for(this, index)`
+    return this.parent?.formElementRegistry ? this.html.for(this, index)`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.render()

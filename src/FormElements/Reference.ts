@@ -1,9 +1,8 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import {debounce, fa, searchSuggestionsSparqlQuery, dbpediaSuggestions, sparqlQueryToList } from '../Helpers'
-import {faPencilAlt, faCheck, faTimes} from '@fortawesome/free-solid-svg-icons'
-import { t } from '../LanguageService'
-import {text} from "@fortawesome/fontawesome-svg-core";
+import { debounce, fa, searchSuggestionsSparqlQuery, dbpediaSuggestions, sparqlQueryToList } from '../Helpers'
+import { faPencilAlt, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { Language, t } from '../LanguageService'
 
 export class Reference extends FormElementBase implements FormElement {
 
@@ -33,7 +32,7 @@ export class Reference extends FormElementBase implements FormElement {
         } = querySetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, value) : dbpediaSuggestions(value)
 
 
-        sparqlQueryToList(query, source, this.form.proxy).then(searchSuggestions => {
+        sparqlQueryToList(query, source, this.comunica).then(searchSuggestions => {
           searchSuggestions.push({
             label: t`Add <strong>${{searchTerm: value}}</strong> as text without reference.`,
             value: value
@@ -52,7 +51,7 @@ export class Reference extends FormElementBase implements FormElement {
       }
     }, 400))
 
-    this.form.addEventListener('language-change', () => {
+    Language.addEventListener('language-change', () => {
       this.updateMetas().then(() => this.render())
     })
 
@@ -64,7 +63,8 @@ export class Reference extends FormElementBase implements FormElement {
   }
 
   async ourTemplateRemoveButton (index) {
-    return this.parent === this.form ? this.html`
+    // TODO fix this.
+    return this.parent?.formElementRegistry ? this.html`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.searchTerms.delete(index)
@@ -131,6 +131,8 @@ export class Reference extends FormElementBase implements FormElement {
     const type = textValue ? 'text' : 'reference'
 
     const meta = hrefValue ? this.metas.get(hrefValue) : null
+
+    console.log(textValue)
 
     const editButton = () => this.html.for(this.values, index)`<button type="button" class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
       ${fa(faPencilAlt)}

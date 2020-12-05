@@ -3,7 +3,7 @@ import { JsonLdProcessor } from 'jsonld';
 import { lastPart } from "./Helpers";
 import { FieldValues } from "./FieldValues";
 
-export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: FormElementRegistry, formData) {
+export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: FormElementRegistry, formData, comunica) {
   const expandedJsonLd = await JsonLdProcessor.expand(jsonLd);
   const fieldsArray = []
   const fields: Map<any, any> = new Map()
@@ -36,7 +36,7 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
       children.set(childFieldName, childFormElement)
     }
 
-    const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field, children, values)
+    const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field, children, values, comunica)
 
     await formElement.init()
 

@@ -5,7 +5,6 @@ export class Number extends FormElementBase implements FormElement {
 
   static type: string = 'number'
 
-
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
       this.Values.set({ '@value': parseInt(event?.target?.value)}, index)

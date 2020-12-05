@@ -7,7 +7,6 @@ import * as ActorHttpProxy from '@comunica/actor-http-proxy'
 import { JsonLdProcessor } from 'jsonld'
 import { String } from './FormElements/String'
 import { Textarea } from './FormElements/Textarea'
-import { Subject } from './FormElements/Subject'
 import { Reference } from './FormElements/Reference'
 import { Duration } from './FormElements/Duration'
 import { Dropdown } from './FormElements/Dropdown'
@@ -15,6 +14,8 @@ import { Number } from './FormElements/Number'
 import { Group } from './FormElements/Group'
 import { Classy } from './Classy'
 import { Language, t } from './LanguageService'
+import { ActorInitSparql } from '@comunica/actor-init-sparql/lib/ActorInitSparql-browser'
+import { newEngine } from '@comunica/actor-init-sparql'
 
 import { attributeToJsonLd, selectCorrectGraph } from './Helpers'
 import { render } from 'uhtml'
@@ -34,6 +35,7 @@ export class RdfForm extends HTMLElement {
   public data: object
   public expandedData: object
   public shadow: any
+  public comunica: ActorInitSparql
 
   /**
    * When the element loads, fetch the quads from the resource,
@@ -43,6 +45,7 @@ export class RdfForm extends HTMLElement {
     const proxyUrl = this.getAttribute('proxy')
     this.proxy = proxyUrl ? new (<any> ActorHttpProxy).ProxyHandlerStatic(proxyUrl) : null;
     const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? { 'en': 'English' }
+    this.comunica = newEngine()
 
     this.html = Classy
     Language.i10nLanguages = JSON.parse(this.getAttribute('i10n-languages')) ?? defaultLanguages
@@ -50,7 +53,7 @@ export class RdfForm extends HTMLElement {
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     this.formElementRegistry = new FormElementRegistry(this)
-    this.formElementRegistry.register(String, Textarea, Subject, Reference, Dropdown, Duration, Number, Group)
+    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group)
 
     this.data = await attributeToJsonLd(this, 'data')
     this.jsonLdContext = this.data['@context']
@@ -62,7 +65,7 @@ export class RdfForm extends HTMLElement {
 
     this.formJsonLd = await attributeToJsonLd(this, 'form');
     this.jsonLdContext = {...this.jsonLdContext, ...this.formJsonLd['@context']}
-    this.formElements = await jsonLdToFormElements(this, this.formJsonLd, this.formElementRegistry, this.expandedData);
+    this.formElements = await jsonLdToFormElements(this, this.formJsonLd, this.formElementRegistry, this.expandedData, this.comunica);
 
     this.removeAttribute('data')
     this.removeAttribute('form')

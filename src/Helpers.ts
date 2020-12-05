@@ -3,8 +3,6 @@ import * as N3 from 'n3'
 import { icon } from '@fortawesome/fontawesome-svg-core'
 import { Hole } from 'uhtml';
 import {Language} from "./LanguageService";
-import {newEngine} from "@comunica/actor-init-sparql";
-import {IDuration} from "./Types";
 
 export const filterInSet = (pred, set) => {
   let found = []
@@ -180,19 +178,16 @@ export function dbpediaSuggestions (searchTerm: string) {
 /**
  * @param query
  * @param source
- * @param proxy
+ * @param comunica
  */
-export async function sparqlQueryToList (query, source, proxy) {
+export async function sparqlQueryToList (query, source, comunica) {
   const config = {}
-  const disabledProxy = source.value === 'https://dbpedia.org/sparql'
-  if (proxy && !disabledProxy) config['httpProxyHandler'] = proxy
-  const myEngine = newEngine();
 
   // TODO maybe use tokens that will less likely collide.
   query = query.toString().replace(/LANGUAGE/g, Language.current)
   if (typeof source === 'object' && source instanceof String) source = source.toString()
 
-  const result = await myEngine.query(query, Object.assign({ sources: [source] }, config));
+  const result = await comunica.query(query, Object.assign({ sources: [source] }, config));
 
   /** @ts-ignore */
   const bindings = await result.bindings()

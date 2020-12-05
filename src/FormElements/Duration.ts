@@ -1,7 +1,7 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
 import { parse, serialize, Duration as IDuration } from 'tinyduration/src/index';
-import { t } from "../LanguageService";
+import { t } from '../LanguageService'
 
 const units = {
   period: [

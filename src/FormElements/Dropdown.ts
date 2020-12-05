@@ -1,7 +1,7 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
 import { sparqlQueryToList } from '../Helpers'
-import { Language, t } from '../LanguageService'
+import { t, Language} from '../LanguageService'
 
 export class Dropdown extends FormElementBase implements FormElement {
 
@@ -10,7 +10,6 @@ export class Dropdown extends FormElementBase implements FormElement {
 
   async init(): Promise<void> {
     await super.init();
-
     for (const option of this.Field.option) {
       const value = option[this.Field.prefix.toString() + 'value'][0]['@id']
 
@@ -30,7 +29,7 @@ export class Dropdown extends FormElementBase implements FormElement {
         throw new Error('optionsQuery and optionsSource are needed for the field dropdown. Please improve the form definition.')
       }
 
-      this.options = await sparqlQueryToList(this.Field.optionsQuery, this.Field.optionsSource, this.form.proxy)
+      this.options = await sparqlQueryToList(this.Field.optionsQuery, this.Field.optionsSource, this.comunica)
     }
   }
 
