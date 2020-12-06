@@ -1,10 +1,13 @@
 /**
  * A custom element that shows a HTML form from a turtle file.
  */
+import { ProxyHandlerStatic } from './vendor/ProxyHandlerStatic-browser.js'
+import { Comunica } from './vendor/comunica-browser.js'
+import { jsonld as JsonLdProcessor } from './vendor/jsonld.js';
+import { render } from './vendor/uhtml.js';
+
 import { FormElementRegistry } from './FormElementRegistry'
 import { jsonLdToFormElements } from './jsonLdToFormElements'
-import * as ActorHttpProxy from '@comunica/actor-http-proxy'
-import { JsonLdProcessor } from 'jsonld'
 import { String } from './FormElements/String'
 import { Textarea } from './FormElements/Textarea'
 import { Reference } from './FormElements/Reference'
@@ -14,19 +17,14 @@ import { Number } from './FormElements/Number'
 import { Group } from './FormElements/Group'
 import { Classy } from './Classy'
 import { Language, t } from './LanguageService'
-import { ActorInitSparql } from '@comunica/actor-init-sparql/lib/ActorInitSparql-browser'
-import { newEngine } from '@comunica/actor-init-sparql'
-
 import { attributeToJsonLd, selectCorrectGraph } from './Helpers'
-import { render } from 'uhtml'
-import style from '../scss/style.scss'
 
 export class RdfForm extends HTMLElement {
 
   public formElementRegistry: FormElementRegistry
 
   public jsonLdContext: object
-  public proxy: string
+  public proxy: any
   public language: string
   public html: any
 
@@ -35,7 +33,7 @@ export class RdfForm extends HTMLElement {
   public data: object
   public expandedData: object
   public shadow: any
-  public comunica: ActorInitSparql
+  public comunica: any
 
   /**
    * When the element loads, fetch the quads from the resource,
@@ -43,10 +41,11 @@ export class RdfForm extends HTMLElement {
    */
   async connectedCallback () {
     const proxyUrl = this.getAttribute('proxy')
-    this.proxy = proxyUrl ? new (<any> ActorHttpProxy).ProxyHandlerStatic(proxyUrl) : null;
-    const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? { 'en': 'English' }
-    this.comunica = newEngine()
+    this.proxy = proxyUrl ? new ProxyHandlerStatic(proxyUrl) : null;
 
+    const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? { 'en': 'English' }
+    this.comunica = Comunica.newEngine()
+    this.comunica.httpProxyHandler = this.proxy
     this.html = Classy
     Language.i10nLanguages = JSON.parse(this.getAttribute('i10n-languages')) ?? defaultLanguages
     Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
@@ -81,9 +80,7 @@ export class RdfForm extends HTMLElement {
   async render () {
     try {
       render(this.shadow, this.html`
-      <style>
-        ${style}
-      </style>
+      <link rel="stylesheet" href="/css/style.css" />
 
       <div class="actions top">
         ${await this.languageSwitcher()}

@@ -1,4 +1,4 @@
-import { html } from 'uhtml'
+import { html } from './vendor/uhtml.js'
 import { StringProxy } from "./FieldDefinition";
 
 const classReplacements = new Map()

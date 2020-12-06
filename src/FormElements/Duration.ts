@@ -1,6 +1,6 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import { parse, serialize, Duration as IDuration } from 'tinyduration/src/index';
+import { parse, serialize, Duration as IDuration } from 'tinyduration';
 import { t } from '../LanguageService'
 
 const units = {

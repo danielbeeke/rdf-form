@@ -1,8 +1,8 @@
-import { parse as ttl2jsonld } from '@frogcat/ttl2jsonld'
-import * as N3 from 'n3'
+import { ttl2jsonld } from './vendor/ttl2jsonld.js'
+import { N3 } from './vendor/n3.js'
 import { icon } from '@fortawesome/fontawesome-svg-core'
-import { Hole } from 'uhtml';
-import {Language} from "./LanguageService";
+import { Hole } from './vendor/uhtml.js'
+import {Language} from './LanguageService'
 
 export const filterInSet = (pred, set) => {
   let found = []
@@ -51,6 +51,7 @@ export async function attributeToJsonLd (element, name, required = false): Promi
     return JSON.parse(text)
   }
   catch (e) {
+    // @ts-ignore
     return text ? ttl2jsonld(text) : []
   }
 }
@@ -182,6 +183,11 @@ export function dbpediaSuggestions (searchTerm: string) {
  */
 export async function sparqlQueryToList (query, source, comunica) {
   const config = {}
+
+  if (comunica.httpProxyHandler) {
+    // TODO make the proxy always work.
+    // config['httpProxyHandler'] = comunica.httpProxyHandler
+  }
 
   // TODO maybe use tokens that will less likely collide.
   query = query.toString().replace(/LANGUAGE/g, Language.current)

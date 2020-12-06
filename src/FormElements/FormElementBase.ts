@@ -14,9 +14,9 @@ import { FieldDefinitionOptions, FormElement } from '../Types'
 import { debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'
 
-const { PathFactory } = require('../../../LDflex/lib/index.js');
-const { default: ComunicaEngine } = require('../../../LDflex-Comunica');
-const { namedNode } = require('@rdfjs/data-model');
+import { PathFactory }  from '../vendor/LDflex.js'
+import { ComunicaEngine } from '../vendor/LDFlex-comunica.js'
+import { namedNode } from '../vendor/rdf-data-model.js'
 import { FieldValues } from '../FieldValues'
 import { FieldDefinition } from '../FieldDefinition'
 import { t, Language} from '../LanguageService'
@@ -157,14 +157,9 @@ export class FormElementBase extends EventTarget {
       const uri = value?.['@id']
 
       if (uri && !this.metas.get(uri)) {
-        const queryEngine = new ComunicaEngine(uri, {});
-
-        /**
-         * Temporary workaround for:
-         * https://github.com/LDflex/LDflex/issues/70
-         */
-        queryEngine._engine = this.comunica
-
+        const queryEngine = new ComunicaEngine(uri, {
+          httpProxyHandler: this.comunica.httpProxyHandler
+        }, this.comunica);
         const path = new PathFactory({ context: this.pathContext, queryEngine });
         this.metas.set(uri, path.create({ subject: namedNode(uri) }))
       }
