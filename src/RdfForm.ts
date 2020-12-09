@@ -51,7 +51,7 @@ export class RdfForm extends HTMLElement {
     Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
-    this.formElementRegistry = new FormElementRegistry(this)
+    this.formElementRegistry = new FormElementRegistry(() => this.render())
     this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group)
 
     this.data = await attributeToJsonLd(this, 'data')
@@ -80,7 +80,7 @@ export class RdfForm extends HTMLElement {
   async render () {
     try {
       render(this.shadow, this.html`
-      <link rel="stylesheet" href="/css/style.css" />
+      <link rel="stylesheet" href="/css/rdf-form.css" />
 
       <div class="actions top">
         ${await this.languageSwitcher()}

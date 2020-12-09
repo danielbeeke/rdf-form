@@ -42,6 +42,7 @@ export function FieldDefinition(definition: any, formPrefix: string) : FieldDefi
       }
 
       const value = definition[formPrefix + prop]
+
       const firstValue = value?.[0]?.['@language'] ? Language.multilingualValue(value) : value?.[0]?.['@value'] ?? value?.[0]?.['@id'] ?? (booleanFields.includes(prop) ? false : '')
       return typeof firstValue === 'string' ? new StringProxy(firstValue, value) : firstValue
     },

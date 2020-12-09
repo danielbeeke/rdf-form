@@ -3,6 +3,7 @@ import { N3 } from './vendor/n3.js'
 import { icon } from '@fortawesome/fontawesome-svg-core'
 import { Hole } from './vendor/uhtml.js'
 import {Language} from './LanguageService'
+import {debug} from "webpack";
 
 export const filterInSet = (pred, set) => {
   let found = []
@@ -99,7 +100,7 @@ export function waiter (reference, promiseFunction, callback) {
 
   if (promise.then) {
     promise.then(meta => {
-      loaderPromises.set(reference, meta)
+      loaderPromises.set(reference, meta ?? 'error')
       callback()
     })
     return { loading: true }

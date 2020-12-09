@@ -42,6 +42,7 @@ export class Reference extends FormElementBase implements FormElement {
           this.isLoading.set(index, false)
           this.render()
         }).catch(exception => {
+          console.error(exception)
           this.searchSuggestions.delete(index)
           this.isLoading.set(index, false)
           this.render()
@@ -131,8 +132,6 @@ export class Reference extends FormElementBase implements FormElement {
     const type = textValue ? 'text' : 'reference'
 
     const meta = hrefValue ? this.metas.get(hrefValue) : null
-
-    console.log(textValue)
 
     const editButton = () => this.html.for(this.values, index)`<button type="button" class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
       ${fa(faPencilAlt)}

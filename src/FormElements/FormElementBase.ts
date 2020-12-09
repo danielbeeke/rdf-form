@@ -161,7 +161,8 @@ export class FormElementBase extends EventTarget {
           httpProxyHandler: this.comunica.httpProxyHandler
         }, this.comunica);
         const path = new PathFactory({ context: this.pathContext, queryEngine });
-        this.metas.set(uri, path.create({ subject: namedNode(uri) }))
+        const flexPath = path.create({ subject: namedNode(uri) })
+        this.metas.set(uri, flexPath)
       }
     }
   }
@@ -228,13 +229,16 @@ export class FormElementBase extends EventTarget {
     const waiterId = await flexPath.toString() + '@' + Language.current
     const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name'])
     const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'])
+
     const label = waiter(waiterId + 'label', labelPromise, this.render)
     const thumbnail = waiter(waiterId + 'thumbnail', thumbnailPromise, this.render)
 
     return this.html`
       <div classy:referenceLabel="reference-label">
-        ${thumbnail.loading ? '' : this.html`<div classy:preloadImage="image"><img src="${thumbnail}"></div>`}
-        ${label.loading ? this.html`<span classy:referenceLoading="reference-loading">${t.direct('Loading...')}</span>` : this.html`<a href="${uri}" target="_blank">${label}</a>`}
+        ${label === 'error' ? this.html`<span classy:referenceLoading="reference-loading">${t.direct('Could not load data')}</span>` : this.html`
+          ${thumbnail.loading ? '' : this.html`<div classy:preloadImage="image"><img src="${thumbnail}"></div>`}
+          ${label.loading ? this.html`<span classy:referenceLoading="reference-loading">${t.direct('Loading...')}</span>` : this.html`<a href="${uri}" target="_blank">${label}</a>`}
+        `}
       </div>
     `
   }
