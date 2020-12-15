@@ -5,25 +5,24 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>RDF Form</title>
-    <script type="module" src="/RdfForm.js"></script>
+    <script type="module" src="/js/RdfForm.js"></script>
 </head>
 <body>
 
 <rdf-form
     id="my-form"
-    data="https://rdf.danielbeeke.nl/recipe/preischotel.ttl"
-    form="https://rdf.danielbeeke.nl/recipe/recipe.form.ttl"
-    selected-language="nl"
-    i10n-languages='{"en": "English", "nl": "Nederlands"}'
+    form="http://rdf.danielbeeke.nl/prayer/prayer.form.ttl"
+    selected-language="en"
+    i10n-languages='{"en": "English", "nl": "Nederlands", "fr": "Français"}'
     ui-languages='{"en": "English", "nl": "Nederlands"}'
     proxy="https://2i9izrkade.execute-api.eu-central-1.amazonaws.com/dev?url=">
 </rdf-form>
 
 <script>
-  const myForm = document.querySelector('#my-form')
-  myForm.addEventListener('save', (event) => {
-    console.log(event.detail)
-  })
+    const myForm = document.querySelector('#my-form')
+    myForm.addEventListener('save', (event) => {
+      console.log(event.detail)
+    })
 </script>
 
 </body>
