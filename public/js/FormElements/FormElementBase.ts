@@ -9,7 +9,7 @@
  * - Classy.add('formElement', ['your', 'classes'])
  */
 
-import { faTimes, faCog } from '@fortawesome/free-solid-svg-icons'
+import { faTimes, faCog } from '../vendor/free-solid-svg-icons.js'
 import { FieldDefinitionOptions, FormElement } from '../Types'
 import { debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
 import { Classy } from '../Classy'

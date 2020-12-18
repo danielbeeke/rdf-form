@@ -1,7 +1,7 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
 import { debounce, fa, searchSuggestionsSparqlQuery, dbpediaSuggestions, sparqlQueryToList } from '../Helpers'
-import { faPencilAlt, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faCheck, faTimes } from '../vendor/free-solid-svg-icons.js'
 import { Language, t } from '../LanguageService'
 
 export class Reference extends FormElementBase implements FormElement {

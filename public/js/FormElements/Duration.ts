@@ -1,6 +1,6 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import { parse, serialize, Duration as IDuration } from 'tinyduration';
+import { parse, serialize } from '../vendor/tinyduration.js';
 import { t } from '../LanguageService'
 
 const units = {
@@ -21,7 +21,7 @@ export class Duration extends FormElementBase implements FormElement {
 
   static type: string = 'duration'
 
-  private duration: IDuration
+  private duration: any
   private allowedUnits = []
 
   async init () {

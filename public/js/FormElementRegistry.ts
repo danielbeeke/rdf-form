@@ -13,7 +13,7 @@ export class FormElementRegistry {
     this.renderCallback = renderCallback
   }
 
-  register (...formElements: any) {
+  register (...formElements) {
     this.elements.push(...formElements)
   }
 

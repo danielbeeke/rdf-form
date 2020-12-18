@@ -1,9 +1,8 @@
 import { ttl2jsonld } from './vendor/ttl2jsonld.js'
 import { N3 } from './vendor/n3.js'
-import { icon } from '@fortawesome/fontawesome-svg-core'
+import { icon } from './vendor/fontawesome-svg-core.js'
 import { Hole } from './vendor/uhtml.js'
-import {Language} from './LanguageService'
-import {debug} from "webpack";
+import { Language } from './LanguageService'
 
 export const filterInSet = (pred, set) => {
   let found = []
@@ -28,6 +27,7 @@ export function debounce(func, wait, immediate = false) {
 
 async function attributeToText (element, name, required = false): Promise<string> {
   let urlOrValue = element.getAttribute(name) ? element.getAttribute(name).trim() : false
+
   if (required && !urlOrValue) throw new Error(`The attribute ${name} does not have a content or does not exist`)
 
   if (urlOrValue && urlOrValue.slice(-3)) {

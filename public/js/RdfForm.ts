@@ -40,6 +40,18 @@ export class RdfForm extends HTMLElement {
    * The resource may be an URL or a text containing the quads.
    */
   async connectedCallback () {
+    if (!this.comunica) { // Just a key of the second phase.
+      this.formJsonLd = await attributeToJsonLd(this, 'form');
+      // If this one is empty the attributes were not attached by uhtml. I think...
+      if (this.formJsonLd) await this.init()
+    }
+  }
+
+  async attributeChangedCallback() {
+    await this.connectedCallback()
+  }
+
+  async init() {
     const proxyUrl = this.getAttribute('proxy')
     this.proxy = proxyUrl ? new ProxyHandlerStatic(proxyUrl) : null;
 
@@ -62,7 +74,6 @@ export class RdfForm extends HTMLElement {
     if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
     delete this.data['@context']
 
-    this.formJsonLd = await attributeToJsonLd(this, 'form');
     this.jsonLdContext = {...this.jsonLdContext, ...this.formJsonLd['@context']}
     this.formElements = await jsonLdToFormElements(this, this.formJsonLd, this.formElementRegistry, this.expandedData, this.comunica);
 
