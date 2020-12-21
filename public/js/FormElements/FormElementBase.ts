@@ -49,11 +49,11 @@ export class FormElementBase extends EventTarget {
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
   }
 
-  constructor (field: FieldDefinitionOptions, values: FieldValues, children: Map<string, FormElement> = null, renderCallback: any, comunica) {
+  constructor (field: FieldDefinitionOptions, values: FieldValues, children: Map<string, FormElement> = null, renderCallback: any, comunica, formPrefix) {
     super()
     this.html = Classy
     this.comunica = comunica
-    this.Field = FieldDefinition(field, 'http://rdf.danielbeeke.nl/form/form-dev.ttl#')
+    this.Field = FieldDefinition(field, formPrefix)
     this.pathContext['@language'] = Language.current
     this.Values = values
 

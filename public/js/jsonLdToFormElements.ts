@@ -10,7 +10,8 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
   const formPrefix = jsonLd['@context']['form']
 
   for (const field of expandedJsonLd) {
-    fieldsArray.push(field)
+    const isField = field['@type'].some(className => lastPart(className) === 'Field')
+    if (isField) fieldsArray.push(field)
   }
 
   const firstLevelFields = fieldsArray.filter(field => !field?.[formPrefix + 'fieldGroup'])
@@ -36,7 +37,7 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
       children.set(childFieldName, childFormElement)
     }
 
-    const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field, children, values, comunica)
+    const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field, children, values, comunica, formPrefix)
 
     await formElement.init()
 

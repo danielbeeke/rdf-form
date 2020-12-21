@@ -14,6 +14,8 @@ import { Reference } from './FormElements/Reference'
 import { Duration } from './FormElements/Duration'
 import { Dropdown } from './FormElements/Dropdown'
 import { Number } from './FormElements/Number'
+import { Password } from './FormElements/Password'
+import { Mail } from './FormElements/Mail'
 import { Group } from './FormElements/Group'
 import { Classy } from './Classy'
 import { Language, t } from './LanguageService'
@@ -29,6 +31,7 @@ export class RdfForm extends HTMLElement {
   public html: any
 
   public formJsonLd: Object = {}
+  public formInfo: Object = {}
   public formElements: Map<any, any> = new Map()
   public data: object
   public expandedData: object
@@ -64,7 +67,7 @@ export class RdfForm extends HTMLElement {
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     this.formElementRegistry = new FormElementRegistry(() => this.render())
-    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group)
+    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail)
 
     this.data = await attributeToJsonLd(this, 'data')
     this.jsonLdContext = this.data['@context']
@@ -76,6 +79,8 @@ export class RdfForm extends HTMLElement {
 
     this.jsonLdContext = {...this.jsonLdContext, ...this.formJsonLd['@context']}
     this.formElements = await jsonLdToFormElements(this, this.formJsonLd, this.formElementRegistry, this.expandedData, this.comunica);
+
+    this.formInfo = this.formJsonLd['@graph'].find(item => item['@type'] === 'form:Form')
 
     this.removeAttribute('data')
     this.removeAttribute('form')
@@ -151,7 +156,12 @@ export class RdfForm extends HTMLElement {
       jsonLd[binding] = formElement.serialize()
     }
 
+    if (this.formInfo?.['form:binding']?.['@id']) {
+      jsonLd['@type'] = [this.formInfo['form:binding']['@id']]
+    }
+
     const compacted = await JsonLdProcessor.compact(jsonLd, jsonLd['@context']);
+
     this.dispatchEvent(new CustomEvent('save', {
       detail: compacted
     }))

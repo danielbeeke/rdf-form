@@ -17,9 +17,9 @@ export class FormElementRegistry {
     this.elements.push(...formElements)
   }
 
-  get (type: string, field, children: Map<string, FieldDefinitionOptions>, values: FieldValues, comunica) {
+  get (type: string, field, children: Map<string, FieldDefinitionOptions>, values: FieldValues, comunica, formPrefix) {
     const formElement = this.elements.find(element => element.type === type)
-    if (formElement) return new formElement(field, values, children, () => this.renderCallback(), comunica)
+    if (formElement) return new formElement(field, values, children, () => this.renderCallback(), comunica, formPrefix)
     else console.error('Could not find FormElement: ' + type)
   }
 
