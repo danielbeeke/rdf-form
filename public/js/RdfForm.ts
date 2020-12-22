@@ -102,7 +102,7 @@ export class RdfForm extends HTMLElement {
         ${await this.languageSwitcher()}
       </div>
 
-      <form onsubmit="${event => { event.preventDefault(); this.serialize() }}">
+      <form autocomplete="off" onsubmit="${event => { event.preventDefault(); this.serialize() }}">
 
       ${await Promise.all(Array.from(this.formElements.values())
         .map(async (formElement) => await formElement.templateWrapper())

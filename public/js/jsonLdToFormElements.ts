@@ -10,7 +10,7 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
   const formPrefix = jsonLd['@context']['form']
 
   for (const field of expandedJsonLd) {
-    const isField = field['@type'].some(className => lastPart(className) === 'Field')
+    const isField = field?.['@type']?.some(className => lastPart(className) === 'Field') ?? false
     if (isField) fieldsArray.push(field)
   }
 
