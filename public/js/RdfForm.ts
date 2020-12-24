@@ -17,6 +17,7 @@ import { Number } from './FormElements/Number'
 import { Password } from './FormElements/Password'
 import { Mail } from './FormElements/Mail'
 import { Group } from './FormElements/Group'
+import { Checkbox } from './FormElements/Checkbox'
 import { Classy } from './Classy'
 import { Language, t } from './LanguageService'
 import { attributeToJsonLd, selectCorrectGraph } from './Helpers'
@@ -61,13 +62,14 @@ export class RdfForm extends HTMLElement {
     const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? { 'en': 'English' }
     this.comunica = Comunica.newEngine()
     this.comunica.httpProxyHandler = this.proxy
+
     this.html = Classy
     Language.i10nLanguages = JSON.parse(this.getAttribute('i10n-languages')) ?? defaultLanguages
     Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     this.formElementRegistry = new FormElementRegistry(() => this.render())
-    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail)
+    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail, Checkbox)
 
     this.data = await attributeToJsonLd(this, 'data')
     this.jsonLdContext = this.data['@context']

@@ -2,6 +2,7 @@ import { FormElementRegistry } from './FormElementRegistry'
 import { jsonld as JsonLdProcessor } from './vendor/jsonld.js';
 import { lastPart } from "./Helpers";
 import { FieldValues } from "./FieldValues";
+import {ttl2jsonld} from "./vendor/ttl2jsonld";
 
 export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: FormElementRegistry, formData, comunica) {
   const expandedJsonLd = await JsonLdProcessor.expand(jsonLd);
@@ -22,9 +23,21 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
 
   const createFormElement = async (field, parentValues) => {
     const fieldName = lastPart(field['@id'])
+
+    const subformUri = field[formPrefix + 'subform']?.[0]['@id']
+
+    if (subformUri) {
+      const subformResponse = await fetch(subformUri)
+      const subformDefinitionText = await subformResponse.text()
+      const subformDefinition = ttl2jsonld(subformDefinitionText, {})
+      const subFields = await jsonLdToFormElements(form, subformDefinition, formElementRegistry, formData, comunica)
+      return Array.from(subFields.values())
+    }
+
     const childFields = field[formPrefix + 'fieldWidget'][0]['@value'] === 'group' ? fieldsArray.filter(field => field?.[formPrefix + 'fieldGroup']?.[0]?.['@value'] === fieldName) : []
     const children = new Map()
-    const binding = field[formPrefix + 'binding'][0]['@id']
+    const binding = field[formPrefix + 'binding']?.[0]['@id']
+
     if (!parentValues[binding]) {
       parentValues[binding] = []
     }
@@ -45,16 +58,17 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
       child.parent = formElement
     }
 
-    return formElement
+    return [formElement]
   }
 
   for (const field of firstLevelFields) {
-    const formElement = await createFormElement(field, formData)
-    const fieldName = lastPart(field['@id'])
+    const formElements = await createFormElement(field, formData)
 
-    if (formElement) {
-      fields.set(fieldName, formElement)
-      formElement.parent = form
+    if (formElements) {
+      for (const formElement of formElements) {
+        fields.set(formElement.Field.name, formElement)
+        formElement.parent = form
+      }
     }
   }
 

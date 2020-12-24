@@ -1,0 +1,50 @@
+import { FormElement } from '../Types'
+import { FormElementBase } from './FormElementBase'
+
+export class Checkbox extends FormElementBase implements FormElement {
+
+  static type: string = 'checkbox'
+
+  async templateItem (index, value, placeholder = null) {
+    const checked = value?.['@value'] === 'true' ? true : null
+
+    return this.html.for(this, index + JSON.stringify(value))`
+    ${this.html`
+    <label classy:checkbox-label="checkbox-label">
+      <input
+        onclick="${event => this.on(event, index)}"
+        type="checkbox"
+        checked="${checked}"
+        placeholder="${placeholder ?? this.Field.placeholder}"
+        required="${this.isRequired(index)}"
+      >${this.Field.label.toString()}
+    </label>
+    `}
+    `
+  }
+
+  async templateLabel () {
+    return null
+  }
+
+  /**
+   * TODO problematic with serialize. What do we really want? off / on and unset? or just off / on?
+   * @param event
+   * @param index
+   */
+  on (event, index) {
+    if (['click'].includes(event.type)) {
+      const value = {}
+      value['@' + this.jsonLdValueType] = event?.target?.checked ? 'true' : 'false'
+      this.Values.set(value, index)
+    }
+
+    this.dispatchEvent(new CustomEvent(event.type, {
+      detail: {
+        originalEvent: event,
+        index: index,
+        value: event.target.value
+      }
+    }))
+  }
+}

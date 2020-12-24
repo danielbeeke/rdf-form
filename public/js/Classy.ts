@@ -36,6 +36,7 @@ export const Classy = function (templates, ...values) {
   return html(newTemplates, ...values)
 }
 
+// TODO Make classy work for 'for()'
 Classy.for = html.for
 
 Classy.add = function (identifier: string, classes: Array<string>) {

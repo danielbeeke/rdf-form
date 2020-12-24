@@ -84,7 +84,7 @@ export class FormElementBase extends EventTarget {
   }
 
   isRequired (index) {
-    return index === 0 && this.Field.required ? true : null
+    return index === 0 && this.Field.required.toString() ? true : null
   }
 
   isRemovable (index) {
@@ -113,7 +113,8 @@ export class FormElementBase extends EventTarget {
   }
 
   serialize () {
-    return this.Values.getAll()
+    const values = this.Values.getAll()
+    return values.length ? values : null
   }
 
   /*****************************************************************************************************************
