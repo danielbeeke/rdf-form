@@ -53,6 +53,10 @@
     align-items: center;
     height: 35px;
 
+    a {
+      margin-left: 10px;
+    }
+
     &[type="text"] {
       padding-left: 10px;
     }
@@ -60,7 +64,6 @@
     .image {
       width: 33px;
       height: 33px;
-      margin-right: 10px;
       border-top-left-radius: var(--radius);
       border-bottom-left-radius: var(--radius);
       background-color: var(--button-color);

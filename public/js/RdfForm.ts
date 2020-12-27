@@ -73,6 +73,14 @@ export class RdfForm extends HTMLElement {
 
     this.data = await attributeToJsonLd(this, 'data')
     this.jsonLdContext = this.data['@context']
+
+    const contextText = this.getAttribute('context')
+
+    if (contextText) {
+      const context = JSON.parse(contextText)
+      this.jsonLdContext = {...this.jsonLdContext, ...context}
+    }
+
     this.data = selectCorrectGraph(this.data, this.getAttribute('data'))
     this.expandedData = this.data ? await JsonLdProcessor.expand(this.data): {}
 

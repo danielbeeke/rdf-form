@@ -49,12 +49,13 @@ export class FormElementBase extends EventTarget {
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
   }
 
-  constructor (field: FieldDefinitionOptions, values: FieldValues, children: Map<string, FormElement> = null, renderCallback: any, comunica, formPrefix) {
+  constructor (field: FieldDefinitionOptions, values: FieldValues, children: Map<string, FormElement> = null, renderCallback: any, comunica, formPrefix, jsonLdContext = {}) {
     super()
     this.html = Classy
     this.comunica = comunica
     this.Field = FieldDefinition(field, formPrefix)
     this.pathContext['@language'] = Language.current
+    this.pathContext = {...this.pathContext, ...jsonLdContext}
     this.Values = values
 
     if (children) {
@@ -228,7 +229,7 @@ export class FormElementBase extends EventTarget {
 
   async templateReferenceLabel (flexPath, uri, index) {
     const waiterId = await flexPath.toString() + '@' + Language.current
-    const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name'])
+    const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name', 'user:username'])
     const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'])
 
     const label = waiter(waiterId + 'label', labelPromise, this.render)
@@ -237,7 +238,7 @@ export class FormElementBase extends EventTarget {
     return this.html`
       <div classy:referenceLabel="reference-label">
         ${label === 'error' ? this.html`<span classy:referenceLoading="reference-loading">${t.direct('Could not load data')}</span>` : this.html`
-          ${thumbnail.loading ? '' : this.html`<div classy:preloadImage="image"><img src="${thumbnail}"></div>`}
+          ${thumbnail.loading ? '' : (thumbnail !== 'error' ? this.html`<div classy:preloadImage="image"><img src="${thumbnail}"></div>` : '')}
           ${label.loading ? this.html`<span classy:referenceLoading="reference-loading">${t.direct('Loading...')}</span>` : this.html`<a href="${uri}" target="_blank">${label}</a>`}
         `}
       </div>

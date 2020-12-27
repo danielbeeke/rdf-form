@@ -50,7 +50,7 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
       children.set(childFieldName, childFormElement)
     }
 
-    const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field, children, values, comunica, formPrefix)
+    const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field, children, values, comunica, formPrefix, form.jsonLdContext)
 
     await formElement.init()
 
