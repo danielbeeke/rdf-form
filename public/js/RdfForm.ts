@@ -106,6 +106,7 @@ export class RdfForm extends HTMLElement {
   async render () {
     try {
       render(this.shadow, this.html`
+      <style>.svg-inline--fa { display: none; }</style>
       <link rel="stylesheet" href="/css/rdf-form.css" />
 
       <div class="actions top">
