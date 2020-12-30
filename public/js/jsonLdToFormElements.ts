@@ -52,13 +52,15 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
 
     const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field, children, values, comunica, formPrefix, form.jsonLdContext)
 
-    await formElement.init()
+    if (formElement) {
+      await formElement.init()
 
-    for (const child of formElement.children.values()) {
-      child.parent = formElement
+      for (const child of formElement.children.values()) {
+        child.parent = formElement
+      }
+
+      return [formElement]
     }
-
-    return [formElement]
   }
 
   for (const field of firstLevelFields) {

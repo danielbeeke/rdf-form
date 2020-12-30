@@ -21,6 +21,8 @@ import { FieldValues } from '../FieldValues'
 import { FieldDefinition } from '../FieldDefinition'
 import { t, Language} from '../LanguageService'
 
+if (!window.RdfForm) { window.RdfForm = { formElements: [] } }
+
 export class FormElementBase extends EventTarget {
 
   static type: string = 'base'

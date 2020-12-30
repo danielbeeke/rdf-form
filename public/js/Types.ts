@@ -44,3 +44,7 @@ export interface IDuration {
   minutes: number
   seconds: number
 }
+
+declare global {
+  interface Window { RdfForm: any; }
+}

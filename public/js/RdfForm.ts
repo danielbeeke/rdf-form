@@ -71,6 +71,10 @@ export class RdfForm extends HTMLElement {
     this.formElementRegistry = new FormElementRegistry(() => this.render())
     this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail, Checkbox)
 
+    if (window.RdfForm?.formElements) {
+      this.formElementRegistry.register(...window.RdfForm?.formElements)
+    }
+
     this.data = await attributeToJsonLd(this, 'data')
     this.jsonLdContext = this.data['@context']
 
