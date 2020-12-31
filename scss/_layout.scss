@@ -1,0 +1,23 @@
+:host form {
+  display: grid;
+  grid-template-columns: 3fr 420px;
+  grid-template-areas: "main sidebar"
+  "bottom-actions bottom-actions";
+  gap: 30px;
+
+  .container {
+    &.default { grid-area: main; }
+    &.sidebar {
+      border-radius: var(--radius);
+      grid-area: sidebar;
+      --background-color: #f2f2f2;
+      background: #fbfbfb;
+      padding: 0 30px;
+      border-left: 1px dashed var(--border-color);
+    }
+  }
+
+  .actions.bottom {
+    grid-area: bottom-actions;
+  }
+}

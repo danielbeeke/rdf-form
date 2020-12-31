@@ -21,6 +21,7 @@ import { Checkbox } from './FormElements/Checkbox'
 import { Classy } from './Classy'
 import { Language, t } from './LanguageService'
 import { attributeToJsonLd, selectCorrectGraph } from './Helpers'
+import {FormElement} from "./Types";
 
 export class RdfForm extends HTMLElement {
 
@@ -38,6 +39,7 @@ export class RdfForm extends HTMLElement {
   public expandedData: object
   public shadow: any
   public comunica: any
+  private containers: Map<string, Array<FormElement>> = new Map()
 
   /**
    * When the element loads, fetch the quads from the resource,
@@ -104,10 +106,21 @@ export class RdfForm extends HTMLElement {
     this.removeAttribute('proxy')
 
     this.shadow = this.attachShadow({ mode: 'open' })
+
+    // TODO Maybe make different types of containers.
+    // Would be nice to use the details element and put headers above them.
+    for (const formElement of this.formElements.values()) {
+      const container = formElement.Field.container.toString() ? formElement.Field.container.toString() : 'default'
+      const containerFormElements = this.containers.get(container) ?? []
+      containerFormElements.push(formElement)
+      this.containers.set(container, containerFormElements)
+    }
+
     this.render()
   }
 
   async render () {
+
     try {
       render(this.shadow, this.html`
       <style>.svg-inline--fa { display: none; }</style>
@@ -119,9 +132,11 @@ export class RdfForm extends HTMLElement {
 
       <form autocomplete="off" onsubmit="${event => { event.preventDefault(); this.serialize() }}">
 
-      ${await Promise.all(Array.from(this.formElements.values())
-        .map(async (formElement) => await formElement.templateWrapper())
-      )}
+      ${await Promise.all([...this.containers.entries()].map(async ([container, formElements]) => this.html`
+        <div class="${'container ' + container}">
+          ${await Promise.all(formElements.map(formElement => formElement.templateWrapper()))}
+        </div>
+      `))}
 
       <div class="actions bottom">
         ${await this.actions()}

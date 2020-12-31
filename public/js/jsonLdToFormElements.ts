@@ -4,6 +4,15 @@ import { lastPart } from "./Helpers";
 import { FieldValues } from "./FieldValues";
 import {ttl2jsonld} from "./vendor/ttl2jsonld";
 
+/**
+ * Given a formDefinition, returns initiated formElements.
+ *
+ * @param form
+ * @param jsonLd
+ * @param formElementRegistry
+ * @param formData
+ * @param comunica
+ */
 export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: FormElementRegistry, formData, comunica) {
   const expandedJsonLd = await JsonLdProcessor.expand(jsonLd);
   const fieldsArray = []
@@ -22,8 +31,8 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
   })
 
   const createFormElement = async (field, parentValues) => {
+    const container = field[formPrefix + 'container']?.[0]['@value']
     const fieldName = lastPart(field['@id'])
-
     const subformUri = field[formPrefix + 'subform']?.[0]['@id']
 
     if (subformUri) {
@@ -31,6 +40,10 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
       const subformDefinitionText = await subformResponse.text()
       const subformDefinition = ttl2jsonld(subformDefinitionText, {})
       const subFields = await jsonLdToFormElements(form, subformDefinition, formElementRegistry, formData, comunica)
+
+      // TODO Maybe inherit properties from the parent?
+      // That way the form could say that the access form should be rendered somewhere else.
+
       return Array.from(subFields.values())
     }
 

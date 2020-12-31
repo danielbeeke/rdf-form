@@ -10,21 +10,17 @@ export class Checkbox extends FormElementBase implements FormElement {
 
     return this.html.for(this, index + JSON.stringify(value))`
     ${this.html`
-    <label classy:checkbox-label="checkbox-label">
+    <label classy:switch="switch">
       <input
         onclick="${event => this.on(event, index)}"
         type="checkbox"
         checked="${checked}"
         placeholder="${placeholder ?? this.Field.placeholder}"
-        required="${this.isRequired(index)}"
-      >${this.Field.label.toString()}
+        required="${this.isRequired(index)}">
+      <span class="slider"></span>
     </label>
     `}
     `
-  }
-
-  async templateLabel () {
-    return null
   }
 
   /**

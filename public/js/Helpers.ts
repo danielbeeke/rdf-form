@@ -30,7 +30,7 @@ async function attributeToText (element, name, required = false): Promise<string
 
   if (required && !urlOrValue) throw new Error(`The attribute ${name} does not have a content or does not exist`)
 
-  if (urlOrValue && (urlOrValue.substr(0, 4) === 'http' || urlOrValue.substr(0, 1) === '/')) {
+  if (urlOrValue && ['http', 'blob'].includes(urlOrValue.substr(0, 4) || urlOrValue.substr(0, 1) === '/')) {
     const response = await fetch(urlOrValue)
     urlOrValue = await response.text()
   }
