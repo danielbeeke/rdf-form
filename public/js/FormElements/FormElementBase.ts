@@ -194,7 +194,7 @@ export class FormElementBase extends EventTarget {
   async templateItem (index, value, placeholder = null) {
     const textValue = value?.['@value'] ?? value
 
-    return this.html.for(this, index + JSON.stringify(value))`
+    return this.html.for(this, index + 'templateItem')`
     <input
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
@@ -231,8 +231,8 @@ export class FormElementBase extends EventTarget {
 
   async templateReferenceLabel (flexPath, uri, index) {
     const waiterId = await flexPath.toString() + '@' + Language.current
-    const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name', 'user:username'])
-    const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'])
+    const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name', 'user:username'], uri)
+    const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'], uri)
 
     const label = waiter(waiterId + 'label', labelPromise, this.render)
     const thumbnail = waiter(waiterId + 'thumbnail', thumbnailPromise, this.render)

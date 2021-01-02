@@ -7,7 +7,7 @@ import { jsonld as JsonLdProcessor } from './vendor/jsonld.js';
 import { render } from './vendor/uhtml.js';
 
 import { FormElementRegistry } from './FormElementRegistry'
-import { jsonLdToFormElements } from './jsonLdToFormElements'
+import {jsonLdToFormElements, resolveSubForms} from './jsonLdToFormElements'
 import { String } from './FormElements/String'
 import { Textarea } from './FormElements/Textarea'
 import { Reference } from './FormElements/Reference'
@@ -18,9 +18,14 @@ import { Password } from './FormElements/Password'
 import { Mail } from './FormElements/Mail'
 import { Group } from './FormElements/Group'
 import { Checkbox } from './FormElements/Checkbox'
+import { Url } from './FormElements/Url'
+import { Date } from './FormElements/Date'
+import { Details } from './ContainerWidgets/Details'
+import { Default } from './ContainerWidgets/Default'
 import { Classy } from './Classy'
 import { Language, t } from './LanguageService'
-import { attributeToJsonLd, selectCorrectGraph } from './Helpers'
+import {attributeToJsonLd, lastPart, selectCorrectGraph} from './Helpers'
+import {ContainerWidgetBase} from "./ContainerWidgets/ContainerWidgetBase";
 import {FormElement} from "./Types";
 
 export class RdfForm extends HTMLElement {
@@ -39,7 +44,9 @@ export class RdfForm extends HTMLElement {
   public expandedData: object
   public shadow: any
   public comunica: any
-  private containers: Map<string, Array<FormElement>> = new Map()
+  private fieldsByBinding: Map<string, FormElement> = new Map()
+  private containerWidgetTypes: Map<string, any>
+  private containers: Map<string, ContainerWidgetBase> = new Map()
 
   /**
    * When the element loads, fetch the quads from the resource,
@@ -47,7 +54,7 @@ export class RdfForm extends HTMLElement {
    */
   async connectedCallback () {
     if (!this.comunica) { // Just a key of the second phase.
-      this.formJsonLd = await attributeToJsonLd(this, 'form');
+      this.formJsonLd = await resolveSubForms(await attributeToJsonLd(this, 'form'));
       // If this one is empty the attributes were not attached by uhtml. I think...
       if (this.formJsonLd) await this.init()
     }
@@ -71,7 +78,12 @@ export class RdfForm extends HTMLElement {
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     this.formElementRegistry = new FormElementRegistry(() => this.render())
-    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail, Checkbox)
+    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail, Checkbox, Url, Date)
+
+    this.containerWidgetTypes = new Map([
+      ['details', Details],
+      ['default', Default],
+    ])
 
     if (window.RdfForm?.formElements) {
       this.formElementRegistry.register(...window.RdfForm?.formElements)
@@ -107,19 +119,32 @@ export class RdfForm extends HTMLElement {
 
     this.shadow = this.attachShadow({ mode: 'open' })
 
-    // TODO Maybe make different types of containers.
-    // Would be nice to use the details element and put headers above them.
+    // TODO Maybe these should be formElements, but maybe not.. I don't know for sure.
+    // I have chosen the shortest route for now.
     for (const formElement of this.formElements.values()) {
-      const container = formElement.Field.container.toString() ? formElement.Field.container.toString() : 'default'
-      const containerFormElements = this.containers.get(container) ?? []
-      containerFormElements.push(formElement)
-      this.containers.set(container, containerFormElements)
+      const containerName = formElement.Field.container.toString() ? formElement.Field.container.toString() : 'default'
+      const containerDefinition = this.formJsonLd['@graph'].find(item => item['@type'] === 'form:Container' && lastPart(item['@id']) === containerName)
+      const containerWidgetClass = this.containerWidgetTypes.get(containerDefinition?.['form:containerWidget'] ?? 'default')
+      const container = this.containers.get(containerName) ?? new containerWidgetClass(containerDefinition)
+      container.addFormElement(formElement)
+      this.fieldsByBinding.set(formElement.Field.binding.toString(), formElement)
+      formElement.addEventListener('change', event => {
+        this.dispatchEvent(new CustomEvent('fieldChange', {
+          detail: formElement
+        }))
+      })
+      if (!this.containers.get(containerName)) this.containers.set(containerName, container)
     }
 
     this.render()
+
+    this.dispatchEvent(new CustomEvent('load'))
   }
 
   async render () {
+
+    // TODO make configurable
+    const regions = ['main', 'sidebar']
 
     try {
       render(this.shadow, this.html`
@@ -132,15 +157,26 @@ export class RdfForm extends HTMLElement {
 
       <form autocomplete="off" onsubmit="${event => { event.preventDefault(); this.serialize() }}">
 
-      ${await Promise.all([...this.containers.entries()].map(async ([container, formElements]) => this.html`
-        <div class="${'container ' + container}">
-          ${await Promise.all(formElements.map(formElement => formElement.templateWrapper()))}
+      ${await Promise.all(regions.map(async region => this.html.for(this, 'region' + region)`
+        <div class="${'region ' + region}" style="${'grid-area: ' + region}">
+          ${await Promise.all([...this.containers.values()]
+            .filter(container => {
+              return (container.definition?.['form:region'] ?? 'main') === region
+            })
+            .sort((a, b) => {
+              const aOrder = a.definition?.['form:order'] ?? 0
+              const bOrder = b.definition?.['form:order'] ?? 0
+              return aOrder - bOrder
+            })
+            .map(async (container) => await container.render()))}
+
+          ${region === 'main' ? this.html`
+            <div class="actions bottom">
+              ${await this.actions()}
+            </div>
+          ` : ''}
         </div>
       `))}
-
-      <div class="actions bottom">
-        ${await this.actions()}
-      </div>
 
       </form>
     `)
@@ -195,6 +231,10 @@ export class RdfForm extends HTMLElement {
     this.dispatchEvent(new CustomEvent('save', {
       detail: compacted
     }))
+  }
+
+  getFieldByPredicate (predicate) {
+    return this.fieldsByBinding.get(predicate)
   }
 }
 

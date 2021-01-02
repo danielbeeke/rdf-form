@@ -1,6 +1,6 @@
 export interface FormElement extends EventTarget {
   init ():  Promise<any>;
-  templateWrapper(): Promise<Promise<any>>;
+  templateWrapper(index?: number): Promise<Promise<any>>;
   Field: FieldDefinitionOptions
 }
 

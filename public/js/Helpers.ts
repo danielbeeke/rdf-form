@@ -110,10 +110,28 @@ export function waiter (reference, promiseFunction, callback) {
   }
 }
 
-export async function fetchObjectByPredicates (flexPath, language, predicates) {
+export async function fetchObjectByPredicates (flexPath, language, predicates, uri = null) {
+  let subject = uri
+
+  if (uri) {
+    let extensionlessUri = uri.split('.')
+    extensionlessUri.pop()
+    extensionlessUri = extensionlessUri.join('.')
+    subject = extensionlessUri
+  }
+
   for (const predicate of predicates) {
     let value = await flexPath[predicate]['@' + language]
     if (!value) value = await flexPath[predicate]
+
+    // TODO this is a fallback for nested subject paths.. how should this have been done properly?
+    if (!value && subject) {
+      for await (const innerSubject of flexPath.subjects) {
+        if (`${innerSubject}` === subject) {
+          value = await innerSubject[predicate]
+        }
+      }
+    }
     if (value) return value.toString()
   }
 }
@@ -134,12 +152,32 @@ export function fa (iconInput) {
  * @param source
  * @param searchTerm
  */
-export function searchSuggestionsSparqlQuery (query, source = null, searchTerm: string = '') {
+export function searchSuggestionsSparqlQuery (query = '', source = null, searchTerm: string = '') {
   if (searchTerm === '' || (searchTerm.length < 4)) return
   let querySearchTerm = searchTerm.trim()
-  if (querySearchTerm.length > 4) querySearchTerm += '*'
+  if (source?.type === 'sparql' && querySearchTerm.length > 4) querySearchTerm += '*'
 
   if (!source) source = { type: 'sparql', value: 'https://dbpedia.org/sparql' }
+
+  if (!query) {
+    query = `
+
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+    SELECT DISTINCT ?uri ?label {
+
+      ?uri rdfs:label ?label .
+
+      FILTER(contains(?label, "'SEARCH_TERM'"))
+    }
+
+    LIMIT 10`
+  }
+
+  if (typeof source === 'string') {
+    source = source.replace(/LANGUAGE/g, Language.current)
+    source = source.replace(/SEARCH_TERM/g, querySearchTerm)
+  }
 
   query = query.replace(/LANGUAGE/g, Language.current)
   query = query.replace(/SEARCH_TERM/g, querySearchTerm)
@@ -208,6 +246,9 @@ export async function sparqlQueryToList (query, source, comunica) {
     if (valueAndLanguage.length > 1) {
       label = {}
       label[valueAndLanguage[1].trim('"')] = valueAndLanguage[0].slice(1, -1)
+    }
+    else {
+      label = label.slice(1, -1)
     }
 
     const uri = binding.get('?uri')?.value

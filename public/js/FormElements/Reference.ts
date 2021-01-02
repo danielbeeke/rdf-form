@@ -29,7 +29,7 @@ export class Reference extends FormElementBase implements FormElement {
         const {
           query,
           source
-        } = querySetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, value) : dbpediaSuggestions(value)
+        } = querySetting || sourceSetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, value) : dbpediaSuggestions(value)
 
 
         sparqlQueryToList(query, source, this.comunica).then(searchSuggestions => {
@@ -65,7 +65,7 @@ export class Reference extends FormElementBase implements FormElement {
 
   async ourTemplateRemoveButton (index) {
     // TODO fix this.
-    return this.parent?.formElementRegistry ? this.html`
+    return this.parent?.formElementRegistry ? this.html.for(this, index + 'ourTemplateRemoveButton')`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.searchTerms.delete(index)
@@ -133,11 +133,11 @@ export class Reference extends FormElementBase implements FormElement {
 
     const meta = hrefValue ? this.metas.get(hrefValue) : null
 
-    const editButton = () => this.html.for(this.values, index)`<button type="button" class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
+    const editButton = () => this.html.for(this.values, index + 'editButton')`<button type="button" class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
       ${fa(faPencilAlt)}
     </button>`
 
-    const acceptButton = () => this.html`<button type="button" class="button accept" onclick="${() => {
+    const acceptButton = () => this.html.for(this.values, index + 'acceptButton')`<button type="button" class="button accept" onclick="${() => {
       this.expanded.set(index, false);
       this.searchSuggestions.set(index, [])
       this.searchTerms.delete(index)
@@ -146,28 +146,26 @@ export class Reference extends FormElementBase implements FormElement {
       ${fa(faCheck)}
     </button>`
 
-    return this.html`
-      ${type === 'reference' ? this.html.for(this.values, index)`
-        ${hrefValue.substr(0, 4) === 'http' && meta ? await this.templateReferenceLabel(meta, hrefValue, index) : ''}
-        ${(hrefValue && meta) && !this.expanded.get(index) ? this.html`
-        ${editButton()}
-        ${await this.ourTemplateRemoveButton(index)}
-      ` : this.html.for(this.values, index)`
-        ${await super.templateItem(index, hrefValue ?? searchTerm)}
-        ${hrefValue.substr(0, 4) === 'http' ? acceptButton() : ''}
-        ${await this.ourTemplateRemoveButton(index)}
-        ${await this.templateSearchSuggestions(index)}
-      `}
+    return type === 'reference' ? this.html.for(this.values, index + 'typeReference')`
+      ${hrefValue.substr(0, 4) === 'http' && meta ? await this.templateReferenceLabel(meta, hrefValue, index) : ''}
+      ${(hrefValue && meta) && !this.expanded.get(index) ? this.html.for(this.values, index + 'element')`
+      ${editButton()}
+      ${await this.ourTemplateRemoveButton(index)}
     ` : this.html.for(this.values, index)`
-        ${this.expanded.get(index) ? this.html`
-          ${await super.templateItem(index, textValue, '')}
-          ${acceptButton()}
-        ` : this.html`
-          <div type="${type}" classy:referenceLabel="reference-label">${textValue}</div>
-          ${editButton()}
-        `}
-        ${await this.ourTemplateRemoveButton(index)}
+      ${await super.templateItem(index, hrefValue ?? searchTerm)}
+      ${hrefValue.substr(0, 4) === 'http' ? acceptButton() : ''}
+      ${await this.ourTemplateRemoveButton(index)}
+      ${await this.templateSearchSuggestions(index)}
+    `}
+  ` : this.html.for(this.values, index + 'typeText')`
+      ${this.expanded.get(index) ? this.html.for(this.values, index + 'expandedLabel')`
+        ${await super.templateItem(index, textValue, '')}
+        ${acceptButton()}
+      ` : this.html`
+        <div type="${type}" classy:referenceLabel="reference-label">${textValue}</div>
+        ${editButton()}
       `}
+      ${await this.ourTemplateRemoveButton(index)}
     `
   }
 }
