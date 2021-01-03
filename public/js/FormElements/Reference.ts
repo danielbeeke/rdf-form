@@ -66,7 +66,7 @@ export class Reference extends FormElementBase implements FormElement {
   async ourTemplateRemoveButton (index) {
     // TODO fix this.
     // THis hack is done for nested fields in fieldgroups.
-    return this.parent?.formElementRegistry ? this.html.for(this, index + 'ourTemplateRemoveButton')`
+    return this.parent?.formElementRegistry ? this.html`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.searchTerms.delete(index)
@@ -134,11 +134,11 @@ export class Reference extends FormElementBase implements FormElement {
 
     const meta = hrefValue ? this.metas.get(hrefValue) : null
 
-    const editButton = () => this.html.for(this.values, index + 'editButton')`<button type="button" class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
+    const editButton = () => this.html`<button type="button" class="button edit" onclick="${() => { this.expanded.set(index, true); this.render() }}">
       ${fa(faPencilAlt)}
     </button>`
 
-    const acceptButton = () => this.html.for(this.values, index + 'acceptButton')`<button type="button" class="button accept" onclick="${() => {
+    const acceptButton = () => this.html`<button type="button" class="button accept" onclick="${() => {
       this.expanded.set(index, false);
       this.searchSuggestions.set(index, [])
       this.searchTerms.delete(index)
@@ -147,19 +147,19 @@ export class Reference extends FormElementBase implements FormElement {
       ${fa(faCheck)}
     </button>`
 
-    return type === 'reference' ? this.html.for(this.values, index + 'typeReference')`
+    return type === 'reference' ? this.html`
       ${hrefValue.substr(0, 4) === 'http' && meta ? await this.templateReferenceLabel(meta, hrefValue) : ''}
-      ${(hrefValue && meta) && !this.expanded.get(index) ? this.html.for(this.values, index + 'element')`
+      ${(hrefValue && meta) && !this.expanded.get(index) ? this.html`
       ${editButton()}
       ${await this.ourTemplateRemoveButton(index)}
-    ` : this.html.for(this.values, index)`
+    ` : this.html`
       ${await super.templateItem(index, hrefValue ?? searchTerm)}
       ${hrefValue.substr(0, 4) === 'http' ? acceptButton() : ''}
       ${await this.ourTemplateRemoveButton(index)}
       ${await this.templateSearchSuggestions(index)}
     `}
-  ` : this.html.for(this.values, index + 'typeText')`
-      ${this.expanded.get(index) ? this.html.for(this.values, index + 'expandedLabel')`
+  ` : this.html`
+      ${this.expanded.get(index) ? this.html`
         ${await super.templateItem(index, textValue, '')}
         ${acceptButton()}
       ` : this.html`

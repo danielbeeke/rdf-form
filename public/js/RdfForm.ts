@@ -157,7 +157,7 @@ export class RdfForm extends HTMLElement {
 
       <form autocomplete="off" onsubmit="${event => { event.preventDefault(); this.serialize() }}">
 
-      ${await Promise.all(regions.map(async region => this.html.for(this, 'region' + region)`
+      ${await Promise.all(regions.map(async region => this.html`
         <div class="${'region ' + region}" style="${'grid-area: ' + region}">
           ${await Promise.all([...this.containers.values()]
             .filter(container => {

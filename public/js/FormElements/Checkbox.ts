@@ -8,7 +8,7 @@ export class Checkbox extends FormElementBase implements FormElement {
   async templateItem (index, value, placeholder = null) {
     const checked = value?.['@value'] === 'true' ? true : null
 
-    return this.html.for(this, index + JSON.stringify(value))`
+    return this.html`
     ${this.html`
     <label class="switch">
       <input

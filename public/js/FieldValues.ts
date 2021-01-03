@@ -86,7 +86,9 @@ export class FieldValues {
     }
 
     // Needed for group field.
-    if (Array.isArray(values)) {
+    // TODO this is not working for fieldgroups I suppose.
+    // Create a better detection mechanism.
+    if (Array.isArray(values) && Array.isArray(values[0])) {
       const newItem = {}
       for (const [binding, value] of Object.entries(values[0])) {
         newItem[binding] = createItem(value[0])

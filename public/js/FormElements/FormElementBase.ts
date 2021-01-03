@@ -194,7 +194,7 @@ export class FormElementBase extends EventTarget {
   async templateItem (index, value, placeholder = null) {
     const textValue = value?.['@' + this.jsonLdValueType] ?? value
 
-    return this.html.for(this, index + 'templateItem')`
+    return this.html`
     <input
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
@@ -231,8 +231,8 @@ export class FormElementBase extends EventTarget {
 
   async templateReferenceLabel (flexPath, uri) {
     const waiterId = await flexPath.toString() + '@' + Language.current
-    const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name', 'user:username'], uri)
-    const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'], uri)
+    const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name', 'user:username'])
+    const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'])
 
     const label = waiter(waiterId + 'label', labelPromise, this.render)
     const thumbnail = waiter(waiterId + 'thumbnail', thumbnailPromise, this.render)
@@ -263,7 +263,7 @@ export class FormElementBase extends EventTarget {
   }
 
   async templateRemoveButton (index) {
-    return this.parent?.formElementRegistry ? this.html.for(this, index)`
+    return this.parent?.formElementRegistry ? this.html`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.render()

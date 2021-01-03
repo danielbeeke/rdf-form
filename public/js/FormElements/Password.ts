@@ -21,7 +21,7 @@ export class Password extends FormElementBase implements FormElement {
   async templateItem (index, value, placeholder = null) {
     const textValue = ''
 
-    return this.html.for(this, index + JSON.stringify(value))`
+    return this.html`
     <input
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.password = event.target.value}"

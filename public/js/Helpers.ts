@@ -220,7 +220,7 @@ export async function sparqlQueryToList (query, source, comunica) {
       label[valueAndLanguage[1].trim('"')] = valueAndLanguage[0].slice(1, -1)
     }
     else {
-      label = label.slice(1, -1)
+      label = label.replace(/"/g, '')
     }
 
     const uri = binding.get('?uri')?.value

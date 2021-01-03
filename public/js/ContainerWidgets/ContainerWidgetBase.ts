@@ -26,7 +26,7 @@ export abstract class ContainerWidgetBase {
 
   async render () {
     const name = this.definition?.['@id'] ? lastPart(this.definition['@id']) : 'default'
-    return this.html.for(this)`<div class="${'container ' + name}">
+    return this.html`<div class="${'container ' + name}">
       ${await Promise.all(this.formElements.map(formElement => formElement.templateWrapper()))}
     </div>`
   }

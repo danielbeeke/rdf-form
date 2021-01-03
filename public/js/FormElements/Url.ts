@@ -4,5 +4,6 @@ import { FormElementBase } from './FormElementBase'
 export class Url extends FormElementBase implements FormElement {
 
   static type: string = 'url'
+  public jsonLdValueType = 'id'
 
 }
