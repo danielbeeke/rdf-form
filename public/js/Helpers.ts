@@ -110,28 +110,10 @@ export function waiter (reference, promiseFunction, callback) {
   }
 }
 
-export async function fetchObjectByPredicates (flexPath, language, predicates, uri = null) {
-  let subject = uri
-
-  if (uri) {
-    let extensionlessUri = uri.split('.')
-    extensionlessUri.pop()
-    extensionlessUri = extensionlessUri.join('.')
-    subject = extensionlessUri
-  }
-
+export async function fetchObjectByPredicates (flexPath, language, predicates) {
   for (const predicate of predicates) {
     let value = await flexPath[predicate]['@' + language]
     if (!value) value = await flexPath[predicate]
-
-    // TODO this is a fallback for nested subject paths.. how should this have been done properly?
-    if (!value && subject) {
-      for await (const innerSubject of flexPath.subjects) {
-        if (`${innerSubject}` === subject) {
-          value = await innerSubject[predicate]
-        }
-      }
-    }
     if (value) return value.toString()
   }
 }
@@ -161,13 +143,10 @@ export function searchSuggestionsSparqlQuery (query = '', source = null, searchT
 
   if (!query) {
     query = `
-
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
     SELECT DISTINCT ?uri ?label {
-
       ?uri rdfs:label ?label .
-
       FILTER(contains(?label, "'SEARCH_TERM'"))
     }
 
@@ -203,9 +182,7 @@ export function dbpediaSuggestions (searchTerm: string) {
 
       ?uri rdfs:label ?label .
       ?uri dbo:thumbnail ?image .
-
       ?label bif:contains "'${querySearchTerm}'" .
-
       filter langMatches(lang(?label), "${Language.current}")
     }
 
@@ -222,11 +199,6 @@ export function dbpediaSuggestions (searchTerm: string) {
  */
 export async function sparqlQueryToList (query, source, comunica) {
   const config = {}
-
-  if (comunica.httpProxyHandler) {
-    // TODO make the proxy always work.
-    // config['httpProxyHandler'] = comunica.httpProxyHandler
-  }
 
   // TODO maybe use tokens that will less likely collide.
   query = query.toString().replace(/LANGUAGE/g, Language.current)

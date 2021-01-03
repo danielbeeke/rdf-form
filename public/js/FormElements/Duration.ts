@@ -47,8 +47,8 @@ export class Duration extends FormElementBase implements FormElement {
 
     if (this.Field.range.substr(0, 1) === '-') {
       fields.push(this.html`
-      <div classy:sub-item="sub-item">
-        <label classy:label="label">${t`Type`}</label>
+      <div class="sub-item">
+        <label class="label">${t`Type`}</label>
         <select>
             ${['-', '+'].map(option => this.html`<option selected="${this.duration.negative && option === '-' || !this.duration.negative && option === '+' ? true : null}" value="${option}">${option}</option>`)}
         </select>
@@ -61,8 +61,8 @@ export class Duration extends FormElementBase implements FormElement {
       const label = unitType.unit.substr(0, 1).toUpperCase() + unitType.unit.substr(1)
 
       fields.push(this.html`
-      <div classy:sub-item="sub-item">
-        <label classy:label="label">${t.direct(label)}</label>
+      <div class="sub-item">
+        <label class="label">${t.direct(label)}</label>
         <input
           onchange="${event => this.on(event, index, unitType.unit)}"
           onkeyup="${event => this.on(event, index, unitType.unit)}"

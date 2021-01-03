@@ -65,6 +65,7 @@ export class Reference extends FormElementBase implements FormElement {
 
   async ourTemplateRemoveButton (index) {
     // TODO fix this.
+    // THis hack is done for nested fields in fieldgroups.
     return this.parent?.formElementRegistry ? this.html.for(this, index + 'ourTemplateRemoveButton')`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
@@ -147,7 +148,7 @@ export class Reference extends FormElementBase implements FormElement {
     </button>`
 
     return type === 'reference' ? this.html.for(this.values, index + 'typeReference')`
-      ${hrefValue.substr(0, 4) === 'http' && meta ? await this.templateReferenceLabel(meta, hrefValue, index) : ''}
+      ${hrefValue.substr(0, 4) === 'http' && meta ? await this.templateReferenceLabel(meta, hrefValue) : ''}
       ${(hrefValue && meta) && !this.expanded.get(index) ? this.html.for(this.values, index + 'element')`
       ${editButton()}
       ${await this.ourTemplateRemoveButton(index)}
@@ -162,7 +163,7 @@ export class Reference extends FormElementBase implements FormElement {
         ${await super.templateItem(index, textValue, '')}
         ${acceptButton()}
       ` : this.html`
-        <div type="${type}" classy:referenceLabel="reference-label">${textValue}</div>
+        <div type="${type}" class="reference-label">${textValue}</div>
         ${editButton()}
       `}
       ${await this.ourTemplateRemoveButton(index)}

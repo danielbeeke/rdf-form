@@ -19,14 +19,15 @@ import { Mail } from './FormElements/Mail'
 import { Group } from './FormElements/Group'
 import { Checkbox } from './FormElements/Checkbox'
 import { Url } from './FormElements/Url'
+import { UrlImage } from './FormElements/UrlImage'
 import { Date } from './FormElements/Date'
 import { Details } from './ContainerWidgets/Details'
 import { Default } from './ContainerWidgets/Default'
-import { Classy } from './Classy'
 import { Language, t } from './LanguageService'
 import {attributeToJsonLd, lastPart, selectCorrectGraph} from './Helpers'
 import {ContainerWidgetBase} from "./ContainerWidgets/ContainerWidgetBase";
 import {FormElement} from "./Types";
+import { html } from './vendor/uhtml.js'
 
 export class RdfForm extends HTMLElement {
 
@@ -72,13 +73,13 @@ export class RdfForm extends HTMLElement {
     this.comunica = Comunica.newEngine()
     this.comunica.httpProxyHandler = this.proxy
 
-    this.html = Classy
+    this.html = html
     Language.i10nLanguages = JSON.parse(this.getAttribute('i10n-languages')) ?? defaultLanguages
     Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     this.formElementRegistry = new FormElementRegistry(() => this.render())
-    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail, Checkbox, Url, Date)
+    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail, Checkbox, Url, Date, UrlImage)
 
     this.containerWidgetTypes = new Map([
       ['details', Details],
@@ -142,7 +143,6 @@ export class RdfForm extends HTMLElement {
   }
 
   async render () {
-
     // TODO make configurable
     const regions = ['main', 'sidebar']
 
@@ -188,10 +188,10 @@ export class RdfForm extends HTMLElement {
 
   async languageSwitcher () {
     return Object.keys(Language.uiLanguages).length > 1 ? this.html`
-      <div classy:language-selector-wrapper="language-selector-wrapper">
-        <label classy:label="label">${t`Interface language`}</label>
+      <div class="language-selector-wrapper">
+        <label class="label">${t`Interface language`}</label>
 
-        <div classy:language-selector-inner="language-selector-inner">
+        <div class="language-selector-inner">
           <select onchange="${async event => {
             await Language.setCurrent(event.target.value)
             this.dispatchEvent(new CustomEvent('language-change'))
@@ -209,7 +209,7 @@ export class RdfForm extends HTMLElement {
   }
 
   async actions () {
-    return this.html`<button classy:save-button="button save">${t.direct('Save')}</button>`
+    return this.html`<button class="button save">${t.direct('Save')}</button>`
   }
 
   async serialize () {

@@ -1,6 +1,6 @@
 import { FormElement} from "../Types";
-import {Classy} from "../Classy";
 import {lastPart} from "../Helpers";
+import { html } from "../vendor/uhtml.js";
 
 export abstract class ContainerWidgetBase {
 
@@ -12,7 +12,7 @@ export abstract class ContainerWidgetBase {
     this.definition = definition
     this.formElements = formElements
     this.sortFormElements()
-    this.html = Classy
+    this.html = html
   }
 
   addFormElement (formElement: FormElement) {

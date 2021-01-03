@@ -10,7 +10,7 @@ export class Checkbox extends FormElementBase implements FormElement {
 
     return this.html.for(this, index + JSON.stringify(value))`
     ${this.html`
-    <label classy:switch="switch">
+    <label class="switch">
       <input
         onclick="${event => this.on(event, index)}"
         type="checkbox"

@@ -9,5 +9,9 @@
     border-radius: var(--radius);
     grid-area: sidebar;
     --background-color: #f2f2f2;
+
+    details.container:first-child {
+      margin-top: 46px;
+    }
   }
 }

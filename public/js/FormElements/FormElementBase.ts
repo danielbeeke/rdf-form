@@ -3,7 +3,7 @@
  * You can extend this class and overwrite the template methods that you want to change.
  *
  * Also if you only want to change css classes you can use the following:
- * - Inspect the template and search for classy:IDENTIFIER="DEFAULT_CLASSES"
+ * - Inspect the template and search for class="DEFAULT_CLASSES"
  * - Before starting RdfForm call:
  * - Classy.add(IDENTIFIER, ['your', 'classes'])
  * - Classy.add('formElement', ['your', 'classes'])
@@ -12,7 +12,6 @@
 import { faTimes, faCog } from '../vendor/free-solid-svg-icons.js'
 import { FieldDefinitionOptions, FormElement } from '../Types'
 import { debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
-import { Classy } from '../Classy'
 
 import { PathFactory }  from '../vendor/LDflex.js'
 import { ComunicaEngine } from '../vendor/LDFlex-comunica.js'
@@ -20,6 +19,7 @@ import { namedNode } from '../vendor/rdf-data-model.js'
 import { FieldValues } from '../FieldValues'
 import { FieldDefinition } from '../FieldDefinition'
 import { t, Language} from '../LanguageService'
+import { html } from '../vendor/uhtml.js'
 
 if (!window.RdfForm) { window.RdfForm = { formElements: [] } }
 
@@ -53,7 +53,7 @@ export class FormElementBase extends EventTarget {
 
   constructor (field: FieldDefinitionOptions, values: FieldValues, children: Map<string, FormElement> = null, renderCallback: any, comunica, formPrefix, jsonLdContext = {}) {
     super()
-    this.html = Classy
+    this.html = html
     this.comunica = comunica
     this.Field = FieldDefinition(field, formPrefix)
     this.pathContext['@language'] = Language.current
@@ -87,7 +87,7 @@ export class FormElementBase extends EventTarget {
   }
 
   isRequired (index) {
-    return index === 0 && this.Field.required.toString() ? true : null
+    return index === 0 && this.Field.required ? true : null
   }
 
   isRemovable (index) {
@@ -177,22 +177,22 @@ export class FormElementBase extends EventTarget {
 
   async templateLabel () {
     return this.Field.label ? this.html`
-    <label classy:label="label">
+    <label class="label">
       ${this.Field.label}
-      ${this.Field.required.toString() ? this.html`<span classy:label-required-star="label-required-star">*</span>` : ''}
+      ${this.Field.required ? this.html`<span class="label-required-star">*</span>` : ''}
       ${await this.templateFieldMenu()}
     </label>` : ''
   }
 
   async templateDescription () {
-    return this.Field.description.toString() ? this.html`
-    <small classy:description="description">
+    return this.Field.description ? this.html`
+    <small class="description">
       ${this.Field.description}
     </small>` : ''
   }
 
   async templateItem (index, value, placeholder = null) {
-    const textValue = value?.['@value'] ?? value
+    const textValue = value?.['@' + this.jsonLdValueType] ?? value
 
     return this.html.for(this, index + 'templateItem')`
     <input
@@ -218,7 +218,7 @@ export class FormElementBase extends EventTarget {
     }
 
     return this.html`
-    <select onchange="${event => this.Values.get(index)['@language'] = event.target.value}" classy:languageSelector="language-selector">
+    <select onchange="${event => this.Values.get(index)['@language'] = event.target.value}" class="language-selector">
     ${options.map((language) => this.html`
       <option value="${language}" selected="${language === selectedLanguage ? true : null}">${Language.i10nLanguages[language]}</option>
     `)}
@@ -229,7 +229,7 @@ export class FormElementBase extends EventTarget {
     return false
   }
 
-  async templateReferenceLabel (flexPath, uri, index) {
+  async templateReferenceLabel (flexPath, uri) {
     const waiterId = await flexPath.toString() + '@' + Language.current
     const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name', 'user:username'], uri)
     const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'], uri)
@@ -238,10 +238,10 @@ export class FormElementBase extends EventTarget {
     const thumbnail = waiter(waiterId + 'thumbnail', thumbnailPromise, this.render)
 
     return this.html`
-      <div classy:referenceLabel="reference-label">
-        ${label === 'error' ? this.html`<span classy:referenceLoading="reference-loading">${t.direct('Could not load data')}</span>` : this.html`
-          ${thumbnail.loading ? '' : (thumbnail !== 'error' ? this.html`<div classy:preloadImage="image"><img src="${thumbnail}"></div>` : '')}
-          ${label.loading ? this.html`<span classy:referenceLoading="reference-loading">${t.direct('Loading...')}</span>` : this.html`<a href="${uri}" target="_blank">${label}</a>`}
+      <div class="reference-label">
+        ${label === 'error' ? this.html`<span class="reference-loading">${t.direct('Could not load data')}</span>` : this.html`
+          ${thumbnail.loading ? '' : (thumbnail !== 'error' ? this.html`<div class="image"><img src="${thumbnail}"></div>` : '')}
+          ${label.loading ? this.html`<span class="reference-loading">${t.direct('Loading...')}</span>` : this.html`<a href="${uri}" target="_blank">${label}</a>`}
         `}
       </div>
     `
@@ -251,11 +251,11 @@ export class FormElementBase extends EventTarget {
     const buttons = this.getMenuButtons()
 
     return buttons.length ? this.html`
-      <div classy:menu-wrapper="menu-wrapper" open="${this.menuIsOpen}">
-        <button type="button" classy:menuButton="menu-button button" onclick="${() => {this.menuIsOpen = !this.menuIsOpen; this.render()}}">
+      <div class="menu-wrapper" open="${this.menuIsOpen}">
+        <button type="button" class="menu-button button" onclick="${() => {this.menuIsOpen = !this.menuIsOpen; this.render()}}">
             ${fa(faCog)}
         </button>
-        <ul onclick="${() => {this.menuIsOpen = false; this.render()}}" classy:menu="menu">
+        <ul onclick="${() => {this.menuIsOpen = false; this.render()}}" class="menu">
           ${buttons.map(button => this.html`<li>${button}</li>`)}
         </ul>
       </div>
@@ -277,12 +277,12 @@ export class FormElementBase extends EventTarget {
     const hasResults = !(searchSuggestions[0]?.value)
 
     return searchSuggestions.length ? this.html`
-    <ul classy:searchSuggestions="search-suggestions">
-      ${!hasResults ? this.html`<li classy:searchSuggestionNoResults="search-suggestion no-results">
-        <span classy:suggestionTitle="title">${t`Nothing found`}</span>
+    <ul class="search-suggestions">
+      ${!hasResults ? this.html`<li class="search-suggestion no-results">
+        <span class="title">${t`Nothing found`}</span>
       </li>` : ''}
       ${searchSuggestions.map(suggestion => this.html`
-      <li classy:searchSuggestion="search-suggestion" onclick="${async () => {
+      <li class="search-suggestion" onclick="${async () => {
         if (suggestion.uri) {
           await this.selectSuggestion(suggestion.uri, index);
         }
@@ -292,8 +292,8 @@ export class FormElementBase extends EventTarget {
 
         this.render()
       }}">
-        ${suggestion.image ? this.html`<div classy:preloadImage="image"><img src="${suggestion.image}"></div>` : ''}
-        <span classy:suggestionTitle="title">${suggestion.label?.[Language.current] ?? suggestion.label}</span>
+        ${suggestion.image ? this.html`<div class="image"><img src="${suggestion.image}"></div>` : ''}
+        <span class="title">${suggestion.label?.[Language.current] ?? suggestion.label}</span>
       </li>`)}
     </ul>
       ` : ''
@@ -330,12 +330,12 @@ export class FormElementBase extends EventTarget {
     }
 
     return this.html`
-    <div classy:wrapper="form-element" type="${this.getType()}">
+    <div class="form-element" type="${this.getType()}">
 
       ${!childIndex ? await this.templateLabel() : ''}
 
       ${this.html`
-        <div classy:items="items">
+        <div class="items">
         ${await Promise.all(itemsToRender.map(async (item) => {
           const index = item[0]
           const value = item[1]
@@ -343,11 +343,11 @@ export class FormElementBase extends EventTarget {
           const templateItemFooter = await this.templateItemFooter(index, value)
 
           return this.html`
-          <div classy:item="item" expanded="${this.shouldShowExpanded(index)}" loading="${this.isLoading.get(index)}">
+          <div class="item" expanded="${this.shouldShowExpanded(index)}" loading="${this.isLoading.get(index)}">
             ${await this.templateItem(index, value)}
             ${value && value['@language'] ? await this.templateLanguageSelector(index, value) : ''}
             ${this.isRemovable(index) ? await this.templateRemoveButton(index) : ''}
-            ${templateItemFooter ? this.html`<div classy:item-footer="item-footer">${templateItemFooter}</div>` : ''}
+            ${templateItemFooter ? this.html`<div class="item-footer">${templateItemFooter}</div>` : ''}
           </div>
         `}))}
 
@@ -357,7 +357,7 @@ export class FormElementBase extends EventTarget {
       ${await this.templateDescription()}
 
       ${actions.length ? this.html`
-      <div classy:actions="actions">
+      <div class="actions">
         ${actions}
       </div>
       ` : ''}
