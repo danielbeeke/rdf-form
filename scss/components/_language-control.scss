@@ -1,0 +1,10 @@
+.language-control-wrapper {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+
+  .inner {
+    margin-bottom: 20px;
+  }
+}

@@ -1,4 +1,5 @@
 import { I10n } from './i10n'
+import {jsonld as JsonLdProcessor} from "./vendor/jsonld";
 
 let current = null
 let fallback = null
@@ -41,9 +42,23 @@ class LanguageService extends EventTarget {
   }
 
   multilingualValue (values) {
+    if (!Array.isArray(values)) values = [values]
     const currentLanguageMatch = values.find(value => value['@language'] === this.current)
     const fallbackLanguageMatch = values.find(value => value['@language'] === this.fallback)
     return currentLanguageMatch?.['@value'] ?? fallbackLanguageMatch?.['@value'] ?? values
+  }
+
+  async extractUsedLanguages (jsonLd): Promise<Array<string>> {
+    const languageCodes = new Set()
+    for (const [predicate, values] of Object.entries(jsonLd)) {
+      /** @ts-ignore */
+      for (const value of values) {
+        if (value?.['@language']) languageCodes.add(value['@language'])
+      }
+    }
+
+    // @ts-ignore
+    return [...languageCodes.values()]
   }
 }
 

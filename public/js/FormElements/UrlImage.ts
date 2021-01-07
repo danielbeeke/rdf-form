@@ -5,7 +5,7 @@ export class UrlImage extends FormElementBase implements FormElement {
 
   static type: string = 'url-image'
 
-  public jsonLdValueType = 'id'
+  public jsonLdValueType = 'value'
 
   on(event, index) {
     super.on(event, index);
@@ -13,7 +13,7 @@ export class UrlImage extends FormElementBase implements FormElement {
   }
 
   async templateItemFooter (index, value) {
-    return value?.['@id'] ? this.html`<img src="${value?.['@id']}" />` : ''
+    return value?.['@value'] ? this.html`<img src="${value?.['@value']}" />` : ''
   }
 
 }

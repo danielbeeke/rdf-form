@@ -28,6 +28,8 @@ import {attributeToJsonLd, lastPart, selectCorrectGraph} from './Helpers'
 import {ContainerWidgetBase} from "./ContainerWidgets/ContainerWidgetBase";
 import {FormElement} from "./Types";
 import { html } from './vendor/uhtml.js'
+import './CustomElements/SlimSelect'
+import {filterLanguages, getLanguageLabel, langCodesToObject} from './getLanguageLabel'
 
 export class RdfForm extends HTMLElement {
 
@@ -69,14 +71,10 @@ export class RdfForm extends HTMLElement {
     const proxyUrl = this.getAttribute('proxy')
     this.proxy = proxyUrl ? new ProxyHandlerStatic(proxyUrl) : null;
 
-    const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? { 'en': 'English' }
     this.comunica = Comunica.newEngine()
     this.comunica.httpProxyHandler = this.proxy
 
     this.html = html
-    Language.i10nLanguages = JSON.parse(this.getAttribute('i10n-languages')) ?? defaultLanguages
-    Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
-    await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     this.formElementRegistry = new FormElementRegistry(() => this.render())
     this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail, Checkbox, Url, Date, UrlImage)
@@ -101,9 +99,20 @@ export class RdfForm extends HTMLElement {
     }
 
     this.data = selectCorrectGraph(this.data, this.getAttribute('data'))
+
     this.expandedData = this.data ? await JsonLdProcessor.expand(this.data): {}
 
     if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
+    const usedLanguages = await Language.extractUsedLanguages(this.expandedData)
+
+    const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? (
+      usedLanguages.length ? await langCodesToObject(usedLanguages) : { 'en': 'English' }
+    )
+
+    Language.i10nLanguages = JSON.parse(this.getAttribute('i10n-languages')) ?? defaultLanguages
+    Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
+    await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
+
     delete this.data['@context']
 
     this.jsonLdContext = {...this.jsonLdContext, ...this.formJsonLd['@context']}
@@ -151,14 +160,20 @@ export class RdfForm extends HTMLElement {
       <style>.svg-inline--fa { display: none; }</style>
       <link rel="stylesheet" href="/css/rdf-form.css" />
 
-      <div class="actions top">
-        ${await this.languageSwitcher()}
-      </div>
-
       <form autocomplete="off" onsubmit="${event => { event.preventDefault(); this.serialize() }}">
 
       ${await Promise.all(regions.map(async region => this.html`
         <div class="${'region ' + region}" style="${'grid-area: ' + region}">
+          ${region === 'sidebar' ? this.html`
+            <details open class="container language-settings">
+              <summary>
+                <h4>${t`Language settings`}</h4>
+              </summary>
+              ${await this.languageSwitcher()}
+              ${await this.languageControl()}
+            </details>
+          ` : ''}
+
           ${await Promise.all([...this.containers.values()]
             .filter(container => {
               return (container.definition?.['form:region'] ?? 'main') === region
@@ -188,7 +203,7 @@ export class RdfForm extends HTMLElement {
 
   async languageSwitcher () {
     return Object.keys(Language.uiLanguages).length > 1 ? this.html`
-      <div class="language-selector-wrapper">
+      <div class="language-selector-wrapper form-element">
         <label class="label">${t`Interface language`}</label>
 
         <div class="language-selector-inner">
@@ -206,6 +221,50 @@ export class RdfForm extends HTMLElement {
         </div>
       </div>
     ` : ''
+  }
+
+  async languageControl () {
+    const onchange = async (event) => {
+      const selectedLanguages = event.currentTarget.slim.selected()
+      Language.i10nLanguages = await langCodesToObject(selectedLanguages)
+      this.render()
+    }
+
+    const onadd = async (event) => {
+      const value = event.detail
+      const text = await getLanguageLabel(value)
+      return {
+        text, value
+      }
+    }
+
+    const ajax = async (event) => {
+      const { callback, search } = event.detail
+      const filteredLanguages = await filterLanguages(search)
+      const items = filteredLanguages.map(language => {
+        return {
+          text: language.description,
+          value: language.subtag
+        }
+      })
+
+      if (!items.length) {
+        return callback('Nothing found')
+      }
+
+      return callback(items)
+    }
+
+    return this.html`
+      <div class="language-control-wrapper form-element">
+        <label class="label">${t`Content languages`}</label>
+
+        <div class="inner">
+          <select multiple is="slim-select" selected="${JSON.stringify(Language.i10nLanguages)}" onadd="${onadd}" allow-add onchange="${onchange}" ajaxsearch onajaxsearch="${ajax}"></select>
+        </div>
+
+      </div>
+    `
   }
 
   async actions () {

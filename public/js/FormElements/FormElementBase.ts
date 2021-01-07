@@ -207,15 +207,8 @@ export class FormElementBase extends EventTarget {
 
   async templateLanguageSelector (index, value) {
     const selectedLanguage = value['@language']
-    let usedLanguages = this.Values.getAll().map(value => value['@language'])
-    let unusedLanguages = Object.keys(Language.i10nLanguages).filter(language => !usedLanguages.includes(language))
-    unusedLanguages.push(selectedLanguage)
 
-    let options = unusedLanguages
-
-    if (this.Values.getAll().length > Object.keys(Language.i10nLanguages).length) {
-      options = Object.keys(Language.i10nLanguages)
-    }
+    let options = Object.keys(Language.i10nLanguages)
 
     return this.html`
     <select onchange="${event => this.Values.get(index)['@language'] = event.target.value}" class="language-selector">
