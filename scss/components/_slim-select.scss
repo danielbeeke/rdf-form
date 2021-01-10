@@ -24,6 +24,7 @@ $spacing-s: 4px !default;
     width: 100%;
     height: $height;
     padding: $spacing-m;
+    position: relative;
     border: 1px solid $border-color;
     border-radius: $border-radius;
     background-color: $white;
@@ -43,6 +44,7 @@ $spacing-s: 4px !default;
     &.ss-open-below {
       border-bottom-left-radius: 0px;
       border-bottom-right-radius: 0px;
+      z-index: 5;
     }
 
     .placeholder {

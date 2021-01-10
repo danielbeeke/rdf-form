@@ -3,21 +3,6 @@ details {
   margin-bottom: 20px;
   border-top: none;
   border-radius: var(--radius);
-  position: relative;
-  z-index: 1;
-
-  &:after {
-    content: '';
-    display: block;
-    position: absolute;
-    z-index: -1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    opacity: .4;
-    background: var(--background-color);
-  }
 
   summary {
     background: var(--disabled-color);

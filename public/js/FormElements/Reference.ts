@@ -23,30 +23,36 @@ export class Reference extends FormElementBase implements FormElement {
         this.searchSuggestions.set(index, [])
         this.render();
 
-        const querySetting = this.Field.autoCompleteQuery.toString()
-        const sourceSetting = this.Field.autoCompleteSource.toString()
+        try {
+          const querySetting = this.Field.autoCompleteQuery.toString()
+          const sourceSetting = this.Field.autoCompleteSource.toString()
 
-        const {
-          query,
-          source
-        } = querySetting || sourceSetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, value) : dbpediaSuggestions(value)
+          const {
+            query,
+            source
+          } = querySetting || sourceSetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, value) : dbpediaSuggestions(value)
 
+          if (query && source) {
+            sparqlQueryToList(query, source, this.comunica).then(searchSuggestions => {
+              searchSuggestions.push({
+                label: t`Add <strong>${{searchTerm: value}}</strong> as text without reference.`,
+                value: value
+              })
 
-        sparqlQueryToList(query, source, this.comunica).then(searchSuggestions => {
-          searchSuggestions.push({
-            label: t`Add <strong>${{searchTerm: value}}</strong> as text without reference.`,
-            value: value
-          })
-
-          this.searchSuggestions.set(index, searchSuggestions)
-          this.isLoading.set(index, false)
-          this.render()
-        }).catch(exception => {
-          console.error(exception)
-          this.searchSuggestions.delete(index)
-          this.isLoading.set(index, false)
-          this.render()
-        })
+              this.searchSuggestions.set(index, searchSuggestions)
+              this.isLoading.set(index, false)
+              this.render()
+            }).catch(exception => {
+              console.error(exception)
+              this.searchSuggestions.delete(index)
+              this.isLoading.set(index, false)
+              this.render()
+            })
+          }
+        }
+        catch (e) {
+          console.log(e)
+        }
 
         this.render()
       }

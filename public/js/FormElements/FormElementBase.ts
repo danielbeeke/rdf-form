@@ -210,8 +210,17 @@ export class FormElementBase extends EventTarget {
 
     let options = Object.keys(Language.i10nLanguages)
 
+    const setLanguage = (event) => {
+      if (event.target.value === '') {
+        delete this.Values.get(index)['@language']
+      }
+      else {
+        this.Values.get(index)['@language'] = event.target.value
+      }
+    }
+
     return this.html`
-    <select onchange="${event => this.Values.get(index)['@language'] = event.target.value}" class="language-selector">
+    <select onchange="${setLanguage}" class="language-selector">
     ${options.map((language) => this.html`
       <option value="${language}" selected="${language === selectedLanguage ? true : null}">${Language.i10nLanguages[language]}</option>
     `)}
@@ -225,7 +234,7 @@ export class FormElementBase extends EventTarget {
   async templateReferenceLabel (flexPath, uri) {
     const waiterId = await flexPath.toString() + '@' + Language.current
     const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name', 'user:username'])
-    const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image'])
+    const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image', 'foaf:img'])
 
     const label = waiter(waiterId + 'label', labelPromise, this.render)
     const thumbnail = waiter(waiterId + 'thumbnail', thumbnailPromise, this.render)
@@ -338,7 +347,7 @@ export class FormElementBase extends EventTarget {
           return this.html`
           <div class="item" expanded="${this.shouldShowExpanded(index)}" loading="${this.isLoading.get(index)}">
             ${await this.templateItem(index, value)}
-            ${value && value['@language'] ? await this.templateLanguageSelector(index, value) : ''}
+            ${value && this.Values.hasTranslations ? await this.templateLanguageSelector(index, value) : ''}
             ${this.isRemovable(index) ? await this.templateRemoveButton(index) : ''}
             ${templateItemFooter ? this.html`<div class="item-footer">${templateItemFooter}</div>` : ''}
           </div>

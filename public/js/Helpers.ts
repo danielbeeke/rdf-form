@@ -135,8 +135,9 @@ export function fa (iconInput) {
  * @param searchTerm
  */
 export function searchSuggestionsSparqlQuery (query = '', source = null, searchTerm: string = '') {
-  if (searchTerm === '' || (searchTerm.length < 4)) return
+  if (searchTerm === '' || (searchTerm.length < 4)) return {}
   let querySearchTerm = searchTerm.trim()
+
   if (source?.type === 'sparql' && querySearchTerm.length > 4) querySearchTerm += '*'
 
   if (!source) source = { type: 'sparql', value: 'https://dbpedia.org/sparql' }

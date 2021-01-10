@@ -13,7 +13,7 @@ export class UrlImage extends FormElementBase implements FormElement {
   }
 
   async templateItemFooter (index, value) {
-    return value?.['@value'] ? this.html`<img src="${value?.['@value']}" />` : ''
+    return value?.['@' + this.jsonLdValueType] ? this.html`<img src="${value?.['@' + this.jsonLdValueType]}" />` : ''
   }
 
 }

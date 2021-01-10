@@ -6,7 +6,7 @@ export class Checkbox extends FormElementBase implements FormElement {
   static type: string = 'checkbox'
 
   async templateItem (index, value, placeholder = null) {
-    const checked = value?.['@value'] === 'true' ? true : null
+    const checked = value?.['@' + this.jsonLdValueType] === 'true' ? true : null
 
     return this.html`
     ${this.html`
@@ -32,6 +32,9 @@ export class Checkbox extends FormElementBase implements FormElement {
     if (['click'].includes(event.type)) {
       const value = {}
       value['@' + this.jsonLdValueType] = event?.target?.checked ? 'true' : 'false'
+      if (this.Values.hasTranslations) {
+        value['@language'] = this.Values.get(index)['@language']
+      }
       this.Values.set(value, index)
     }
 
