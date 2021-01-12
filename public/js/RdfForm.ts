@@ -10,6 +10,7 @@ import { FormElementRegistry } from './FormElementRegistry'
 import {jsonLdToFormElements, resolveSubForms} from './jsonLdToFormElements'
 import { String } from './FormElements/String'
 import { Textarea } from './FormElements/Textarea'
+import { WYSIWYG } from './FormElements/WYSIWYG'
 import { Reference } from './FormElements/Reference'
 import { Duration } from './FormElements/Duration'
 import { Dropdown } from './FormElements/Dropdown'
@@ -19,6 +20,7 @@ import { Mail } from './FormElements/Mail'
 import { Group } from './FormElements/Group'
 import { Checkbox } from './FormElements/Checkbox'
 import { Url } from './FormElements/Url'
+import { Color } from './FormElements/Color'
 import { UrlImage } from './FormElements/UrlImage'
 import { Date } from './FormElements/Date'
 import { Details } from './ContainerWidgets/Details'
@@ -77,7 +79,7 @@ export class RdfForm extends HTMLElement {
     this.html = html
 
     this.formElementRegistry = new FormElementRegistry(() => this.render())
-    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail, Checkbox, Url, Date, UrlImage)
+    this.formElementRegistry.register(String, Textarea, Reference, Dropdown, Duration, Number, Group, Password, Mail, Checkbox, Url, Date, UrlImage, WYSIWYG, Color)
 
     this.containerWidgetTypes = new Map([
       ['details', Details],
@@ -154,6 +156,8 @@ export class RdfForm extends HTMLElement {
   async render () {
     // TODO make configurable
     const regions = ['main', 'sidebar']
+
+    if (!this.shadow) { return }
 
     try {
       render(this.shadow, this.html`

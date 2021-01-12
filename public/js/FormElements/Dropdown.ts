@@ -10,18 +10,21 @@ export class Dropdown extends FormElementBase implements FormElement {
 
   async init(): Promise<void> {
     await super.init();
-    for (const option of this.Field.option) {
-      const value = option[this.Field.prefix.toString() + 'value'][0]['@id']
 
-      const labels = {}
-      for (const label of option[this.Field.prefix.toString() + 'label']) {
-        labels[label['@language']] = label['@value']
+    if (this.Field.option) {
+      for (const option of this.Field.option) {
+        const value = option[this.Field.prefix.toString() + 'value'][0]['@id']
+
+        const labels = {}
+        for (const label of option[this.Field.prefix.toString() + 'label']) {
+          labels[label['@language']] = label['@value']
+        }
+
+        this.options.push({
+          uri: value,
+          label: labels
+        })
       }
-
-      this.options.push({
-        uri: value,
-        label: labels
-      })
     }
 
     if (!this.options.length) {

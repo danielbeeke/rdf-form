@@ -191,7 +191,7 @@ export class FormElementBase extends EventTarget {
     </small>` : ''
   }
 
-  async templateItem (index, value, placeholder = null) {
+  async templateItem (index, value, placeholder = null): Promise<typeof html | HTMLElement> {
     const textValue = value?.['@' + this.jsonLdValueType] ?? value
 
     return this.html`
