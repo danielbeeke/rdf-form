@@ -1,6 +1,6 @@
 const { document } = require('basichtml').init({});
 const test = require('ava');
-import { FieldDefinition } from "../src/FieldDefinition";
+import { FieldDefinition } from "../public/js/FieldDefinition";
 
 const field = {
   "@id": "http://rdf.danielbeeke.nl/recipe/recipe.form.ttl#fn",

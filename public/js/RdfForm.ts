@@ -60,6 +60,7 @@ export class RdfForm extends HTMLElement {
   async connectedCallback () {
     if (!this.comunica) { // Just a key of the second phase.
       this.formJsonLd = await resolveSubForms(await attributeToJsonLd(this, 'form'));
+
       // If this one is empty the attributes were not attached by uhtml. I think...
       if (this.formJsonLd) await this.init()
     }

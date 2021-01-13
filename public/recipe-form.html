@@ -11,18 +11,18 @@
 
 <rdf-form
     id="my-form"
-    form="http://rdf.danielbeeke.nl/prayer/prayer.form.ttl"
-    selected-language="en"
-    i10n-languages='{"en": "English", "nl": "Nederlands", "fr": "Français"}'
+    form="/recipe.form.ttl"
+    selected-language="nl"
+    i10n-languages='{"en": "English", "nl": "Nederlands"}'
     ui-languages='{"en": "English", "nl": "Nederlands"}'
-    proxy="https://2i9izrkade.execute-api.eu-central-1.amazonaws.com/dev?url=">
+>
 </rdf-form>
 
 <script>
-    const myForm = document.querySelector('#my-form')
-    myForm.addEventListener('save', (event) => {
-      console.log(event.detail)
-    })
+  const myForm = document.querySelector('#my-form')
+  myForm.addEventListener('save', (event) => {
+    console.log(event.detail)
+  })
 </script>
 
 </body>

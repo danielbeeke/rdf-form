@@ -1,5 +1,6 @@
 "use strict";
 
+// noinspection JSAnnotator
 /**
  * Asynchronous iterator wrapper for the Comunica SPARQL query engine.
  */

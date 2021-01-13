@@ -35,11 +35,11 @@ function mixString (a, b, asCodeString) {
   return string;
 }
 
-export async function I10n (language, possibleLanguageCodes) {
+export async function I10n (language, prefix = '', possibleLanguageCodes) {
   let translations = {};
   translations[language] = {};
   if (possibleLanguageCodes.includes(language)) {
-    translations[language] = (await import(`./Translations/${language}.js`)).Translations;
+    translations[language] = (await import(`./Translations/${(prefix ? prefix + '.' : '') + language}.js`)).Translations;
   }
 
   /**

@@ -1,5 +1,4 @@
 import { I10n } from './i10n'
-import {jsonld as JsonLdProcessor} from "./vendor/jsonld";
 
 let current = null
 let fallback = null
@@ -21,7 +20,7 @@ class LanguageService extends EventTarget {
 
   async setCurrent (languageCode) {
     current = languageCode
-    t = await I10n(languageCode, Object.keys(this.i10nLanguages))
+    t = await I10n(languageCode, 'RdfForm', Object.keys(this.i10nLanguages))
     this.dispatchEvent(new CustomEvent('language-change'))
   }
 
