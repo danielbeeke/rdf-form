@@ -1,8 +1,19 @@
+/**
+ * THis file fetches
+ */
+
 import { Hole } from './vendor/uhtml.js';
 
 class TranslatedText extends Hole {
-  constructor(text, context) {
-    super();
+
+  readonly text: string
+  public context: Array<any> | string
+
+  constructor(type, template = [], values = []) {
+    super(type, template, values);
+    const text = type
+    const context = template
+
     this.text = text;
     this.template = [text];
     this.values = [];
@@ -15,7 +26,7 @@ class TranslatedText extends Hole {
   }
 }
 
-function mixString (a, b, asCodeString) {
+function mixString (a, b, asCodeString = false) {
   let total = Math.max(a.length, b.length);
   let string = '';
 
@@ -35,7 +46,7 @@ function mixString (a, b, asCodeString) {
   return string;
 }
 
-export async function I10n (language, prefix = '', possibleLanguageCodes) {
+export async function I18n (language, prefix = '', possibleLanguageCodes) {
   let translations = {};
   translations[language] = {};
   if (possibleLanguageCodes.includes(language)) {
@@ -49,7 +60,7 @@ export async function I10n (language, prefix = '', possibleLanguageCodes) {
    * @returns {TranslatedText}
    * @constructor
    */
-  let translate = function Translate (context, ...values) {
+  function Translate (context, ...values): any {
     if (typeof context === 'string') {
       return (strings, ...values) => {
         let translatedText = Translate(strings, ...values);
@@ -75,7 +86,7 @@ export async function I10n (language, prefix = '', possibleLanguageCodes) {
         let translatedString = translations[language][codeString];
         let tokens = Object.assign({}, ...values);
 
-        let replacements = translatedString.match(/\{[a-zA-Z]*}/g);
+        let replacements = translatedString.match(/{[a-zA-Z]*}/g);
         if (replacements) {
           replacements.forEach(replacement => {
             let variableName = replacement.substr(1).substr(0, replacement.length - 2);
@@ -86,9 +97,9 @@ export async function I10n (language, prefix = '', possibleLanguageCodes) {
         return new TranslatedText(translatedString);
       }
     }
-  };
+  }
 
-  translate.direct = (variable) => {
+  Translate.constructor.prototype.direct = (variable) => {
     if (typeof translations[language][variable] === 'undefined') {
       return new TranslatedText(variable);
     }
@@ -97,6 +108,6 @@ export async function I10n (language, prefix = '', possibleLanguageCodes) {
     }
   };
 
-  return translate;
+  return Translate;
 }
 

@@ -208,7 +208,7 @@ export class FormElementBase extends EventTarget {
   async templateLanguageSelector (index, value) {
     const selectedLanguage = value['@language']
 
-    let options = Object.keys(Language.i10nLanguages)
+    let options = Object.keys(Language.l10nLanguages)
 
     const setLanguage = (event) => {
       if (event.target.value === '') {
@@ -222,7 +222,7 @@ export class FormElementBase extends EventTarget {
     return this.html`
     <select onchange="${setLanguage}" class="language-selector">
     ${options.map((language) => this.html`
-      <option value="${language}" selected="${language === selectedLanguage ? true : null}">${Language.i10nLanguages[language]}</option>
+      <option value="${language}" selected="${language === selectedLanguage ? true : null}">${Language.l10nLanguages[language]}</option>
     `)}
     </select>`
   }

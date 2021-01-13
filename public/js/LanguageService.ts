@@ -1,9 +1,9 @@
-import { I10n } from './i10n'
+import { I18n } from './i18n'
 
 let current = null
 let fallback = null
 let uiLanguages: object
-let i10nLanguages: object
+let l10nLanguages: object
 
 class LanguageService extends EventTarget {
   get current () {
@@ -20,16 +20,16 @@ class LanguageService extends EventTarget {
 
   async setCurrent (languageCode) {
     current = languageCode
-    t = await I10n(languageCode, 'RdfForm', Object.keys(this.i10nLanguages))
+    t = await I18n(languageCode, 'RdfForm', Object.keys(this.l10nLanguages))
     this.dispatchEvent(new CustomEvent('language-change'))
   }
 
-  set i10nLanguages (languages) {
-    i10nLanguages = languages
+  set l10nLanguages (languages) {
+    l10nLanguages = languages
   }
 
-  get i10nLanguages () {
-    return i10nLanguages
+  get l10nLanguages () {
+    return l10nLanguages
   }
 
   set uiLanguages (languages) {
@@ -47,16 +47,14 @@ class LanguageService extends EventTarget {
     return currentLanguageMatch?.['@value'] ?? fallbackLanguageMatch?.['@value'] ?? values
   }
 
-  async extractUsedLanguages (jsonLd): Promise<Array<string>> {
-    const languageCodes = new Set()
+  async extractUsedLanguages (jsonLd: object): Promise<Array<string>> {
+    const languageCodes = new Set<string>()
     for (const [predicate, values] of Object.entries(jsonLd)) {
-      /** @ts-ignore */
       for (const value of values) {
         if (value?.['@language']) languageCodes.add(value['@language'])
       }
     }
 
-    // @ts-ignore
     return [...languageCodes.values()]
   }
 }

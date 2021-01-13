@@ -48,10 +48,10 @@ export class FieldValues {
     }
 
     const usedLanguages = this._getValues(this.defaultBinding).map(value => value?.['@language']).filter(onlyUnique)
-    const i10nLanguagesCount = Object.keys(Language.i10nLanguages).length
-    const filteredArray = usedLanguages.filter(value => Object.keys(Language.i10nLanguages).includes(value));
+    const l10nLanguagesCount = Object.keys(Language.l10nLanguages).length
+    const filteredArray = usedLanguages.filter(value => Object.keys(Language.l10nLanguages).includes(value));
     const usedLanguagesCount = filteredArray.length
-    return this.hasTranslations && (usedLanguagesCount < i10nLanguagesCount || this._getValues(this.defaultBinding).length > i10nLanguagesCount)
+    return this.hasTranslations && (usedLanguagesCount < l10nLanguagesCount || this._getValues(this.defaultBinding).length > l10nLanguagesCount)
   }
 
   get length () {
@@ -64,7 +64,7 @@ export class FieldValues {
 
   addTranslation () {
     let usedLanguages = this._getValues(this.defaultBinding).map(value => value['@language'])
-    let unusedLanguages = Object.keys(Language.i10nLanguages).filter(language => !usedLanguages.includes(language))
+    let unusedLanguages = Object.keys(Language.l10nLanguages).filter(language => !usedLanguages.includes(language))
     const values = this._getValues(this.defaultBinding)
 
     if (unusedLanguages.length) {
