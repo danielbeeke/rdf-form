@@ -4,12 +4,6 @@ import { icon } from './vendor/fontawesome-svg-core.js'
 import { Hole } from './vendor/uhtml.js'
 import { Language } from './LanguageService'
 
-export const filterInSet = (pred, set) => {
-  let found = []
-  for (let item of set) if (pred(item)) found.push(item)
-  return found
-}
-
 export function debounce(func, wait, immediate = false) {
   var timeout;
   return function() {
@@ -25,11 +19,9 @@ export function debounce(func, wait, immediate = false) {
   };
 }
 
-async function attributeToText (element, name, required = false): Promise<string> {
+export async function attributeToText (element, name, required = false): Promise<string> {
   let urlOrValue = element.getAttribute(name) ? element.getAttribute(name).trim() : false
-
   if (required && !urlOrValue) throw new Error(`The attribute ${name} does not have a content or does not exist`)
-
 
   if (urlOrValue && (urlOrValue.startsWith('http') || urlOrValue.startsWith('blob') || urlOrValue.substr(0, 1) === '/')) {
     const response = await fetch(urlOrValue)
@@ -91,6 +83,14 @@ export function selectCorrectGraph (data, url) {
 
 const loaderPromises = new Map()
 
+/**
+ * TODO Maybe you should not have to call it twice?
+ * It works fine for rendering but for other cases it may be a bit strange.
+ *
+ * @param reference
+ * @param promiseFunction
+ * @param callback
+ */
 export function waiter (reference, promiseFunction, callback) {
   let promise = loaderPromises.get(reference);
 
@@ -113,9 +113,14 @@ export function waiter (reference, promiseFunction, callback) {
 
 export async function fetchObjectByPredicates (flexPath, language, predicates) {
   for (const predicate of predicates) {
-    let value = await flexPath[predicate]['@' + language]
-    if (!value) value = await flexPath[predicate]
-    if (value) return value.toString()
+    try {
+      let value = await flexPath[predicate]['@' + language]
+      if (!value) value = await flexPath[predicate]
+      if (value) return value.toString()
+    }
+    catch (e) {
+      console.log(e)
+    }
   }
 }
 
@@ -139,9 +144,9 @@ export function searchSuggestionsSparqlQuery (query = '', source = null, searchT
   if (searchTerm === '' || (searchTerm.length < 4)) return {}
   let querySearchTerm = searchTerm.trim()
 
-  if (source?.type === 'sparql' && querySearchTerm.length > 4) querySearchTerm += '*'
-
   if (!source) source = { type: 'sparql', value: 'https://dbpedia.org/sparql' }
+
+  if (source?.type === 'sparql' && querySearchTerm.length > 4) querySearchTerm += '*'
 
   if (!query) {
     query = `
@@ -149,7 +154,7 @@ export function searchSuggestionsSparqlQuery (query = '', source = null, searchT
 
     SELECT DISTINCT ?uri ?label {
       ?uri rdfs:label ?label .
-      FILTER(contains(?label, "'SEARCH_TERM'"))
+      FILTER(contains(?label, """SEARCH_TERM"""))
     }
 
     LIMIT 10`
@@ -172,7 +177,8 @@ export function searchSuggestionsSparqlQuery (query = '', source = null, searchT
 export function dbpediaSuggestions (searchTerm: string) {
   // Add the following if you want to filter by dbpedia class: ?o dbo:ingredient ?uri .
   let querySearchTerm = searchTerm.trim()
-  if (querySearchTerm.length > 4) querySearchTerm += '*'
+
+  // The * does not work on dbpedia.
 
   const query = `
 
@@ -184,8 +190,8 @@ export function dbpediaSuggestions (searchTerm: string) {
 
       ?uri rdfs:label ?label .
       ?uri dbo:thumbnail ?image .
-      ?label bif:contains "'${querySearchTerm}'" .
-      filter langMatches(lang(?label), "${Language.current}")
+      ?label bif:contains '"${querySearchTerm}"' .
+      ${Language.current ? `filter langMatches(lang(?label), "${Language.current}")` : ''}
     }
 
     LIMIT 10`
@@ -239,21 +245,6 @@ export async function sparqlQueryToList (query, source, comunica) {
   }
 
   return [...items.values()]
-}
-
-export function jsonLdValue(value) {
-  if (Array.isArray(value) && value[0]?.['@language']) {
-    return Language.multilingualValue(value)
-  }
-  else if (Array.isArray(value)) {
-    return value.map(item => item['@value'] ?? item['@id'])
-  }
-  else if (value?.['@id'] || value?.['@value']) {
-    return value?.['@id'] ?? value?.['@value']
-  }
-  else {
-    return value ?? ''
-  }
 }
 
 export function asArray (value) {

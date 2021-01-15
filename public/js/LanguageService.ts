@@ -7,10 +7,10 @@
 
 import { I18n } from './i18n'
 
-let current = null
-let fallback = null
-let uiLanguages: object
-let l10nLanguages: object
+let current = 'en'
+let fallback = 'en'
+let uiLanguages: object = { 'en': 'English' }
+let l10nLanguages: object = { 'en': 'English' }
 let currentL10nLanguage: string
 
 class LanguageService extends EventTarget {

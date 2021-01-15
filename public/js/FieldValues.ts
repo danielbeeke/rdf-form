@@ -78,13 +78,7 @@ export class FieldValues {
 
   removeItem (index) {
     const values = this._getValues(this.defaultBinding)
-
-    if (typeof values[index] === 'string') {
-      values[index] = ''
-    }
-    else if (values[index]['@value']) {
-      values[index]['@value'] = ''
-    }
+    values.splice(index, 1)
   }
 
   enableTranslations () {

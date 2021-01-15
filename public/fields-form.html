@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RDF Form</title>
+    <script type="module" src="/js/RdfForm.js"></script>
+</head>
+<body>
+
+<rdf-form
+    id="my-form"
+    form="/fields.form.ttl"
+>
+</rdf-form>
+
+<script>
+  const myForm = document.querySelector('#my-form')
+  myForm.addEventListener('save', (event) => {
+    console.log(event.detail)
+  })
+</script>
+
+</body>
+</html>

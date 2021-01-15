@@ -215,3 +215,4 @@ module.exports = Variable
 
 const rdf = module.exports
 export const namedNode = rdf.namedNode
+export const literal = rdf.literal
