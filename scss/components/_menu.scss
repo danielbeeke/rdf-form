@@ -23,6 +23,7 @@
   max-height: 0;
 }
 
+.menu-wrapper[open="true"],
 .menu-wrapper:hover {
   .menu-button {
     background: var(--color-gray-dark);

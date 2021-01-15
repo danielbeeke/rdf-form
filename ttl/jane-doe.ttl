@@ -1,0 +1,11 @@
+@prefix schema: <http://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[]
+    a schema:Person ;
+    schema:jobTitle "Professor" ;
+    schema:name "Jane Doe" ;
+    schema:givenName "Jane" ;
+    schema:familyName "Doe" ;
+    schema:telephone "(425) 123-4567" ;
+    schema:url <http://www.janedoe.com> .

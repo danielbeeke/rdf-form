@@ -10,6 +10,8 @@
  * window.RdfForm.formElements.push(YourClass)
  * Before loading RdfForm.
  *
+ * We do not support JSON-ld types: @see https://github.com/w3c/json-ld-syntax/issues/13
+ *
  */
 import { ProxyHandlerStatic } from './vendor/ProxyHandlerStatic-browser.js'
 import { Comunica } from './vendor/comunica-browser.js'
@@ -220,11 +222,11 @@ export class RdfForm extends HTMLElement {
         this.render()
       }
 
-      const languageTabs = html`<div class="language-tabs">
+      const languageTabs = Object.keys(Language.l10nLanguages).length > 1 ? html`<div class="language-tabs">
       ${Object.entries(Language.l10nLanguages).map(([langCode, language]) => this.html`
-        <button class="${'language-tab ' + (langCode === Language.currentL10nLanguage ? 'active' : null)}" type="button" onclick="${() => languageClick(langCode)}">${Language.l10nLanguages?.[langCode] ?? language}</button>
+        <button lang="${langCode}" class="${'language-tab ' + (langCode === Language.currentL10nLanguage ? 'active' : '')}" type="button" onclick="${() => languageClick(langCode)}">${Language.l10nLanguages?.[langCode] ?? language}</button>
       `)}
-      </div>`
+      </div>` : ''
 
       const languageContainer = this.html`
         <details open class="container language-settings">

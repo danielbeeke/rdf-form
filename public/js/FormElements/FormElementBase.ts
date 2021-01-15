@@ -243,7 +243,7 @@ export class FormElementBase extends EventTarget {
 
     return buttons.length ? this.html`
       <div class="menu-wrapper" open="${this.menuIsOpen}">
-        <button type="button" class="menu-button button">${fa(faCog)}</button>
+        <button type="button" class="menu-button button" onclick="${() => {this.menuIsOpen = !this.menuIsOpen; this.render()}}">${fa(faCog)}</button>
         <ul onclick="${() => {this.menuIsOpen = false; this.render()}}" class="menu">
           ${buttons.map(button => this.html`<li>${button}</li>`)}
         </ul>
@@ -319,7 +319,7 @@ export class FormElementBase extends EventTarget {
     }
 
     return this.html`
-    <div class="form-element" type="${this.getType()}">
+    <div class="form-element" name="${this.Field.name}" type="${this.getType()}">
 
       ${await this.templateLabel()}
 
