@@ -14,7 +14,7 @@ export class Checkbox extends FormElementBase implements FormElement {
       <input
         onclick="${event => this.on(event, index)}"
         type="checkbox"
-        checked="${checked}"
+        .checked="${checked}"
         placeholder="${placeholder ?? this.Field.placeholder}"
         required="${this.isRequired(index)}">
       <span class="slider"></span>

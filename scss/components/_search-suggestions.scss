@@ -5,7 +5,7 @@
   margin: 0;
   margin-top: 10px;
   list-style: none;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--color-gray);
   border-radius: var(--radius);
   overflow: hidden;
 
@@ -18,7 +18,7 @@
       height: 40px;
       display: block;
       margin-right: 10px;
-      background: var(--button-color);
+      background: var(--color-gray);
 
       img {
         width: 40px;
@@ -44,6 +44,6 @@
   }
 
   .search-suggestion + .search-suggestion {
-    border-top: 1px dashed var(--border-color);
+    border-top: 1px dashed var(--color-gray);
   }
 }

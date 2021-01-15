@@ -159,7 +159,7 @@ export class Reference extends FormElementBase implements FormElement {
       ${editButton()}
       ${await this.ourTemplateRemoveButton(index)}
     ` : this.html`
-      ${await super.templateItem(index, hrefValue ?? searchTerm)}
+      ${await super.templateItem(index, (searchTerm !== '' ? searchTerm : hrefValue) ?? '')}
       ${hrefValue.substr(0, 4) === 'http' ? acceptButton() : ''}
       ${await this.ourTemplateRemoveButton(index)}
       ${await this.templateSearchSuggestions(index)}

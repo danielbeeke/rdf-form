@@ -1,14 +1,16 @@
 :host form {
   display: grid;
   grid-template-columns: 3fr 480px;
+  grid-template-rows: auto auto;
   grid-template-areas:
+    "top top"
     "main sidebar";
-  gap: 30px;
+  gap: 20px;
 
   .region.sidebar {
     border-radius: var(--radius);
     grid-area: sidebar;
-    --background-color: #f2f2f2;
+    --background-color: #f6f4f4;
 
     details.container:first-child {
       margin-top: 46px;

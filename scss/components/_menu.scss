@@ -1,6 +1,6 @@
 .menu-button {
-  float: right;
-  margin-left: auto;
+  background: var(--color-gray-light);
+  padding: 6px;
 }
 
 .menu-wrapper {
@@ -21,15 +21,11 @@
   margin: 0;
   padding: 0;
   max-height: 0;
-
-  li:first-child {
-    margin-top: 10px;
-  }
 }
 
-.menu-wrapper[open=true] {
+.menu-wrapper:hover {
   .menu-button {
-    background: var(--focus-color);
+    background: var(--color-gray-dark);
 
     path {
       fill: white;

@@ -1,12 +1,8 @@
 /**
  * This is the base class for every form element.
  * You can extend this class and overwrite the template methods that you want to change.
- *
- * Also if you only want to change css classes you can use the following:
- * - Inspect the template and search for class="DEFAULT_CLASSES"
- * - Before starting RdfForm call:
- * - Classy.add(IDENTIFIER, ['your', 'classes'])
- * - Classy.add('formElement', ['your', 'classes'])
+ * It is possible to use the formElements without RDF form,
+ * However you still should use FieldDefinitions and FieldValues.
  */
 
 import { faTimes, faCog } from '../vendor/free-solid-svg-icons.js'
@@ -33,7 +29,7 @@ export class FormElementBase extends EventTarget {
   public Field: FieldDefinitionOptions
   public html: any
   public parent: any
-  public searchSuggestions: Map<string, Array<any>> = new Map()
+  public searchSuggestions: Map<string | number, Array<any>> = new Map()
   public metas = new Map()
   public render: any
   public isLoading = new Map()
@@ -51,7 +47,15 @@ export class FormElementBase extends EventTarget {
     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
   }
 
-  constructor (field: FieldDefinitionOptions, values: FieldValues, children: Map<string, FormElement> = null, renderCallback: any, comunica, formPrefix, jsonLdContext = {}) {
+  constructor (
+    field: FieldDefinitionOptions,
+    values: FieldValues,
+    children: Map<string, FormElement> = null,
+    renderCallback: any,
+    comunica,
+    formPrefix,
+    jsonLdContext = {}
+    ) {
     super()
     this.html = html
     this.comunica = comunica
@@ -59,6 +63,7 @@ export class FormElementBase extends EventTarget {
     this.pathContext['@language'] = Language.current
     this.pathContext = {...this.pathContext, ...jsonLdContext}
     this.Values = values
+    this.Values.jsonLdValueType = this.jsonLdValueType
 
     if (children) {
       this.children = children
@@ -91,7 +96,7 @@ export class FormElementBase extends EventTarget {
   }
 
   isRemovable (index) {
-    return !(this.Field.required && this.Values.length < 2)
+    return index !== 0 && !(this.Field.required && this.Values.length < 2)
   }
 
   createButton (buttonClass, method, label) {
@@ -121,7 +126,7 @@ export class FormElementBase extends EventTarget {
   }
 
   /*****************************************************************************************************************
-   * Mutators.
+   * Mutators, most of them are inside FieldValues, these are here because they do more then only mutate a value.
    *****************************************************************************************************************/
 
   async selectSuggestion (suggestionUrl, index) {
@@ -142,9 +147,11 @@ export class FormElementBase extends EventTarget {
       const value = {}
       value['@' + this.jsonLdValueType] = event?.target?.value
       if (this.Values.hasTranslations) {
-        value['@language'] = this.Values.get(index)['@language']
+        value['@language'] = Language.currentL10nLanguage
       }
       this.Values.set(value, index)
+
+      if (index === null) this.render()
     }
 
     this.dispatchEvent(new CustomEvent(event.type, {
@@ -173,6 +180,9 @@ export class FormElementBase extends EventTarget {
 
   /************************************************************************
    * Templates.
+   *
+   * These are small parts of the whole field.
+   * Extending classes may override one or more of them.
    ************************************************************************/
 
   async templateLabel () {
@@ -180,6 +190,7 @@ export class FormElementBase extends EventTarget {
     <label class="label">
       ${this.Field.label}
       ${this.Field.required ? this.html`<span class="label-required-star">*</span>` : ''}
+      <small><em>(${this.Values.hasTranslations ? Language.l10nLanguages[Language.currentL10nLanguage] : t.direct('Language independent')})</em></small>
       ${await this.templateFieldMenu()}
     </label>` : ''
   }
@@ -200,38 +211,16 @@ export class FormElementBase extends EventTarget {
       onkeyup="${event => this.on(event, index)}"
       type="text"
       placeholder="${placeholder ?? this.Field.placeholder}"
-      value="${textValue}"
+      .value="${textValue}"
       required="${this.isRequired(index)}"
     >`
   }
 
-  async templateLanguageSelector (index, value) {
-    const selectedLanguage = value['@language']
-
-    let options = Object.keys(Language.l10nLanguages)
-
-    const setLanguage = (event) => {
-      if (event.target.value === '') {
-        delete this.Values.get(index)['@language']
-      }
-      else {
-        this.Values.get(index)['@language'] = event.target.value
-      }
-    }
-
-    return this.html`
-    <select onchange="${setLanguage}" class="language-selector">
-    ${options.map((language) => this.html`
-      <option value="${language}" selected="${language === selectedLanguage ? true : null}">${Language.l10nLanguages[language]}</option>
-    `)}
-    </select>`
-  }
-
-  async templateItemFooter (index, value) {
+  async templateItemFooter (index: number, value) {
     return false
   }
 
-  async templateReferenceLabel (flexPath, uri) {
+  async templateReferenceLabel (flexPath, uri: string) {
     const waiterId = await flexPath.toString() + '@' + Language.current
     const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name', 'user:username'])
     const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image', 'foaf:img'])
@@ -254,9 +243,7 @@ export class FormElementBase extends EventTarget {
 
     return buttons.length ? this.html`
       <div class="menu-wrapper" open="${this.menuIsOpen}">
-        <button type="button" class="menu-button button" onclick="${() => {this.menuIsOpen = !this.menuIsOpen; this.render()}}">
-            ${fa(faCog)}
-        </button>
+        <button type="button" class="menu-button button">${fa(faCog)}</button>
         <ul onclick="${() => {this.menuIsOpen = false; this.render()}}" class="menu">
           ${buttons.map(button => this.html`<li>${button}</li>`)}
         </ul>
@@ -264,17 +251,17 @@ export class FormElementBase extends EventTarget {
     ` : ''
   }
 
-  async templateRemoveButton (index) {
-    return this.parent?.formElementRegistry ? this.html`
+  async templateRemoveButton (index: number) {
+    this.html`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.render()
       }}">
       ${fa(faTimes)}
-    </button>` : ''
+    </button>`
   }
 
-  async templateSearchSuggestions (index) {
+  async templateSearchSuggestions (index: number) {
     const searchSuggestions = this.searchSuggestions.get(index) ?? []
     const hasResults = !(searchSuggestions[0]?.value)
 
@@ -305,24 +292,24 @@ export class FormElementBase extends EventTarget {
    * Called via the RdfForm
    * @see RdfForm.render()
    */
-  async templateWrapper (childIndex = null) {
-    let countToRender = this.Values.length ? this.Values.length : 1
-    if (childIndex !== null) countToRender = 1 + childIndex
-
+  async templateWrapper () {
     const itemsToRender = []
-    let i = childIndex !== null ? childIndex : 0
-    for (i; i < countToRender; i++) {
-      itemsToRender.push([i, this.Values.get(i) ? this.Values.get(i) : null])
+
+    for (const [index, value] of this.Values.getAll().entries()) {
+      if (this.Values.hasTranslations && value?.['@language'] === Language.currentL10nLanguage) {
+        itemsToRender.push([index, value])
+      }
+
+      if (!this.Values.hasTranslations) {
+        itemsToRender.push([index, value])
+      }
+    }
+
+    if (itemsToRender.length === 0) {
+      itemsToRender.push([null, null])
     }
 
     const actions = []
-
-    if (this.Field.translatable && this.Values.anotherTranslationIsPossible && this.Values.hasTranslations) {
-      actions.push(this.html`<button type="button" class="button add" onclick="${() => {
-        this.Values.addTranslation()
-        this.render()
-      }}">${t.direct('Add translation')}</button>`)
-    }
 
     if (this.Field.multiple) {
       actions.push(this.html`<button type="button" class="button add" onclick="${() => {
@@ -334,7 +321,7 @@ export class FormElementBase extends EventTarget {
     return this.html`
     <div class="form-element" type="${this.getType()}">
 
-      ${!childIndex ? await this.templateLabel() : ''}
+      ${await this.templateLabel()}
 
       ${this.html`
         <div class="items">
@@ -347,7 +334,6 @@ export class FormElementBase extends EventTarget {
           return this.html`
           <div class="item" expanded="${this.shouldShowExpanded(index)}" loading="${this.isLoading.get(index)}">
             ${await this.templateItem(index, value)}
-            ${value && this.Values.hasTranslations ? await this.templateLanguageSelector(index, value) : ''}
             ${this.isRemovable(index) ? await this.templateRemoveButton(index) : ''}
             ${templateItemFooter ? this.html`<div class="item-footer">${templateItemFooter}</div>` : ''}
           </div>

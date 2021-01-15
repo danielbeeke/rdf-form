@@ -2,6 +2,9 @@ import { ContainerWidgetBase } from "./ContainerWidgetBase";
 import {lastPart} from "../Helpers";
 import { Language } from "../LanguageService";
 
+/**
+ * Renders the fields into a HTML details element.
+ */
 export class Details extends ContainerWidgetBase {
 
   async render () {

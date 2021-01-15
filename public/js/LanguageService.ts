@@ -1,9 +1,17 @@
+/**
+ * Language service
+ * The t function get be imported to do translations.
+ * Using it as template literal with t`Lorem Ipsum` returns a Hole for uHtml,
+ * Using t.direct('Lorem Ipsum') returns a string.
+ */
+
 import { I18n } from './i18n'
 
 let current = null
 let fallback = null
 let uiLanguages: object
 let l10nLanguages: object
+let currentL10nLanguage: string
 
 class LanguageService extends EventTarget {
   get current () {
@@ -24,8 +32,19 @@ class LanguageService extends EventTarget {
     this.dispatchEvent(new CustomEvent('language-change'))
   }
 
+  set currentL10nLanguage (langCode) {
+    currentL10nLanguage = langCode
+  }
+
+  get currentL10nLanguage () {
+    return currentL10nLanguage
+  }
+
   set l10nLanguages (languages) {
     l10nLanguages = languages
+    if (!currentL10nLanguage) {
+      currentL10nLanguage = Object.keys(l10nLanguages)[0]
+    }
   }
 
   get l10nLanguages () {
@@ -40,6 +59,10 @@ class LanguageService extends EventTarget {
     return uiLanguages
   }
 
+  /**
+   * Helper function to extract a language value of a RDF quad/triple.
+   * @param values
+   */
   multilingualValue (values) {
     if (!Array.isArray(values)) values = [values]
     const currentLanguageMatch = values.find(value => value['@language'] === this.current)
@@ -47,6 +70,10 @@ class LanguageService extends EventTarget {
     return currentLanguageMatch?.['@value'] ?? fallbackLanguageMatch?.['@value'] ?? values
   }
 
+  /**
+   * Extracts the used languages of JSON-ld.
+   * @param jsonLd
+   */
   async extractUsedLanguages (jsonLd: object): Promise<Array<string>> {
     const languageCodes = new Set<string>()
     for (const [predicate, values] of Object.entries(jsonLd)) {

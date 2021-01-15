@@ -1,50 +1,33 @@
-$height: 37px !default;
-$white: #ffffff !default;
-$font-color: var(--text-color) !default;
-$font-placeholder-color: #8a8a8a !default;
-$font-disabled-color: #dedede !default;
-$primary-color: var(--secondary-text) !default;
-$border-color: var(--border-color) !default;
-$search-highlight-color: var(--add-button-color) !default;
-$border-radius: 4px !default;
-$spacing-l: 8px !default;
-$spacing-m: 6px !default;
-$spacing-s: 4px !default;
-
 .ss-main {
   position: relative;
   display: inline-block;
   user-select: none;
-  color: $font-color;
+  color: var(--color-text);
   width: 100%;
 
   .ss-single-selected {
     display: flex;
     cursor: pointer;
     width: 100%;
-    height: $height;
-    padding: $spacing-m;
-    position: relative;
-    border: 1px solid $border-color;
-    border-radius: $border-radius;
-    background-color: $white;
+    padding: 10px;
+    border: 1px solid var(--color-gray);
+    background-color: white;
     outline: 0;
     box-sizing: border-box;
     transition: background-color .2s;
 
     &.ss-disabled {
-      background-color: $border-color;
+      background-color: var(--color-gray-light);
       cursor: not-allowed;
     }
 
     &.ss-open-above {
-      border-top-left-radius: 0px;
-      border-top-right-radius: 0px;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
     }
     &.ss-open-below {
-      border-bottom-left-radius: 0px;
-      border-bottom-right-radius: 0px;
-      z-index: 5;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
     }
 
     .placeholder {
@@ -72,7 +55,7 @@ $spacing-s: 4px !default;
       }
 
       .ss-disabled {
-        color: $font-disabled-color;
+        color: var(--color-gray-light);
       }
     }
 
@@ -81,7 +64,7 @@ $spacing-s: 4px !default;
       align-items: center;
       justify-content: flex-end;
       flex: 0 1 auto;
-      margin: 0 $spacing-m 0 $spacing-m;
+      margin: 0 6px 0 6px;
       font-weight: bold;
 
       &.ss-hide {
@@ -94,10 +77,10 @@ $spacing-s: 4px !default;
       align-items: center;
       justify-content: flex-end;
       flex: 0 1 auto;
-      margin: 0 $spacing-m 0 $spacing-m;
+      margin: 0 6px 0 6px;
 
       span {
-        border: solid $font-color;
+        border: solid var(--color-text);
         border-width: 0 2px 2px 0;
         display: inline-block;
         padding: 3px;
@@ -117,25 +100,19 @@ $spacing-s: 4px !default;
 
   .ss-multi-selected {
     display: flex;
+    min-height: 41px;
     flex-direction: row;
-    cursor: pointer;
-    min-height: $height;
-    width: 100%;
-    padding: 0 0 0 3px;
-    border: 1px solid $border-color;
-    border-radius: $border-radius;
-    background-color: $white;
-    outline: 0;
-    box-sizing: border-box;
-    transition: background-color .2s;
+    border: solid 1px var(--color-gray);
+    background: white;
+    border-radius: var(--radius);
 
     &.ss-disabled {
-      background-color: $border-color;
+      background-color: var(--color-gray-light);
       cursor: not-allowed;
 
       .ss-values {
         .ss-disabled {
-          color: $font-color;
+          color: var(--color-text);
         }
 
         .ss-value {
@@ -147,12 +124,12 @@ $spacing-s: 4px !default;
     }
 
     &.ss-open-above {
-      border-top-left-radius: 0px;
-      border-top-right-radius: 0px;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
     }
     &.ss-open-below {
-      border-bottom-left-radius: 0px;
-      border-bottom-right-radius: 0px;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
     }
 
     .ss-values {
@@ -160,28 +137,21 @@ $spacing-s: 4px !default;
       flex-wrap: wrap;
       justify-content: flex-start;
       flex: 1 1 100%;
+      padding: 4px;
       width: calc(100% - 30px);
 
       .ss-disabled {
         display: flex;
         padding: 4px 5px;
-        margin: 2px 0px;
+        font-size: 16px;
+        margin: 2px 0;
         line-height: 1em;
         align-items: center;
         width: 100%;
-        color: $font-disabled-color;
+        color: var(--color-gray-light);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-      }
-
-      @keyframes scaleIn {
-        0% {transform: scale(0); opacity: 0;}
-        100% {transform: scale(1); opacity: 1;}
-      }
-      @keyframes scaleOut {
-        0% {transform: scale(1); opacity: 1;}
-        100% {transform: scale(0); opacity: 0;}
       }
 
       .ss-value {
@@ -189,15 +159,11 @@ $spacing-s: 4px !default;
         user-select: none;
         align-items: center;
         font-size: 12px;
-        padding: 3px 5px;
-        margin: 3px 5px 3px 0px;
-        color: $white;
-        background-color: $primary-color;
-        border-radius: $border-radius;
-        animation-name: scaleIn;
-        animation-duration: .2s;
-        animation-timing-function: ease-out;
-        animation-fill-mode: both;
+        padding: 3px 6px;
+        margin: 3px 5px 3px 0;
+        color: var(--text);
+        background-color: var(--color-gray);
+        border-radius: var(--radius);
 
         .ss-value-delete {
           margin: 0 0 0 5px;
@@ -210,26 +176,26 @@ $spacing-s: 4px !default;
       display: flex;
       flex: 0 1 3px;
       align-items: center;
-      margin-right: 10px;
+      margin-right: 16px;
 
       .ss-plus {
         display: flex;
         justify-content: center;
         align-items: center;
-        background: $font-color;
+        background: var(--color-gray-medium);
         position: relative;
-        height: 10px;
-        width: 2px;
+        height: 15px;
+        width: 3px;
         transition: transform .2s;
 
         &:after {
-          background: $font-color;
+          background: var(--color-gray-medium);
           content: "";
           position: absolute;
-          height: 2px;
-          width: 10px;
-          left: -4px;
-          top: 4px;
+          height: 3px;
+          width: 15px;
+          left: -6px;
+          top: 6px;
         }
 
         &.ss-cross {
@@ -245,9 +211,9 @@ $spacing-s: 4px !default;
   width: 100%;
   margin: -1px 0 0 0;
   box-sizing: border-box;
-  border: solid 1px $border-color;
+  border: solid 1px var(--color-gray);
   z-index: 1010;
-  background-color: $white;
+  background-color: white;
   transform-origin: center top;
   transition: transform .2s, opacity .2s;
   opacity: 0;
@@ -262,19 +228,18 @@ $spacing-s: 4px !default;
   .ss-search {
     display: flex;
     flex-direction: row;
-    padding: $spacing-l $spacing-l $spacing-m $spacing-l;
 
     &.ss-hide {
-      height: 0px;
+      height: 0;
       opacity: 0;
-      padding: 0px 0px 0px 0px;
-      margin: 0px 0px 0px 0px;
+      padding: 0;
+      margin: 0;
 
       input {
-        height: 0px;
+        height: 0;
         opacity: 0;
-        padding: 0px 0px 0px 0px;
-        margin: 0px 0px 0px 0px;
+        padding: 0;
+        margin: 0;
       }
     }
 
@@ -284,26 +249,24 @@ $spacing-s: 4px !default;
       line-height: inherit;
       flex: 1 1 auto;
       width: 100%;
-      min-width: 0px;
+      min-width: 0;
       height: 30px;
-      padding: $spacing-m $spacing-l;
+      padding: 6px 8px;
       margin: 0;
-      border: 1px solid $border-color;
-      border-radius: $border-radius;
-      background-color: $white;
+      border: none;
+      background-color: white;
       outline: 0;
       text-align: left;
       box-sizing: border-box;
       -webkit-box-sizing: border-box;
       -webkit-appearance: textfield;
 
-      &::placeholder {
-        color: $font-placeholder-color;
-        vertical-align: middle;
+      &:focus {
+        box-shadow: none;
       }
 
-      &:focus {
-        box-shadow: 0 0 5px $primary-color;
+      &::placeholder {
+        vertical-align: middle;
       }
     }
 
@@ -316,15 +279,15 @@ $spacing-s: 4px !default;
       font-weight: bold;
       flex: 0 0 30px;
       height: 30px;
-      margin: 0 0 0 8px;
-      border: 1px solid $border-color;
-      border-radius: $border-radius;
+      color: var(--color-gray-medium);
+      margin: 0 3px 0 12px;
+      border-radius: var(--radius);
       box-sizing: border-box;
     }
   }
 
   .ss-addable {
-    padding-top: 0px;
+    padding-top: 0;
   }
 
   .ss-list {
@@ -348,8 +311,8 @@ $spacing-s: 4px !default;
       cursor: pointer;
 
       &:hover {
-        color: $white;
-        background-color: $primary-color;
+        color: var(--text);
+        background-color: var(--color-gray);
       }
     }
 
@@ -363,25 +326,25 @@ $spacing-s: 4px !default;
       }
 
       &:hover, &.ss-highlighted {
-        color: $white;
-        background-color: $primary-color;
+        color: var(--text);
+        background-color: var(--color-gray);
       }
 
       &.ss-disabled {
         cursor: not-allowed;
-        color: $font-disabled-color;
-        background-color: $white;
+        color: var(--color-gray-light);
+        background-color: white;
       }
 
       &:not(.ss-disabled).ss-option-selected {
-        color: $font-color;
-        background-color: rgba($primary-color, .1);
+        color: var(--text);
+        background-color: rgba(var(--color-gray), .1);
       }
 
       &.ss-hide { display: none; }
 
       .ss-search-highlight {
-        background-color: $search-highlight-color;
+        background-color: var(--color-gray);
       }
     }
   }

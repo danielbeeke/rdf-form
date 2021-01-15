@@ -75,7 +75,7 @@ export function selectCorrectGraph (data, url) {
     const urlId = url.split('#')[1]
 
     for (const graph of data['@graph']) {
-      const id = graph['@id'].split(':')[1]
+      const id = lastPart(graph?.['@id'])
       if (id === urlId) {
         found = true
         return graph

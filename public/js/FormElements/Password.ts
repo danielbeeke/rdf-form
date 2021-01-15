@@ -27,7 +27,7 @@ export class Password extends FormElementBase implements FormElement {
       onkeyup="${event => this.password = event.target.value}"
       type="password"
       placeholder="${placeholder ?? this.Field.placeholder}"
-      value="${textValue}"
+      .value="${textValue}"
       autocomplete="off"
       required="${this.isRequired(index)}"
     >
@@ -37,7 +37,7 @@ export class Password extends FormElementBase implements FormElement {
       onkeyup="${event => this.passwordConfirm = event.target.value}"
       type="password"
       placeholder="${placeholder ?? this.Field.placeholder}"
-      value="${textValue}"
+      .value="${textValue}"
       autocomplete="off"
       required="${this.isRequired(index)}"
     >

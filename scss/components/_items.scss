@@ -14,7 +14,7 @@
   align-items: flex-start;
 
   &:not(:last-child) {
-    border-bottom: 1px dashed var(--border-color);
+    border-bottom: 1px dashed var(--color-gray);
   }
 
   &:after {

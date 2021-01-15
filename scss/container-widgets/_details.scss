@@ -3,9 +3,10 @@ details {
   margin-bottom: 20px;
   border-top: none;
   border-radius: var(--radius);
+  background: var(--background-color);
 
   summary {
-    background: var(--disabled-color);
+    background: var(--color-gray-light);
     padding: 10px;
     cursor: pointer;
     border-radius: var(--radius);

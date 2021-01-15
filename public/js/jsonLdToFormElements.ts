@@ -30,14 +30,11 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
     if (!field[formPrefix + 'fieldWidget']) return
 
     const fieldName = lastPart(field['@id'])
-
     const childFields = field[formPrefix + 'fieldWidget'][0]['@value'] === 'group' ? fieldsArray.filter(field => field?.[formPrefix + 'fieldGroup']?.[0]?.['@value'] === fieldName) : []
     const children = new Map()
     const binding = field[formPrefix + 'binding']?.[0]['@id']
 
-    if (!parentValues[binding]) {
-      parentValues[binding] = []
-    }
+    if (!parentValues[binding]) parentValues[binding] = []
 
     const values = new FieldValues(parentValues, binding)
 
@@ -71,6 +68,11 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
   return fields;
 }
 
+/**
+ * Replaces subForm fields with their sub form definitions.
+ * A subform field holds an URL to the sub form definition.
+ * @param formDefinition
+ */
 export const resolveSubForms = async (formDefinition) => {
   const formPrefix = formDefinition['@context']['form']
 

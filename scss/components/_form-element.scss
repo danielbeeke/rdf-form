@@ -20,11 +20,16 @@
     margin-bottom: 10px;
     line-height: 22px;
     font-style: italic;
-    color: var(--secondary-text);
+    color: var(--color-gray-medium);
   }
 
   > .label {
     height: 46px;
+  }
+
+  textarea:invalid,
+  input:invalid {
+    box-shadow: none;
   }
 }
 

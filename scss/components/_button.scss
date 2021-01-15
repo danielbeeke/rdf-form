@@ -1,21 +1,21 @@
 .button {
   padding: 10px;
   border-radius: var(--radius);
-  background: var(--button-color);
+  background: var(--color-gray);
   cursor: pointer;
   border: none;
 
   &.save,
   &.add {
-    background: var(--add-button-color);
+    background: var(--color-primary);
   }
 
   &.edit {
-    background: var(--edit-button-color);
+    background: var(--color-secondary);
   }
 
   &.remove {
-    background: var(--remove-button-color);
+    background: var(--color-danger);
     color: white;
 
     svg path {

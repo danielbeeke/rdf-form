@@ -15,7 +15,7 @@ export class Date extends FormElementBase implements FormElement {
       onkeyup="${event => this.on(event, index)}"
       type="text"
       placeholder="${placeholder ?? this.Field.placeholder}"
-      value="${itemValue}"
+      .value="${itemValue}"
       required="${this.isRequired(index)}"
     >`
   }

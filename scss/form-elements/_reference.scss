@@ -9,6 +9,10 @@
     align-items: center;
     gap: 0;
 
+    &:not(:last-child) {
+      border-bottom: none;
+    }
+
     &[expanded="true"] {
       flex: 1 1 100%;
 
@@ -44,7 +48,7 @@
     background: white;
     border-top-left-radius: var(--radius);
     border-bottom-left-radius: var(--radius);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--color-gray);
     padding-right: 10px;
 
     display: flex;
@@ -66,7 +70,7 @@
       height: 33px;
       border-top-left-radius: var(--radius);
       border-bottom-left-radius: var(--radius);
-      background-color: var(--button-color);
+      background-color: var(--color-gray);
       overflow: hidden;
 
       img {

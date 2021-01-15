@@ -1,5 +1,5 @@
 /**
- * THis file fetches
+ * This file fetches the translations.
  */
 
 import { Hole } from './vendor/uhtml.js';

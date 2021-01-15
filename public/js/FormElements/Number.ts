@@ -27,9 +27,8 @@ export class Number extends FormElementBase implements FormElement {
       type="number"
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
-      type="text"
       placeholder="${placeholder ?? this.Field.placeholder}"
-      value="${itemValue}"
+      .value="${itemValue}"
       required="${this.isRequired(index)}"
     >`
   }

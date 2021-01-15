@@ -14,6 +14,6 @@ export class Textarea extends FormElementBase implements FormElement {
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
       required="${this.isRequired(index)}"
-      rows="${this.Field.rows}">${textValue}</textarea>`
+      rows="${this.Field.rows}" .value="${textValue}"></textarea>`
   }
 }

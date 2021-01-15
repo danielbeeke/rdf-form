@@ -2,6 +2,10 @@ import { FormElement} from "../Types";
 import {lastPart} from "../Helpers";
 import { html } from "../vendor/uhtml.js";
 
+/**
+ * A base class for container widgets.
+ * A container holds one or more fields and is placed within a region.
+ */
 export abstract class ContainerWidgetBase {
 
   readonly formElements: Array<FormElement>

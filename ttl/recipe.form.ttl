@@ -1,7 +1,7 @@
 @prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix form:       <http://localhost:8080/form.ttl#> .
 @prefix recipeForm: <http://localhost:8080/recipe.form.ttl#> .
-@prefix schema:     <https://schema.org/> .
+@prefix schema:     <http://schema.org/> .
 
 <http://localhost:8080/recipe.form#recipeForm>
     form:binding schema:Recipe ;

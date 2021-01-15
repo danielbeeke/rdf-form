@@ -10,6 +10,7 @@ import { asArray } from './Helpers'
  */
 export class FieldValues {
 
+  public jsonLdValueType = 'value'
   private bindingValues = new Map<string, any>()
   readonly bindings: Array<any>
   readonly defaultBinding: string
@@ -29,8 +30,8 @@ export class FieldValues {
   }
 
   _getValues (binding) {
-    let parentValues = this.bindingValues.get(binding.toString())
-    return Array.isArray(parentValues) ? parentValues.flatMap(groupItem => groupItem[binding]) : parentValues[binding.toString()] ?? []
+    let values = this.bindingValues.get(binding.toString())
+    return values[binding.toString()] ?? []
   }
 
   get (index = 0) {
@@ -62,88 +63,75 @@ export class FieldValues {
     return this._getValues(this.defaultBinding)
   }
 
-  addTranslation () {
-    let usedLanguages = this._getValues(this.defaultBinding).map(value => value['@language'])
-    let unusedLanguages = Object.keys(Language.l10nLanguages).filter(language => !usedLanguages.includes(language))
-    const values = this._getValues(this.defaultBinding)
-
-    if (unusedLanguages.length) {
-      values.push({ '@value': '', '@language': unusedLanguages.shift() })
-    }
-    else {
-      values.push({ '@value': '', '@language': usedLanguages[0] })
-    }
-  }
-
   addItem () {
     const values = this._getValues(this.defaultBinding)
 
-    const createItem = (value) => {
-      const newItem = Object.assign({}, value)
-      if (newItem['@id']) newItem['@id'] = ''
-      if (newItem['@value']) newItem['@value'] = ''
+    const createItem = () => {
+      const newItem = {}
+      newItem['@' + this.jsonLdValueType] = ''
+      if (this.hasTranslations) newItem['@language'] = ''
       return newItem
     }
 
-    // Needed for group field.
-    // TODO this is not working for fieldgroups I suppose.
-    // Create a better detection mechanism.
-    if (Array.isArray(values) && Array.isArray(values[0])) {
-      const newItem = {}
-      for (const [binding, value] of Object.entries(values[0])) {
-        newItem[binding] = createItem(value[0])
-      }
-      values.push(newItem)
-    }
-
-    else if (typeof values[0] === 'object') {
-      values.push(createItem(values[0]))
-    }
+    values.push(createItem())
   }
 
   removeItem (index) {
     const values = this._getValues(this.defaultBinding)
-    values.splice(index, 1)
+
+    if (typeof values[index] === 'string') {
+      values[index] = ''
+    }
+    else if (values[index]['@value']) {
+      values[index]['@value'] = ''
+    }
   }
 
   enableTranslations () {
     const values = this._getValues(this.defaultBinding) ?? []
-    for (const [index, value] of values.entries()) {
+
+    let usedLanguages = this._getValues(this.defaultBinding).map(value => value['@language'])
+    let unusedLanguages = Object.keys(Language.l10nLanguages).filter(language => !usedLanguages.includes(language))
+
+    for (const [index, unusedLanguage] of unusedLanguages.entries()) {
+      let value = values[index]
       if (typeof value === 'object') {
-        values[index]['@language'] = Language.current
+        values[index]['@language'] = unusedLanguage
       }
       else {
         values[index] = {
-          '@value': this.bindingValues[index],
-          '@language': Language.current
+          '@value': this.bindingValues?.[index] ?? '',
+          '@language': unusedLanguage
         }
       }
     }
 
-    if (!values.length) {
-      this.bindingValues[0] = {
-        '@value': '',
-        '@language': Language.current
+    if (values.length > unusedLanguages.length) {
+      for (let index = unusedLanguages.length; index <= values.length; index++) {
+        let value = values[index]
+        if (typeof value === 'object') {
+          values[index]['@language'] = Language.current
+        }
+        else {
+          values[index] = {
+            '@value':  this.bindingValues?.[index] ?? '',
+            '@language': Language.current
+          }
+        }
       }
     }
   }
 
   removeTranslations () {
     let values = this._getValues(this.defaultBinding)
-    if (values?.[0]?.['@language']) {
-      values = [values?.[0]?.['@value']]
-    }
+    delete values?.[0]?.['@language']
+    values.splice(1)
   }
 
   set (value, index) {
-    const parentValues = this.bindingValues.get(this.defaultBinding)
     const values = this._getValues(this.defaultBinding)
-    if (Array.isArray(parentValues)) {
-      parentValues[index][this.defaultBinding] = value
-    }
-    else {
-      values[index] = value
-    }
+    if (index === null) index = values.length
+    values[index] = value
   }
 
 }

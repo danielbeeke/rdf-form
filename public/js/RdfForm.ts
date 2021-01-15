@@ -18,6 +18,7 @@ import { render, html } from './vendor/uhtml.js';
 
 import { FormElementRegistry } from './FormElementRegistry'
 import {jsonLdToFormElements, resolveSubForms} from './jsonLdToFormElements'
+import { SlimSelect } from "./vendor/slimselect.js";
 
 // Default formElements.
 import { String } from './FormElements/String'
@@ -41,11 +42,10 @@ import { Details } from './ContainerWidgets/Details'
 import { Default } from './ContainerWidgets/Default'
 
 import { Language, t } from './LanguageService'
-import {attributeToJsonLd, lastPart, selectCorrectGraph} from './Helpers'
+import {attributeToJsonLd, debounce, lastPart, selectCorrectGraph} from './Helpers'
 import {ContainerWidgetBase} from "./ContainerWidgets/ContainerWidgetBase";
 import {FormElement} from "./Types";
-import './CustomElements/SlimSelect'
-import {filterLanguages, getLanguageLabel, langCodesToObject} from './getLanguageLabel'
+import {ensureLanguages, languages, langCodesToObject, filterLanguages} from './getLanguageLabel'
 
 export class RdfForm extends HTMLElement {
 
@@ -66,6 +66,8 @@ export class RdfForm extends HTMLElement {
   private containerWidgetTypes: Map<string, any>
   private containers: Map<string, ContainerWidgetBase> = new Map()
   private initiated = false
+  private languageSelectElement: HTMLSelectElement = null
+  private cssLoaded = false
 
   async attributeChangedCallback() {
     if (!this.initiated) await this.init()
@@ -120,7 +122,6 @@ export class RdfForm extends HTMLElement {
 
     this.data = await attributeToJsonLd(this, 'data')
     this.jsonLdContext = this.data['@context']
-    delete this.data['@context']
 
     // The application may have needs for adding aliases to the JSON-ld context.
     const contextText = this.getAttribute('context')
@@ -144,9 +145,9 @@ export class RdfForm extends HTMLElement {
     // It makes it possible for an application developer to completely detach from any hosted code of RDF form
     // and ship the form definition ontology files themselves.
     this.expandedData = this.data ? await JsonLdProcessor.expand(this.data): {}
+    if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
 
     // Language initialisation.
-    if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
     const usedLanguages = await Language.extractUsedLanguages(this.expandedData)
     const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? (
       usedLanguages.length ? await langCodesToObject(usedLanguages) : { 'en': 'English' }
@@ -211,9 +212,20 @@ export class RdfForm extends HTMLElement {
 
     // For now there are two regions. A region may hold containers. It is only used for visual purposes.
     // TODO I think the layout should be configurable somewhere in the future.
-    const regions = ['main', 'sidebar']
+    const regions = ['top', 'main', 'sidebar']
 
     try {
+      const languageClick = (langCode) => {
+        Language.currentL10nLanguage = langCode
+        this.render()
+      }
+
+      const languageTabs = html`<div class="language-tabs">
+      ${Object.entries(Language.l10nLanguages).map(([langCode, language]) => this.html`
+        <button class="${'language-tab ' + (langCode === Language.currentL10nLanguage ? 'active' : null)}" type="button" onclick="${() => languageClick(langCode)}">${Language.l10nLanguages?.[langCode] ?? language}</button>
+      `)}
+      </div>`
+
       const languageContainer = this.html`
         <details open class="container language-settings">
           <summary>
@@ -225,14 +237,18 @@ export class RdfForm extends HTMLElement {
       `
 
       render(this.shadow, this.html`
-      <style>.svg-inline--fa { display: none; }</style>
-      <link rel="stylesheet" href="/css/rdf-form.css" />
+      ${!this.cssLoaded ? this.html`<style>* { display: none; }</style>` : ''}
+      <link onload="${() => {
+        this.cssLoaded = true
+        this.render()
+      }}" rel="stylesheet" href="/css/rdf-form.css" />
 
       <form autocomplete="off" onsubmit="${event => { event.preventDefault(); this.serialize() }}">
 
       ${await Promise.all(regions.map(async region => this.html`
         <div class="${'region ' + region}" style="${'grid-area: ' + region}">
           ${region === 'sidebar' ? languageContainer : ''}
+          ${region === 'top' ? languageTabs : ''}
 
           ${await Promise.all([...this.containers.values()]
             .filter(container => {
@@ -278,11 +294,11 @@ export class RdfForm extends HTMLElement {
             this.dispatchEvent(new CustomEvent('language-change'))
             await this.render()
           }}" class="language-switcher">
-              ${Object.entries(Language.uiLanguages).map((language) => {
-            const code = language[0]
-            const label = language[1]
-            return this.html`<option value="${code}" selected="${code === Language.current ? true : null}">${label}</option>`
-          })}
+            ${Object.entries(Language.uiLanguages).map((language) => {
+              const code = language[0]
+              const label = language[1]
+              return this.html`<option value="${code}" selected="${code === Language.current ? true : null}">${label}</option>`
+            })}
           </select>
         </div>
       </div>
@@ -294,52 +310,71 @@ export class RdfForm extends HTMLElement {
    * If so we need to be able to add a new language.
    * For now I have used https://r12a.github.io/app-subtags so that I do not have to update it.
    * TODO this should be fetched locally on the developers machine instead of in the browser.
+   *
+   * TODO Make it possible to have a fixed list of languages.
+   * Something like allow-l10n-add could be used to show the language control.
    */
   async languageControl () {
-    const onchange = async (event) => {
+    const onChange = async (event) => {
       const selectedLanguages = event.currentTarget.slim.selected()
+      const oldLanguages = Language.l10nLanguages
       Language.l10nLanguages = await langCodesToObject(selectedLanguages)
+
+      // This makes it possible for the application developer to set a different label for a specific language.
+      // Dutch, Flemish to Nederlands..
+      for (const [langCode, givenLabel] of Object.entries(oldLanguages)) {
+        if (Language.l10nLanguages[langCode]) {
+          Language.l10nLanguages[langCode] = givenLabel
+        }
+      }
+
       await this.render()
     }
 
-    const onAdd = async (event) => {
-      const value = event.detail
-      const text = await getLanguageLabel(value)
-      return { text, value }
-    }
+    const select = this.languageSelectElement ?? document.createElement('select')
 
-    const ajax = async (event) => {
-      const { callback, search } = event.detail
-      const filteredLanguages = await filterLanguages(search)
-      const items = filteredLanguages.map(language => {
-        return {
-          text: language.description,
-          value: language.subtag
-        }
+    if (!this.languageSelectElement) {
+      this.languageSelectElement = select
+      select.multiple = true
+      select.addEventListener('change', onChange)
+
+      const initialLanguages = [...Object.entries(Language.l10nLanguages)]
+
+      setTimeout(async () => {
+        await ensureLanguages()
+
+        const slimSelect = new SlimSelect({
+          select: select,
+          ajax: async function (search, callback) {
+            const languages = await filterLanguages(search)
+            const options = languages.map(language => {
+              return {
+                text: Language.l10nLanguages?.[language.subtag] ?? language.description,
+                value: language.subtag,
+              }
+            })
+
+            callback(options)
+          }
+        })
+
+        const selection = initialLanguages.map(([langCode, language]) => {
+          return {
+            text: Language.l10nLanguages[langCode] ?? language,
+            value: langCode,
+            mandatory: true // TODO think about how one should remove a language from an object.
+          }
+        })
+
+        slimSelect.setData(selection)
+        slimSelect.set(selection.map(option => option.value))
       })
-
-      if (!items.length) return callback(t.direct(`Nothing found`))
-
-      return callback(items)
     }
 
     return this.html`
       <div class="language-control-wrapper form-element">
         <label class="label">${t`Content languages`}</label>
-
-        <div class="inner">
-          <select
-            multiple
-            is="slim-select"
-            selected="${JSON.stringify(Language.l10nLanguages)}"
-            onadd="${onAdd}"
-            allow-add
-            onchange="${onchange}"
-            ajaxsearch
-            onajaxsearch="${ajax}">
-          </select>
-        </div>
-
+        <div class="inner">${select}</div>
       </div>
     `
   }

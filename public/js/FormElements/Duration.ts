@@ -67,7 +67,7 @@ export class Duration extends FormElementBase implements FormElement {
           onchange="${event => this.on(event, index, unitType.unit)}"
           onkeyup="${event => this.on(event, index, unitType.unit)}"
           type="number"
-          value="${value !== null ? value : 0}"
+          .value="${value !== null ? value : 0}"
           placeholder="${placeholder ?? this.Field.placeholder}"
           required="${this.isRequired(index)}"
         >
