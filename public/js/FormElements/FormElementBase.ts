@@ -190,7 +190,7 @@ export class FormElementBase extends EventTarget {
     <label class="label">
       ${this.Field.label}
       ${this.Field.required ? this.html`<span class="label-required-star">*</span>` : ''}
-      <small><em>(${this.Values.hasTranslations ? Language.l10nLanguages[Language.currentL10nLanguage] : t.direct('Language independent')})</em></small>
+      <small>&nbsp;<em>(${this.Values.hasTranslations ? Language.l10nLanguages[Language.currentL10nLanguage] : t.direct('Language independent')})</em></small>
       ${await this.templateFieldMenu()}
     </label>` : ''
   }
