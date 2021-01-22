@@ -70,6 +70,7 @@ export class RdfForm extends HTMLElement {
   private initiated = false
   private languageSelectElement: HTMLSelectElement = null
   private cssLoaded = false
+  private hideLanguageControl = false
 
   async attributeChangedCallback() {
     if (!this.initiated) await this.init()
@@ -91,6 +92,8 @@ export class RdfForm extends HTMLElement {
     this.initiated = true
 
     this.formJsonLd = await resolveSubForms(await attributeToJsonLd(this, 'form'));
+
+    this.hideLanguageControl = this.getAttribute('hide-language-control') !== null
 
     // This form library is heavily dependant on CORS requests. Some websites may have been closed off.
     // For this we use a CORS proxy. @see https://developer.mozilla.org/nl/docs/Web/HTTP/CORS
@@ -150,12 +153,14 @@ export class RdfForm extends HTMLElement {
     if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
 
     // Language initialisation.
+    await ensureLanguages()
     const usedLanguages = await Language.extractUsedLanguages(this.expandedData)
     const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? (
       usedLanguages.length ? await langCodesToObject(usedLanguages) : { 'en': 'English' }
     )
-    Language.l10nLanguages = JSON.parse(this.getAttribute('l10n-languages')) ?? defaultLanguages
-    Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? defaultLanguages
+
+    Language.l10nLanguages = JSON.parse(this.getAttribute('l10n-languages')) ?? Object.assign({}, defaultLanguages)
+    Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? Object.assign({}, defaultLanguages)
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     // The form may have subForms fields, a subForm field has a URL reference to another form definition. The subForm field is replaced with all the fields of the subform definition.
@@ -172,6 +177,7 @@ export class RdfForm extends HTMLElement {
     this.removeAttribute('l10n-languages')
     this.removeAttribute('ui-languages')
     this.removeAttribute('proxy')
+    this.removeAttribute('context')
 
     this.shadow = this.attachShadow({ mode: 'open' })
 
@@ -228,15 +234,19 @@ export class RdfForm extends HTMLElement {
       `)}
       </div>` : ''
 
-      const languageContainer = this.html`
+      const languageWrappers = [
+        await this.languageSwitcher(),
+        await this.languageControl()
+      ].filter(thing => thing)
+
+      const languageContainer = languageWrappers.length ? this.html`
         <details open class="container language-settings">
           <summary>
             <h4>${t`Language settings`}</h4>
+            ${languageWrappers}
           </summary>
-          ${await this.languageSwitcher()}
-          ${await this.languageControl()}
         </details>
-      `
+      ` : ''
 
       render(this.shadow, this.html`
       ${!this.cssLoaded ? this.html`<style>* { display: none; }</style>` : ''}
@@ -304,7 +314,7 @@ export class RdfForm extends HTMLElement {
           </select>
         </div>
       </div>
-    ` : ''
+    ` : null
   }
 
   /**
@@ -317,19 +327,11 @@ export class RdfForm extends HTMLElement {
    * Something like allow-l10n-add could be used to show the language control.
    */
   async languageControl () {
+    if (this.hideLanguageControl) return null
+
     const onChange = async (event) => {
       const selectedLanguages = event.currentTarget.slim.selected()
-      const oldLanguages = Language.l10nLanguages
       Language.l10nLanguages = await langCodesToObject(selectedLanguages)
-
-      // This makes it possible for the application developer to set a different label for a specific language.
-      // Dutch, Flemish to Nederlands..
-      for (const [langCode, givenLabel] of Object.entries(oldLanguages)) {
-        if (Language.l10nLanguages[langCode]) {
-          Language.l10nLanguages[langCode] = givenLabel
-        }
-      }
-
       await this.render()
     }
 
@@ -343,8 +345,6 @@ export class RdfForm extends HTMLElement {
       const initialLanguages = [...Object.entries(Language.l10nLanguages)]
 
       setTimeout(async () => {
-        await ensureLanguages()
-
         const slimSelect = new SlimSelect({
           select: select,
           ajax: async function (search, callback) {
