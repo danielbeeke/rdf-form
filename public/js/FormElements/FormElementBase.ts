@@ -48,13 +48,13 @@ export class FormElementBase extends EventTarget {
   }
 
   constructor (
-    field: FieldDefinitionOptions,
-    values: FieldValues,
-    children: Map<string, FormElement> = null,
-    renderCallback: any,
-    comunica,
-    formPrefix,
-    jsonLdContext = {}
+      field: FieldDefinitionOptions,
+      values: FieldValues,
+      children: Map<string, FormElement> = null,
+      renderCallback: any,
+      comunica,
+      formPrefix,
+      jsonLdContext = {}
     ) {
     super()
     this.html = html
@@ -186,11 +186,15 @@ export class FormElementBase extends EventTarget {
    ************************************************************************/
 
   async templateLabel () {
+
+    const languageCount = Object.keys(Language.l10nLanguages).length
+    const languageLabel = this.Values.hasTranslations ? Language.l10nLanguages[Language.currentL10nLanguage] : (languageCount ? t.direct('Language independent') : null)
+
     return this.Field.label ? this.html`
     <label class="label">
       ${this.Field.label}
       ${this.Field.required ? this.html`<span class="label-required-star">*</span>` : ''}
-      <small>&nbsp;<em>(${this.Values.hasTranslations ? Language.l10nLanguages[Language.currentL10nLanguage] : t.direct('Language independent')})</em></small>
+      ${languageLabel ? this.html`<small>&nbsp;<em>(${languageLabel})</em></small>` : ''}
       ${await this.templateFieldMenu()}
     </label>` : ''
   }

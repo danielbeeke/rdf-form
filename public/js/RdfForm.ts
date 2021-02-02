@@ -156,7 +156,7 @@ export class RdfForm extends HTMLElement {
     await ensureLanguages()
     const usedLanguages = await Language.extractUsedLanguages(this.expandedData)
     const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? (
-      usedLanguages.length ? await langCodesToObject(usedLanguages) : { 'en': 'English' }
+      usedLanguages.length ? await langCodesToObject(usedLanguages) : {}
     )
 
     Language.l10nLanguages = JSON.parse(this.getAttribute('l10n-languages')) ?? Object.assign({}, defaultLanguages)
@@ -243,8 +243,8 @@ export class RdfForm extends HTMLElement {
         <details open class="container language-settings">
           <summary>
             <h4>${t`Language settings`}</h4>
-            ${languageWrappers}
           </summary>
+          ${languageWrappers}
         </details>
       ` : ''
 
@@ -376,7 +376,7 @@ export class RdfForm extends HTMLElement {
     return this.html`
       <div class="language-control-wrapper form-element">
         <label class="label">${t`Content languages`}</label>
-        <div class="inner">${select}</div>
+        <div class="inner"><div class="items"><div class="item">${select}</div></div></div>
       </div>
     `
   }
