@@ -50,7 +50,7 @@ export async function I18n (language, prefix = '', possibleLanguageCodes) {
   let translations = {};
   translations[language] = {};
   if (possibleLanguageCodes.includes(language)) {
-    translations[language] = (await import(`./Translations/${(prefix ? prefix + '.' : '') + language}.js`)).Translations;
+    translations[language] = (await import(`/js/Translations/${(prefix ? prefix + '.' : '') + language}.js`)).Translations;
   }
 
   /**

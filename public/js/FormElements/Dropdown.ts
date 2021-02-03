@@ -13,11 +13,12 @@ export class Dropdown extends FormElementBase implements FormElement {
 
     if (this.Field.option) {
       for (const option of this.Field.option) {
-        const value = option[this.Field.prefix.toString() + 'value'][0]['@id']
+        const valueItem = option[this.Field.prefix.toString() + 'value'][0]
+        const value = valueItem?.['@' + this.jsonLdValueType]
 
         const labels = {}
         for (const label of option[this.Field.prefix.toString() + 'label']) {
-          labels[label['@language']] = label['@value']
+          labels[label?.['@language'] ?? 'und'] = label['@value']
         }
 
         this.options.push({
@@ -40,10 +41,11 @@ export class Dropdown extends FormElementBase implements FormElement {
     return !this.Field.required
   }
 
-
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
-      this.Values.set({ '@id': event?.target?.value}, index)
+      const value = this.Values.get(index)
+      value['@' + this.jsonLdValueType] = event?.target?.value
+      this.Values.set(value, index)
     }
 
     this.dispatchEvent(new CustomEvent(event.type, {
@@ -56,7 +58,7 @@ export class Dropdown extends FormElementBase implements FormElement {
   }
 
   async templateItem (index, value) {
-    const idValue = value?.['@id'] ?? value
+    const idValue = value?.['@' + this.jsonLdValueType] ?? value
 
     return this.html`
     <select
@@ -66,7 +68,7 @@ export class Dropdown extends FormElementBase implements FormElement {
         <option disabled selected value>${this.Field.emptyText.toString() ? this.Field.emptyText.toString() : t`- Select a value -`}</option>
         ${this.options.map(option => this.html`
             <option value="${option.uri}" selected="${option.uri === idValue ? true : null}">
-                ${option.label?.[Language.current] ?? option.label}
+                ${option.label?.[Language.current] ?? option.label?.['und'] ?? option.label}
               </option>
         `)}
     </select>`

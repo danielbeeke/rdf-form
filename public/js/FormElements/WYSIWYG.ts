@@ -15,6 +15,7 @@ export class WYSIWYG extends FormElementBase implements FormElement {
 
     if (!this.editors.get(language)) {
       const element: HTMLDivElement = document.createElement('div')
+      element.classList.add('wysiwyg-wrapper')
       this.editors.set(language, init({
         element: element,
         defaultParagraphSeparator: 'p',

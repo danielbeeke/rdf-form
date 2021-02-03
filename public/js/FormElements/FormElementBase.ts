@@ -60,6 +60,7 @@ export class FormElementBase extends EventTarget {
     this.html = html
     this.comunica = comunica
     this.Field = FieldDefinition(field, formPrefix)
+    if (this.Field.jsonLdKey) this.jsonLdValueType = this.Field.jsonLdKey
     this.pathContext['@language'] = Language.current
     this.pathContext = {...this.pathContext, ...jsonLdContext}
     this.Values = values

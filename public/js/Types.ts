@@ -28,6 +28,7 @@ export interface FieldDefinitionOptions {
   range: string
   fieldGroup: string
   prefix: string
+  jsonLdKey: string
 }
 
 export interface FieldDefinitionProxy extends FieldDefinitionOptions {
