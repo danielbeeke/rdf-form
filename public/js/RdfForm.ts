@@ -72,8 +72,10 @@ export class RdfForm extends HTMLElement {
   private cssLoaded = false
   private hideLanguageControl = false
 
-  async attributeChangedCallback() {
+  async attributeChangedCallback(name, oldValue, newValue) {
     if (!this.initiated) await this.init()
+
+    console.log(name, oldValue, newValue)
   }
 
   async connectedCallback () {
@@ -169,16 +171,6 @@ export class RdfForm extends HTMLElement {
 
     // A form may have some information such as the RDF class it will save to.
     this.formInfo = this.formJsonLd['@graph'].find(item => item['@type'] === 'form:Form')
-
-    // Cleaning up attributes, this is not really needed, I thought the attributes make the DOM inspector a mess.
-    this.removeAttribute('data')
-    this.removeAttribute('form')
-    this.removeAttribute('selected-language')
-    this.removeAttribute('l10n-languages')
-    this.removeAttribute('ui-languages')
-    this.removeAttribute('proxy')
-    this.removeAttribute('context')
-
     this.shadow = this.attachShadow({ mode: 'open' })
 
     this.nestContainers()
