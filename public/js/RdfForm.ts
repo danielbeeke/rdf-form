@@ -74,8 +74,6 @@ export class RdfForm extends HTMLElement {
 
   async attributeChangedCallback(name, oldValue, newValue) {
     if (!this.initiated) await this.init()
-
-    console.log(name, oldValue, newValue)
   }
 
   async connectedCallback () {
@@ -162,7 +160,7 @@ export class RdfForm extends HTMLElement {
     )
 
     Language.l10nLanguages = JSON.parse(this.getAttribute('l10n-languages')) ?? Object.assign({}, defaultLanguages)
-    Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? Object.assign({}, defaultLanguages)
+    Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? {}
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 
     // The form may have subForms fields, a subForm field has a URL reference to another form definition. The subForm field is replaced with all the fields of the subform definition.

@@ -28,7 +28,6 @@ class LanguageService extends EventTarget {
 
   async setCurrent (languageCode) {
     current = languageCode
-    console.log(languageCode)
     t = await I18n(languageCode, 'RdfForm', Object.keys(this.uiLanguages))
     this.dispatchEvent(new CustomEvent('language-change'))
   }

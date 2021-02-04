@@ -7,11 +7,8 @@
 
 import { faTimes, faCog } from '../vendor/free-solid-svg-icons.js'
 import { FieldDefinitionOptions, FormElement } from '../Types'
-import { debounce, waiter, fetchObjectByPredicates, fa } from '../Helpers'
-
-import { PathFactory }  from '../vendor/LDflex.js'
-import { ComunicaEngine } from '../vendor/LDFlex-comunica.js'
-import { namedNode } from '../vendor/rdf-data-model.js'
+import { debounce, fa, lastPart } from '../Helpers'
+import { ttl2jsonld } from '../vendor/ttl2jsonld.js'
 import { FieldValues } from '../FieldValues'
 import { FieldDefinition } from '../FieldDefinition'
 import { t, Language} from '../LanguageService'
@@ -36,6 +33,7 @@ export class FormElementBase extends EventTarget {
   public children: Map<string, FormElement> = null
   public jsonLdValueType: string = 'value'
   public comunica
+  public t: any
 
   private menuIsOpen: boolean = false
   private pathContext = {
@@ -65,6 +63,7 @@ export class FormElementBase extends EventTarget {
     this.pathContext = {...this.pathContext, ...jsonLdContext}
     this.Values = values
     this.Values.jsonLdValueType = this.jsonLdValueType
+    this.t = t
 
     if (children) {
       this.children = children
@@ -151,7 +150,6 @@ export class FormElementBase extends EventTarget {
         value['@language'] = Language.currentL10nLanguage
       }
       this.Values.set(value, index)
-
       if (index === null) this.render()
     }
 
@@ -169,12 +167,41 @@ export class FormElementBase extends EventTarget {
       const uri = value?.['@id']
 
       if (uri && !this.metas.get(uri)) {
-        const queryEngine = new ComunicaEngine(uri, {
-          httpProxyHandler: this.comunica.httpProxyHandler
-        }, this.comunica);
-        const path = new PathFactory({ context: this.pathContext, queryEngine });
-        const flexPath = path.create({ subject: namedNode(uri) })
-        this.metas.set(uri, flexPath)
+        const response = await fetch(`${this.comunica.httpProxyHandler.prefixUrl}${uri}`)
+        const text = await response.text()
+        let json
+        try { json = JSON.parse(text) }
+        catch (e) {
+          // @ts-ignore
+          json = ttl2jsonld(text)
+        }
+
+        const meta = {
+          label: null,
+          thumbnail: null,
+        }
+
+        const labelLastParts = ['name', 'username', 'label']
+        const imageLastParts = ['thumbnail', 'depiction', 'image', 'img']
+
+        for (const [predicate, value] of Object.entries(json)) {
+          if (!meta.label && labelLastParts.includes(lastPart(predicate))) {
+            const valueInPreferredLanguage = (value as Array<any>).find(item => item['@language'] === Language.current)
+            const valueInUndeterminedLanguage = (value as Array<any>).find(item => item['@language'] === 'und')
+            meta.label = valueInPreferredLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@value'] ?? value?.[0]?.['@value']
+          }
+
+          if (!meta.thumbnail && imageLastParts.includes(lastPart(predicate))) {
+            const valueInPreferredLanguage = (value as Array<any>).find(item => item['@language'] === Language.current)
+            const valueInUndeterminedLanguage = (value as Array<any>).find(item => item['@language'] === 'und')
+            meta.thumbnail = valueInPreferredLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@value'] ?? value?.[0]?.['@value']
+          }
+        }
+
+        if (!meta.label) meta.label = false
+        if (!meta.thumbnail) meta.thumbnail = false
+
+        this.metas.set(uri, meta)
       }
     }
   }
@@ -225,19 +252,15 @@ export class FormElementBase extends EventTarget {
     return false
   }
 
-  async templateReferenceLabel (flexPath, uri: string) {
-    const waiterId = await flexPath.toString() + '@' + Language.current
-    const labelPromise = fetchObjectByPredicates(flexPath, Language.current, ['rdfs:label', 'foaf:name', 'schema:name', 'user:username'])
-    const thumbnailPromise = fetchObjectByPredicates(flexPath, Language.current, ['dbo:thumbnail', 'foaf:depiction', 'schema:image', 'foaf:img'])
-
-    const label = waiter(waiterId + 'label', labelPromise, this.render)
-    const thumbnail = waiter(waiterId + 'thumbnail', thumbnailPromise, this.render)
-
+  async templateReferenceLabel (meta, uri: string) {
+    const label = meta?.label
+    const thumbnail = meta?.thumbnail
+    
     return this.html`
       <div class="reference-label">
-        ${label === 'error' ? this.html`<span class="reference-loading">${t.direct('Could not load data')}</span>` : this.html`
-          ${thumbnail.loading ? '' : (thumbnail !== 'error' ? this.html`<div class="image"><img src="${thumbnail}"></div>` : '')}
-          ${label.loading ? this.html`<span class="reference-loading">${t.direct('Loading...')}</span>` : this.html`<a href="${uri}" target="_blank">${label}</a>`}
+        ${label === false ? this.html`<span class="reference-loading">${t.direct('Could not load data')}</span>` : this.html`
+          ${thumbnail ? this.html`<div class="image"><img src="${thumbnail}"></div>` : ''}
+          ${label ? this.html`<a href="${uri}" target="_blank">${label}</a>` : this.html`<span class="reference-loading">${t.direct('Loading...')}</span>`}
         `}
       </div>
     `

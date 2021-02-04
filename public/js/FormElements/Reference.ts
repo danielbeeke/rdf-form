@@ -70,8 +70,8 @@ export class Reference extends FormElementBase implements FormElement {
   }
 
   async ourTemplateRemoveButton (index) {
-    // TODO fix this.
-    // THis hack is done for nested fields in fieldgroups.
+    // TODO fix this `this.parent?.formElementRegistry`.
+    // This hack is done for nested fields in fieldgroups.
     return this.parent?.formElementRegistry ? this.html`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)

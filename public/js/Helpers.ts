@@ -81,49 +81,6 @@ export function selectCorrectGraph (data, url) {
   }
 }
 
-const loaderPromises = new Map()
-
-/**
- * TODO Maybe you should not have to call it twice?
- * It works fine for rendering but for other cases it may be a bit strange.
- *
- * @param reference
- * @param promiseFunction
- * @param callback
- */
-export function waiter (reference, promiseFunction, callback) {
-  let promise = loaderPromises.get(reference);
-
-  if (!promise) {
-    promise = promiseFunction.then ? promiseFunction : new Promise(promiseFunction)
-    loaderPromises.set(reference, promise)
-  }
-
-  if (promise.then) {
-    promise.then(meta => {
-      loaderPromises.set(reference, meta ?? 'error')
-      callback()
-    })
-    return { loading: true }
-  }
-  else {
-    return promise
-  }
-}
-
-export async function fetchObjectByPredicates (flexPath, language, predicates) {
-  for (const predicate of predicates) {
-    try {
-      let value = await flexPath[predicate]['@' + language]
-      if (!value) value = await flexPath[predicate]
-      if (value) return value.toString()
-    }
-    catch (e) {
-      console.log(e)
-    }
-  }
-}
-
 class FaIcon extends Hole {
   constructor(icon) {
     /** @ts-ignore */
@@ -144,9 +101,13 @@ export function searchSuggestionsSparqlQuery (query = '', source = null, searchT
   if (searchTerm === '' || (searchTerm.length < 4)) return {}
   let querySearchTerm = searchTerm.trim()
 
+  if (source) {
+    source = { type: 'sparql', value: source }
+  }
+
   if (!source) source = { type: 'sparql', value: 'https://dbpedia.org/sparql' }
 
-  if (source?.type === 'sparql' && querySearchTerm.length > 4) querySearchTerm += '*'
+  // if (source?.type === 'sparql' && querySearchTerm.length > 4) querySearchTerm += '*'
 
   if (!query) {
     query = `
@@ -206,7 +167,9 @@ export function dbpediaSuggestions (searchTerm: string) {
  * @param comunica
  */
 export async function sparqlQueryToList (query, source, comunica) {
-  const config = {}
+  const config = {
+    httpProxyHandler: comunica.httpProxyHandler
+  }
 
   // TODO maybe use tokens that will less likely collide.
   query = query.toString().replace(/LANGUAGE/g, Language.current)

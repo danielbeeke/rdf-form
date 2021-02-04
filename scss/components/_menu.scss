@@ -19,8 +19,11 @@
   pointer-events: none;
   list-style: none;
   margin: 0;
+  position: absolute;
+  top: 100%;
   padding: 0;
   max-height: 0;
+  white-space: nowrap;
 }
 
 .menu-wrapper[open="true"],
