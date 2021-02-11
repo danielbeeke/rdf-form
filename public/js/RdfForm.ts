@@ -73,11 +73,14 @@ export class RdfForm extends HTMLElement {
   private hideLanguageControl = false
 
   async attributeChangedCallback(name, oldValue, newValue) {
-    if (!this.initiated) await this.init()
+    await this.connectedCallback()
   }
 
   async connectedCallback () {
-    if (!this.initiated) await this.init()
+    if (!this.initiated) {
+      this.initiated = true
+      await this.init()
+    }
   }
 
   /**

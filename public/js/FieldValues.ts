@@ -124,7 +124,6 @@ export class FieldValues {
 
   set (value, index) {
     const values = this._getValues(this.defaultBinding)
-    if (index === null) index = values.length
     values[index] = value
   }
 

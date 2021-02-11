@@ -60,12 +60,14 @@ export class Dropdown extends FormElementBase implements FormElement {
   async templateItem (index, value) {
     const idValue = value?.['@' + this.jsonLdValueType] ?? value
 
+    console.log(idValue)
+
     return this.html`
     <select
     required="${this.isRequired(index)}"
     onchange="${event => this.on(event, index)}"
     >
-        <option disabled selected value>${this.Field.emptyText.toString() ? this.Field.emptyText.toString() : t`- Select a value -`}</option>
+        ${!idValue ? this.html`<option disabled selected value>${this.Field.emptyText.toString() ? this.Field.emptyText.toString() : t`- Select a value -`}</option>` : this.html``}
         ${this.options.map(option => this.html`
             <option value="${option.uri}" selected="${option.uri === idValue ? true : null}">
                 ${option.label?.[Language.current] ?? option.label?.['und'] ?? option.label}

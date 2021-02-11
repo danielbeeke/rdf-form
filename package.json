@@ -1,7 +1,6 @@
 {
   "scripts": {
-    "test": "ava",
-    "test:watch": "ava --watch",
+    "test": "cypress open",
     "start": "snowpack dev",
     "build": "snowpack build"
   },
@@ -30,20 +29,11 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/free-regular-svg-icons": "^5.15.1",
     "@fortawesome/free-solid-svg-icons": "^5.15.1",
-    "ava": "^3.13.0",
     "cypress": "^6.2.1",
     "node-sass": "^4.14.1",
     "node-sass-glob-importer": "^5.3.2",
     "rollup": "2.15.0",
     "snowpack": "3",
     "ts-node": "*"
-  },
-  "ava": {
-    "extensions": [
-      "ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ]
   }
 }

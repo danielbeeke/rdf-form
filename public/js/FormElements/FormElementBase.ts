@@ -13,6 +13,7 @@ import { FieldValues } from '../FieldValues'
 import { FieldDefinition } from '../FieldDefinition'
 import { t, Language} from '../LanguageService'
 import { html } from '../vendor/uhtml.js'
+import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js';
 
 if (!window.RdfForm) { window.RdfForm = { formElements: [] } }
 
@@ -70,7 +71,9 @@ export class FormElementBase extends EventTarget {
     }
 
     if (renderCallback) {
-      this.render = debounce(() => renderCallback(), 100)
+      this.render = debounce(() => {
+        renderCallback()
+      }, 100)
     }
   }
 
@@ -167,7 +170,12 @@ export class FormElementBase extends EventTarget {
       const uri = value?.['@id']
 
       if (uri && !this.metas.get(uri)) {
-        const response = await fetch(`${this.comunica.httpProxyHandler.prefixUrl}${uri}`)
+        const proxyUrl = this.comunica?.httpProxyHandler?.prefixUrl
+        const response = await fetch(`${proxyUrl ? proxyUrl : ''}${uri}`, {
+          headers: {
+            'Accept': 'application/ld+json'
+          }
+        })
         const text = await response.text()
         let json
         try { json = JSON.parse(text) }
@@ -175,6 +183,9 @@ export class FormElementBase extends EventTarget {
           // @ts-ignore
           json = ttl2jsonld(text)
         }
+
+        json = await JsonLdProcessor.expand(json)
+        if (Array.isArray(json)) json = json[0]
 
         const meta = {
           label: null,
@@ -334,7 +345,7 @@ export class FormElementBase extends EventTarget {
     }
 
     if (itemsToRender.length === 0) {
-      itemsToRender.push([null, null])
+      itemsToRender.push([0, null])
     }
 
     const actions = []

@@ -1,6 +1,6 @@
 describe('It fetches the ttl data correctly', function () {
   it('Checks for data coming from the ttl', function () {
-    cy.visit('http://localhost:8080/person-form.html')
+    cy.visit('http://localhost:8070/person-form.html')
 
     cy.get('rdf-form').shadow()
     .find('.form-element[name="name"] input')
@@ -16,7 +16,7 @@ describe('It fetches the ttl data correctly', function () {
   })
 
   it('should translate a field and the exported json-ld should match', function () {
-    cy.visit('http://localhost:8080/person-form.html')
+    cy.visit('http://localhost:8070/person-form.html')
 
     cy.get('rdf-form').shadow()
     .find('.form-element[name="name"] .menu-wrapper .menu-button').click()

@@ -6,42 +6,12 @@ import {
   attributeToJsonLd,
   attributeToQuads,
   selectCorrectGraph,
-  waiter,
-  fetchObjectByPredicates
 } from '../../public/js/Helpers'
-import { PathFactory } from '../../public/js/vendor/LDflex.js'
-import { namedNode, literal } from '../../public/js/vendor/rdf-data-model.js'
-
-export function createQueryEngine(variableNames, results) {
-  if (!results) {
-    results = variableNames;
-    variableNames = ['?value'];
-  }
-  return {
-    execute: async function* (query) {
-
-      if (!query.includes('schema:givenName')) return
-
-      for (let result of results) {
-        if (!Array.isArray(result))
-          result = [result];
-        const bindings = variableNames.map((name, i) => [name, result[i]]);
-        yield new Map(bindings);
-      }
-    }
-  }
-}
-
-const multilingualQueryEngine = createQueryEngine([
-  literal('Tomato', 'en'),
-  literal('Tomaat', 'nl'),
-  literal('Tomate', 'de'),
-]);
 
 describe('attributeToText and attributeToJsonLd', function () {
   it('should get the attribute and fetch if it is a URL', async function () {
     const element = document.createElement('div')
-    element.setAttribute('data',  'http://localhost:8080/fields.form.ttl')
+    element.setAttribute('data',  'http://localhost:8070/fields.form.ttl')
     const formDefinition = await attributeToText(element, 'data')
     expect(formDefinition).to.contain('@prefix form:')
 
@@ -54,17 +24,17 @@ describe('attributeToText and attributeToJsonLd', function () {
 
     const formDefinitionJsonLd = await attributeToJsonLd(element, 'data')
 
-    expect(formDefinitionJsonLd['@context']['fieldsForm']).to.be.equal('http://localhost:8080/fields.form.ttl#')
+    expect(formDefinitionJsonLd['@context']['fieldsForm']).to.be.equal('http://localhost:8070/fields.form.ttl#')
   })
 })
 
 describe('attributeToQuads', () => {
   it('should get the attribute and fetch if it is a URL', async function () {
     const element = document.createElement('div')
-    element.setAttribute('data',  'http://localhost:8080/fields.form.ttl')
+    element.setAttribute('data',  'http://localhost:8070/fields.form.ttl')
     const formDefinition = await attributeToQuads(element, 'data')
     const thingQuad = formDefinition.find(field => field.object.id === 'http://schema.org/Thing')
-    expect(thingQuad.subject.id).to.be.equal('http://localhost:8080/person.form#fieldsForm')
+    expect(thingQuad.subject.id).to.be.equal('http://localhost:8070/person.form#fieldsForm')
   })
 })
 
@@ -93,35 +63,6 @@ describe('selectCorrectGraph', () => {
 
     const wholeGraph = selectCorrectGraph(graph['@graph'], 'http://example.com/data#two')
     expect(wholeGraph).to.be.equal(graph['@graph'])
-  })
-})
-
-describe('waiter', async () => {
-  it('should waiter until the promise ready', function () {
-    const waiterPromise = new Promise((resolve) => {
-      setTimeout(() => {
-        resolve('test')
-      }, 1000)
-    })
-    const myWaiter = waiter('my-waiter', waiterPromise, () => {
-      expect(waiter('my-waiter')).to.be.equal('test')
-    })
-
-    expect(myWaiter.loading).to.be.equal(true)
-  })
-})
-
-describe('fetchObjectByPredicates', function () {
-  it('should fetch the first predicate that it can find in a flexpath', async function () {
-    const subject = namedNode('https://example.org/#me');
-
-    const context = {
-      'schema': 'http://schema.org'
-    }
-    const path = new PathFactory({ context, multilingualQueryEngine });
-    const tomato = path.create({ queryEngine: multilingualQueryEngine }, { subject });
-    const result = await fetchObjectByPredicates(tomato, 'nl', ['rdfs:label', 'foaf:name', 'schema:givenName'])
-    expect(result).to.be.equal('Tomaat')
   })
 })
 
