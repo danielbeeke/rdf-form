@@ -43,7 +43,7 @@ export class Dropdown extends FormElementBase implements FormElement {
 
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
-      const value = this.Values.get(index)
+      const value = this.Values.get(index) ?? {}
       value['@' + this.jsonLdValueType] = event?.target?.value
       this.Values.set(value, index)
     }
