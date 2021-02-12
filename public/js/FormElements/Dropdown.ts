@@ -60,8 +60,6 @@ export class Dropdown extends FormElementBase implements FormElement {
   async templateItem (index, value) {
     const idValue = value?.['@' + this.jsonLdValueType] ?? value
 
-    console.log(idValue)
-
     return this.html`
     <select
     required="${this.isRequired(index)}"
