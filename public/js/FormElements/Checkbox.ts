@@ -1,5 +1,6 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
+import { Language} from '../LanguageService'
 
 export class Checkbox extends FormElementBase implements FormElement {
 
@@ -24,7 +25,6 @@ export class Checkbox extends FormElementBase implements FormElement {
   }
 
   /**
-   * TODO problematic with serialize. What do we really want? off / on and unset? or just off / on?
    * @param event
    * @param index
    */
@@ -45,5 +45,31 @@ export class Checkbox extends FormElementBase implements FormElement {
         value: event.target.value
       }
     }))
+  }
+
+  serialize () {
+    let values = this.Values.getAll()
+
+    if (this.Field.saveEmptyValue) {
+      if (this.Values.hasTranslations) {
+        const missingLanguages = Object.keys(Language.l10nLanguages).filter(langCode => !values.find(value => value['@language'] === langCode))
+        
+        for (const missingLanguage of missingLanguages) {
+          this.Values.set({
+            '@language': missingLanguage,
+            '@value': 'false'
+          }, values.length)
+        }
+      }
+      else {
+        this.Values.set({
+          '@value': 'false'
+        }, values.length)
+      }
+
+      values = this.Values.getAll()
+    }
+
+    return values.length ? values : null
   }
 }

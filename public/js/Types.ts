@@ -29,6 +29,7 @@ export interface FieldDefinitionOptions {
   fieldGroup: string
   prefix: string
   jsonLdKey: string
+  saveEmptyValue: string
 }
 
 export interface FieldDefinitionProxy extends FieldDefinitionOptions {
