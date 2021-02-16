@@ -62,9 +62,11 @@ export class Checkbox extends FormElementBase implements FormElement {
         }
       }
       else {
-        this.Values.set({
-          '@value': 'false'
-        }, values.length)
+        if (!values.length) {
+          this.Values.set({
+            '@value': 'false'
+          }, 0)  
+        }
       }
 
       values = this.Values.getAll()
