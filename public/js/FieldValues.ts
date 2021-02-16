@@ -69,7 +69,7 @@ export class FieldValues {
     const createItem = () => {
       const newItem = {}
       newItem['@' + this.jsonLdValueType] = ''
-      if (this.hasTranslations) newItem['@language'] = ''
+      if (this.hasTranslations) newItem['@language'] = Language.currentL10nLanguage
       return newItem
     }
 
