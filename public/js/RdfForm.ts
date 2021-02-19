@@ -163,6 +163,11 @@ export class RdfForm extends HTMLElement {
     )
 
     Language.l10nLanguages = JSON.parse(this.getAttribute('l10n-languages')) ?? Object.assign({}, defaultLanguages)
+
+    if (this.getAttribute('selected-l10n-language') && this.getAttribute('selected-l10n-language') in Language.l10nLanguages) {
+      Language.currentL10nLanguage = this.getAttribute('selected-l10n-language')
+    }
+
     Language.uiLanguages = JSON.parse(this.getAttribute('ui-languages')) ?? {}
     await Language.setCurrent(this.getAttribute('selected-language') ?? 'en')
 

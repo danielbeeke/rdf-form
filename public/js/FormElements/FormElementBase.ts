@@ -112,7 +112,7 @@ export class FormElementBase extends EventTarget {
   getMenuButtons () {
     const buttons = []
 
-    if (this.Field.translatable && !this.Values.hasTranslations) {
+    if (this.Field.translatable && !this.Values.hasTranslations && Object.keys(Language.l10nLanguages).length) {
       buttons.push(this.createButton('add', () => this.Values.enableTranslations(), 'Create translation'))
     }
 
