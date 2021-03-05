@@ -30,6 +30,7 @@ export interface FieldDefinitionOptions {
   prefix: string
   jsonLdKey: string
   saveEmptyValue: string
+  saveMeta: boolean
 }
 
 export interface FieldDefinitionProxy extends FieldDefinitionOptions {

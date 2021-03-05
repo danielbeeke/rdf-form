@@ -60,9 +60,9 @@ export class Password extends FormElementBase implements FormElement {
     }))
   }
 
-  serialize () {
+  async serialize () {
     if (!this.password) return null
-    return super.serialize()
+    return await super.serialize()
   }
 
 }

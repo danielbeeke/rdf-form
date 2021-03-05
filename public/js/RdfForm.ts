@@ -71,6 +71,7 @@ export class RdfForm extends HTMLElement {
   private languageSelectElement: HTMLSelectElement = null
   private cssLoaded = false
   private hideLanguageControl = false
+  private isSaving = false
 
   async attributeChangedCallback(name, oldValue, newValue) {
     await this.connectedCallback()
@@ -380,29 +381,32 @@ export class RdfForm extends HTMLElement {
   }
 
   async actions () {
-    return this.html`<button class="button save">${t.direct('Save')}</button>`
+    return this.html`<button class="${'button save ' + (this.isSaving ? 'is-working' : '') }">${t.direct('Save')}</button>`
   }
 
   /**
    * Serialized all the form fields back to JSON-ld so it can be saved to the backend of the application developer.
    */
   async serialize () {
+    this.isSaving = true
+    this.render()
     const jsonLd = { '@context': {...this.jsonLdContext} }
     const formElements = Array.from(this.formElements.values())
     for (const formElement of formElements) {
       const binding = formElement.Field.binding
-      jsonLd[binding] = formElement.serialize()
+      jsonLd[binding] = await formElement.serialize()
     }
 
-    // Sets the target RDF class
-    // TODO maybe these should be allowed to be multiple classes.
-    if (this.formInfo?.['form:binding']?.['@id']) {
-      jsonLd['@type'] = [this.formInfo['form:binding']['@id']]
+    // Sets the target RDF classes
+    if (this.formInfo?.['form:binding']) {
+      jsonLd['@type'] = this.formInfo['form:binding'].map(value => value['@id'])
     }
 
+    if (this.data['@id']) jsonLd['@id'] = this.data['@id']
     const compacted = await JsonLdProcessor.compact(jsonLd, jsonLd['@context']);
-
     this.dispatchEvent(new CustomEvent('save', { detail: compacted }))
+    this.isSaving = false
+    this.render()
   }
 
   /**

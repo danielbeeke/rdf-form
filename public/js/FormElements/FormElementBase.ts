@@ -123,7 +123,7 @@ export class FormElementBase extends EventTarget {
     return buttons
   }
 
-  serialize () {
+  async serialize () {
     const values = this.Values.getAll()
     return values.length ? values : null
   }
@@ -327,6 +327,18 @@ export class FormElementBase extends EventTarget {
       ` : ''
   }
 
+  async templateActions (actionsObject) {
+    const actions = Object.values(actionsObject)
+
+    return this.html`
+      ${actions.length ? this.html`
+      <div class="actions">
+        ${actions}
+      </div>
+      ` : ''}
+    `
+  }
+
   /**
    * Called via the RdfForm
    * @see RdfForm.render()
@@ -351,10 +363,10 @@ export class FormElementBase extends EventTarget {
     const actions = []
 
     if (this.Field.multiple) {
-      actions.push(this.html`<button type="button" class="button add" onclick="${() => {
+      actions['addItem'] = this.html`<button type="button" class="button add" onclick="${() => {
         this.Values.addItem()
         this.render()
-      }}">${t.direct('Add item')}</button>` )
+      }}">${t.direct('Add item')}</button>`
     }
 
     return this.html`
@@ -383,11 +395,7 @@ export class FormElementBase extends EventTarget {
 
       ${await this.templateDescription()}
 
-      ${actions.length ? this.html`
-      <div class="actions">
-        ${actions}
-      </div>
-      ` : ''}
+      ${await this.templateActions(actions)}
 
     </div>`
   }

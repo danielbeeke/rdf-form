@@ -32,4 +32,39 @@
     &.fa-w-16 { width: 16px; }
     &.fa-w-16 { width: 16px; }
   }
+
+  &.is-working {
+    position: relative;
+    background: var(--color-primary-darker);
+    color: white;
+
+    &:after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background-image: linear-gradient(
+        -45deg, 
+        rgba(255, 255, 255, .2) 25%, 
+        transparent 25%, 
+        transparent 50%, 
+        rgba(255, 255, 255, .2) 50%, 
+        rgba(255, 255, 255, .2) 75%, 
+        transparent 75%, 
+        transparent
+      );
+      z-index: 1;
+      background-size: 37px;
+      animation: move 2s linear infinite;
+      overflow: hidden;
+    }
+  }
+}
+
+@keyframes move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 50px 50px;
+  }
 }

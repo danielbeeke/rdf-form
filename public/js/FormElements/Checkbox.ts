@@ -47,7 +47,7 @@ export class Checkbox extends FormElementBase implements FormElement {
     }))
   }
 
-  serialize () {
+  async serialize () {
     let values = this.Values.getAll()
 
     if (this.Field.saveEmptyValue) {

@@ -36,7 +36,7 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
 
     if (!parentValues[binding]) parentValues[binding] = []
 
-    const values = new FieldValues(parentValues, binding)
+    const values = new FieldValues(parentValues, field[formPrefix + 'binding'].map(value => value['@id']))
 
     for (const childField of childFields) {
       const childFormElement = await createFormElement(childField, values.getAll())
