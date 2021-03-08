@@ -399,7 +399,7 @@ export class RdfForm extends HTMLElement {
 
     // Sets the target RDF classes
     if (this.formInfo?.['form:binding']) {
-      jsonLd['@type'] = this.formInfo['form:binding'].map(value => value['@id'])
+      jsonLd['@type'] = Array.isArray(this.formInfo['form:binding']) ? this.formInfo['form:binding'].map(value => value['@id']) : this.formInfo['form:binding']['@id']
     }
 
     if (this.data['@id']) jsonLd['@id'] = this.data['@id']
