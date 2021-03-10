@@ -38,6 +38,7 @@ export class UrlImage extends FormElementBase implements FormElement {
   async serialize () {
     if (this.Values.bindings.length > 1) {
       const baseValues = this.Values.getAll(this.Values.defaultBinding)
+
       if (this.Values.bindings.some(binding => lastPart(binding) === 'width' || lastPart(binding) === 'height')) {
         const bindingMapping = {
           width: null,
@@ -50,11 +51,14 @@ export class UrlImage extends FormElementBase implements FormElement {
         }
 
         for (const [index, baseValue] of baseValues.entries()) {
-          const imageUrl = baseValue?.['@value']
-          const { width, height } = await getImageDimensionsByUrl(imageUrl)
+          const imageUrl = baseValue['https://schema.org/url']?.[0]?.['@value'] ?? baseValue?.['@value']
+
+          if (imageUrl) {
+            const { width, height } = await getImageDimensionsByUrl(imageUrl)
           
-          if (bindingMapping.width && width) this.Values.set({ '@value': width }, index, bindingMapping.width)
-          if (bindingMapping.height && height) this.Values.set({ '@value': height }, index, bindingMapping.height)
+            if (bindingMapping.width && width) this.Values.set({ '@value': width }, index, bindingMapping.width)
+            if (bindingMapping.height && height) this.Values.set({ '@value': height }, index, bindingMapping.height)  
+          }
         }
       }
 

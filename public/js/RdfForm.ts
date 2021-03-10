@@ -390,7 +390,10 @@ export class RdfForm extends HTMLElement {
   async serialize () {
     this.isSaving = true
     this.render()
-    const jsonLd = { '@context': {...this.jsonLdContext} }
+
+    const clonedData = JSON.parse(JSON.stringify(this.data))
+
+    const jsonLd = Object.assign({ '@context': {...this.jsonLdContext} }, clonedData)
     const formElements = Array.from(this.formElements.values())
     for (const formElement of formElements) {
       const binding = formElement.Field.binding
@@ -398,11 +401,10 @@ export class RdfForm extends HTMLElement {
     }
 
     // Sets the target RDF classes
-    if (this.formInfo?.['form:binding']) {
+    if (this.formInfo?.['form:binding'] && !jsonLd['@type']) {
       jsonLd['@type'] = Array.isArray(this.formInfo['form:binding']) ? this.formInfo['form:binding'].map(value => value['@id']) : this.formInfo['form:binding']['@id']
     }
 
-    if (this.data['@id']) jsonLd['@id'] = this.data['@id']
     const compacted = await JsonLdProcessor.compact(jsonLd, jsonLd['@context']);
     this.dispatchEvent(new CustomEvent('save', { detail: compacted }))
     this.isSaving = false
