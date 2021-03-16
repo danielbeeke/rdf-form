@@ -6,11 +6,10 @@
  */
 
 import { faTimes, faCog } from '../vendor/free-solid-svg-icons.js'
-import { FieldDefinitionOptions, FormElement } from '../Types'
+import { FieldDefinitionOptions, FieldDefinitionProxy } from '../Types'
 import { debounce, fa, lastPart } from '../Helpers'
 import { ttl2jsonld } from '../vendor/ttl2jsonld.js'
 import { FieldValues } from '../FieldValues'
-import { FieldDefinition } from '../FieldDefinition'
 import { t, Language} from '../LanguageService'
 import { html } from '../vendor/uhtml.js'
 import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js';
@@ -24,14 +23,13 @@ export class FormElementBase extends EventTarget {
   public expanded = new Map()
   public values: Array<any> = []
   public Values: FieldValues
-  public Field: FieldDefinitionOptions
+  public Field: FieldDefinitionProxy
   public html: any
   public parent: any
   public searchSuggestions: Map<string | number, Array<any>> = new Map()
   public metas = new Map()
   public render: any
   public isLoading = new Map()
-  public children: Map<string, FormElement> = null
   public jsonLdValueType: string = 'value'
   public comunica
   public t: any
@@ -47,28 +45,22 @@ export class FormElementBase extends EventTarget {
   }
 
   constructor (
-      field: FieldDefinitionOptions,
+      field: FieldDefinitionProxy,
       values: FieldValues,
-      children: Map<string, FormElement> = null,
-      renderCallback: any,
+      jsonLdContext = {},
       comunica,
-      formPrefix,
-      jsonLdContext = {}
+      renderCallback: any,
     ) {
     super()
     this.html = html
     this.comunica = comunica
-    this.Field = FieldDefinition(field, formPrefix)
-    if (this.Field.jsonLdKey) this.jsonLdValueType = this.Field.jsonLdKey
+    this.Field = field
+    if (this.Field.jsonLdKey.toString()) this.jsonLdValueType = this.Field.jsonLdKey
     this.pathContext['@language'] = Language.current
     this.pathContext = {...this.pathContext, ...jsonLdContext}
     this.Values = values
     this.Values.jsonLdValueType = this.jsonLdValueType
     this.t = t
-
-    if (children) {
-      this.children = children
-    }
 
     if (renderCallback) {
       this.render = debounce(() => {
@@ -123,29 +115,6 @@ export class FormElementBase extends EventTarget {
     return buttons
   }
 
-  async serialize () {
-    const values = this.Values.getAllFromOneBinding()
-    if (this.Field.wrapperBinding.toString()) {
-      if (values.length) {
-        const returnObject = {
-          '@type': this.Field.wrapperType.toString(),
-        }
-
-        for (const [binding, parentValues] of this.Values.bindingValues.entries()) {
-          returnObject[binding] = parentValues[binding]
-        }
-
-        return returnObject
-      } 
-      else {
-        return null
-      }
-    }
-    else {
-      return values.length ? values : null
-    } 
-  }
-
   /*****************************************************************************************************************
    * Mutators, most of them are inside FieldValues, these are here because they do more then only mutate a value.
    *****************************************************************************************************************/
@@ -184,7 +153,7 @@ export class FormElementBase extends EventTarget {
   }
 
   async updateMetas () {
-    for (const value of this.Values.getAllFromOneBinding()) {
+    for (const value of this.Values.getAllFromBinding()) {
       const uri = value?.['@id']
 
       if (uri && !this.metas.get(uri)) {
@@ -364,7 +333,7 @@ export class FormElementBase extends EventTarget {
   async templateWrapper () {
     const itemsToRender = []
 
-    for (const [index, value] of this.Values.getAllFromOneBinding().entries()) {
+    for (const [index, value] of this.Values.getAllFromBinding().entries()) {
       if (this.Values.hasTranslations && value?.['@language'] === Language.currentL10nLanguage) {
         itemsToRender.push([index, value])
       }

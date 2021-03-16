@@ -93,13 +93,13 @@ form:additionalBindings
                "The predicate(s) this field maps to. Some widgets have multiple bindings, like a geo location or an address field. Just supply them all."@en ;
     rdfs:label "Additional binding(s)"@en .
 
-form:wrapperBinding
+form:innerBinding
     rdf:type   rdf:Property ;
     rdfs:comment
                "A predicate that wraps the contents ."@en ;
     rdfs:label "Wrapper binding"@en .
 
-form:wrapperType
+form:innerType
     rdf:type   rdf:Property ;
     rdfs:comment
                "A type that the wrapper has ."@en ;
@@ -214,12 +214,14 @@ form:jsonLdKey
     rdfs:comment "Will this field save URI's or text values?."@en ;
     rdfs:label   "JSON-ld key"@en .
 
-form:saveMeta
+form:dimensions
     rdf:type     rdf:Property ;
     rdfs:comment "Save meta data aside from the image."@en ;
+    form:isBindingProperty true ;
     rdfs:label   "Save meta"@en .
 
 form:focalPoint
     rdf:type     rdf:Property ;
     rdfs:comment "Save a focal point."@en ;
+    form:isBindingProperty true ;
     rdfs:label   "Focal point"@en .

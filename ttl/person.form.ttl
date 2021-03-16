@@ -39,16 +39,15 @@ personForm:familyName
     form:required     true .
 
 personForm:image
-    a                form:Field ;
-    form:fieldWidget "url-image" ;
-    form:label       "Image"@en ;
-    form:label       "Afbeelding"@nl ;
-    form:binding     schema:url ;
-    form:wrapperBinding     schema:image ;
-    form:wrapperType     schema:ImageObject ;
-    form:additionalBindings schema:width, schema:height, focalPoint:x1, focalPoint:y1, focalPoint:x2, focalPoint:y2 ;
-    form:saveMeta true ;
-    form:order       3 ;
-    form:focalPoint  true ;
-    form:multiple  true ;
-    form:translatable true .
+    a                   form:Field ;
+    form:fieldWidget    "url-image" ;
+    form:label          "Image"@en ;
+    form:label          "Afbeelding"@nl ;
+    form:innerBinding   schema:image ;
+    form:innerType      schema:ImageObject ;
+    form:binding        schema:image ;
+    form:focalPoint     focalPoint:x1, focalPoint:y1, focalPoint:x2, focalPoint:y2 ;
+    form:dimensions     schema:width, schema:height ;
+    form:order          3 ;
+    form:multiple       true ;
+    form:translatable   true .

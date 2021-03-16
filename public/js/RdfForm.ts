@@ -157,8 +157,6 @@ export class RdfForm extends HTMLElement {
     this.expandedData = this.data ? await JsonLdProcessor.expand(this.data): {}
     if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
 
-    console.log(this.expandedData)
-
     // Language initialisation.
     await ensureLanguages()
     const usedLanguages = await Language.extractUsedLanguages(this.expandedData)
@@ -398,10 +396,7 @@ export class RdfForm extends HTMLElement {
     const jsonLd = Object.assign({ '@context': {}}, clonedData)
     Object.assign(jsonLd['@context'], this.jsonLdContext)
     const formElements = Array.from(this.formElements.values())
-    for (const formElement of formElements) {
-      const binding = formElement.Values.wrapperBinding ?? formElement.Values.defaultBinding
-      jsonLd[binding] = await formElement.serialize()
-    }
+    for (const formElement of formElements) await formElement.Values.serialize(jsonLd)
 
     // Sets the target RDF classes
     if (this.formInfo?.['form:binding'] && !jsonLd['@type']) {

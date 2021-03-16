@@ -29,28 +29,28 @@ export class UrlImage extends FormElementBase implements FormElement {
   public y4: number
 
   async init () {
-    for (const binding of this.Values.additionalBindings) {
-      if (lastPart(binding) === 'width') this.bindingMapping.width = binding
-      if (lastPart(binding) === 'height') this.bindingMapping.height = binding
-      if (lastPart(binding) === 'x1') this.bindingMapping.x1 = binding
-      if (lastPart(binding) === 'y1') this.bindingMapping.y1 = binding
-      if (lastPart(binding) === 'x2') this.bindingMapping.x2 = binding
-      if (lastPart(binding) === 'y2') this.bindingMapping.y2 = binding
-    }
+    // for (const binding of this.Values.additionalBindings) {
+    //   if (lastPart(binding) === 'width') this.bindingMapping.width = binding
+    //   if (lastPart(binding) === 'height') this.bindingMapping.height = binding
+    //   if (lastPart(binding) === 'x1') this.bindingMapping.x1 = binding
+    //   if (lastPart(binding) === 'y1') this.bindingMapping.y1 = binding
+    //   if (lastPart(binding) === 'x2') this.bindingMapping.x2 = binding
+    //   if (lastPart(binding) === 'y2') this.bindingMapping.y2 = binding
+    // }
   }
 
   async on(event, index) {
     super.on(event, index);
-    if (this.Values.wrapperBinding && this.Field.saveMeta) {
-      const value = this.Values.get(index)
-      const url = value?.['@' + this.jsonLdValueType]
-      if (url) {
-        getImageDimensionsByUrl(url).then(({ width, height }) => {
-          if (this.bindingMapping.width) this.Values.set({ '@value': width }, index, this.bindingMapping.width)
-          if (this.bindingMapping.height) this.Values.set({ '@value': height }, index, this.bindingMapping.height)
-        })
-      }
-    }
+    // if (this.Values.wrapperBinding && this.Field.saveMeta) {
+    //   const value = this.Values.get(index)
+    //   const url = value?.['@' + this.jsonLdValueType]
+    //   if (url) {
+    //     getImageDimensionsByUrl(url).then(({ width, height }) => {
+    //       if (this.bindingMapping.width) this.Values.set({ '@value': width }, index, this.bindingMapping.width)
+    //       if (this.bindingMapping.height) this.Values.set({ '@value': height }, index, this.bindingMapping.height)
+    //     })
+    //   }
+    // }
     if (event.type === 'change') this.render()
   }
 

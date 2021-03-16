@@ -1,6 +1,3 @@
-import { FieldDefinitionOptions } from './Types'
-import { FieldValues } from './FieldValues'
-
 /**
  * Keeps track of all the possible FormElements.
  */
@@ -17,9 +14,9 @@ export class FormElementRegistry {
     this.elements.push(...formElements)
   }
 
-  get (type: string, field, children: Map<string, FieldDefinitionOptions>, values: FieldValues, comunica, formPrefix, jsonLdContext) {
+  get (type: string, ...args: any[]) {
     const formElement = this.elements.find(element => element.type === type)
-    if (formElement) return new formElement(field, values, children, this.renderCallback, comunica, formPrefix, jsonLdContext)
+    if (formElement) return new formElement(...args, this.renderCallback)
     else console.error('Could not find FormElement: ' + type)
   }
 

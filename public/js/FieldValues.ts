@@ -1,11 +1,9 @@
 import { Language } from './LanguageService'
+import { FieldDefinitionProxy } from './Types'
 
 /**
  * This class sits between a field and the RDF JSON ld values.
  * All mutations to the data happen here.
- *
- * TODO the flatMap construction makes it harder to update values.
- * All the methods that mutate things should be checked
  */
 export class FieldValues {
 
@@ -15,66 +13,58 @@ export class FieldValues {
   public additionalBindings: Array<any>
   readonly defaultBinding: string
   readonly hasSubValues: boolean
-  readonly wrapperBinding: string
+  readonly innerBinding: string
+  public Field: FieldDefinitionProxy
 
   /**
    *
    * @param parentValues
    * @param binding
    */
-  constructor (parentValues, binding, wrapperBinding = null, additionalBindings = []) {
-    this.bindings = binding
-    this.wrapperBinding = wrapperBinding
+  constructor (field, values) {
+    this.Field = field
+    this.bindings = Array.isArray(this.Field.binding) ? this.Field.binding : [this.Field.binding]
     this.defaultBinding = this.bindings[0]
-    this.additionalBindings = additionalBindings
 
     Language.addEventListener('language.removed', (event: CustomEvent) => {
       const removedLanguage = event.detail
 
       if (this.hasTranslations) {
         for (const binding of this.bindings) {
-          let values = this.getAllFromOneBinding(binding)
+          let values = this.getAllFromBinding(binding)
           const index = values.find(value => value?.['@language'] === removedLanguage)
           if (index !== null) values.splice(index, 1)
         }  
       }
     })
 
-    if (wrapperBinding && parentValues[wrapperBinding]) {
-      const bindingsValues = {}
+    console.log(this.Field)
 
-      const bindings = [binding, ...additionalBindings]
-
-      for (const innerBinding of bindings) {
-        for (const [index, item] of parentValues[wrapperBinding].entries()) {
-          if (item[innerBinding]) {
-            if (!bindingsValues[innerBinding]) bindingsValues[innerBinding] = []
-            bindingsValues[innerBinding].push(...item[innerBinding])
-          }
-        }  
+    for (const binding of this.bindings) {
+      const list = values?.[0]?.['@list']
+      const thisBindingValues = []
+      if (list) {
+        for (const item of list) {
+          // console.log(item)
+          thisBindingValues.push(item[binding])
+        }
+        this.bindingValues.set(binding.toString(), thisBindingValues)
       }
-
-      for (const [binding, values] of Object.entries(bindingsValues)) {
-        this.bindingValues.set(binding, bindingsValues)
-      }
-    }
-    else {
-      for (const binding of this.bindings) {
-        this.bindingValues.set(binding.toString(), parentValues)
+      else {
+        this.bindingValues.set(binding.toString(), values)
       }
     }
   }
 
   _getValues (binding) {
-    let values = this.bindingValues.get(binding.toString()) ?? {}
+    let values = this.bindingValues.get(binding.toString())
 
-    if (!values[binding.toString()]) {
-      const newValues = []
-      values[binding.toString()] = newValues
+    if (!values) {
+      values = []
       this.bindingValues.set(binding.toString(), values)
     }
 
-    return values[binding.toString()] ?? []
+    return values
   }
 
   get (index = 0, binding = null) {
@@ -102,14 +92,14 @@ export class FieldValues {
     return this._getValues(this.defaultBinding).length
   }
 
-  getAllFromOneBinding (binding = null) {
+  getAllFromBinding (binding = null) {
     return this._getValues(binding ?? this.defaultBinding)
   }
 
   getAll () {
     const allValues = {};
     [...this.bindingValues.keys()].forEach(binding => {
-      allValues[binding] = this.getAllFromOneBinding(binding)
+      allValues[binding] = this.getAllFromBinding(binding)
     })
 
     return allValues
@@ -133,7 +123,7 @@ export class FieldValues {
     values.splice(index, 1)
   }
 
-  // TODO make multi binding
+  // TODO support multi binding
   enableTranslations () {
     const values = this._getValues(this.defaultBinding) ?? []
 
@@ -169,7 +159,7 @@ export class FieldValues {
     }
   }
 
-  // TODO make multi binding
+  // TODO support multi binding
   removeTranslations () {
     let values = this._getValues(this.defaultBinding)
     delete values?.[0]?.['@language']
@@ -184,7 +174,7 @@ export class FieldValues {
   get groupedValues () {
     const values = []
     for (const binding of this.bindings) {
-      const bindingValues = this.getAllFromOneBinding(binding)
+      const bindingValues = this.getAllFromBinding(binding)
 
       for (const [index, value] of bindingValues.entries()) {
         if (!values[index]) values[index] = {}
@@ -193,6 +183,11 @@ export class FieldValues {
     }
 
     return values
+  }
+
+  async serialize (jsonLd) {
+    const values = this.getAllFromBinding()
+    jsonLd[this.defaultBinding] = values.length ? values : null
   }
 
 }

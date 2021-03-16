@@ -3,6 +3,7 @@ import { jsonld as JsonLdProcessor } from './vendor/jsonld.js';
 import { lastPart } from "./Helpers";
 import { FieldValues } from "./FieldValues";
 import {ttl2jsonld} from "./vendor/ttl2jsonld";
+import { FieldDefinition } from './FieldDefinition'
 
 /**
  * Given a formDefinition, returns initiated formElements.
@@ -14,6 +15,7 @@ import {ttl2jsonld} from "./vendor/ttl2jsonld";
  * @param comunica
  */
 export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: FormElementRegistry, formData, comunica) {
+  const allPromises = []
   const expandedJsonLd = await JsonLdProcessor.expand(jsonLd);
   const fieldsArray = []
   const fields: Map<any, any> = new Map()
@@ -24,49 +26,32 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
     if (isField) fieldsArray.push(field)
   }
 
-  const firstLevelFields = fieldsArray.filter(field => !field?.[formPrefix + 'fieldGroup'])
-
   const createFormElement = async (field, parentValues) => {
-    if (!field[formPrefix + 'fieldWidget']) return
-
-    const fieldName = lastPart(field['@id'])
-    const childFields = field[formPrefix + 'fieldWidget'][0]['@value'] === 'group' ? fieldsArray.filter(field => field?.[formPrefix + 'fieldGroup']?.[0]?.['@value'] === fieldName) : []
-    const children = new Map()
-    const binding = field[formPrefix + 'binding']?.[0]['@id']
-
-    if (!parentValues[binding]) parentValues[binding] = []
-
-    const wrapperBinding = field[formPrefix + 'wrapperBinding']?.[0]?.['@id']
-    const values = new FieldValues(parentValues, field[formPrefix + 'binding'].map(value => value['@id']), wrapperBinding, field[formPrefix + 'additionalBindings']?.map(value => value['@id']))
-
-    for (const childField of childFields) {
-      const childFormElement = await createFormElement(childField, values.getAllFromOneBinding())
-      children.set(wrapperBinding ?? binding, childFormElement)
-    }
-
-    const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field, children, values, comunica, formPrefix, form.jsonLdContext)
+    const fieldDefinition = FieldDefinition(field, formPrefix)
+    if (!fieldDefinition.fieldWidget.toString()) return
+    if (!parentValues[fieldDefinition.binding.toString()]) parentValues[fieldDefinition.binding.toString()] = []
+    
+    const values = new FieldValues(fieldDefinition, parentValues[fieldDefinition.binding.toString()])
+    const formElement = formElementRegistry.get(fieldDefinition.fieldWidget, fieldDefinition, values, form.jsonLdContext, comunica)
 
     if (formElement) {
-      await formElement.init()
-
-      for (const child of formElement.children.values()) {
-        child.parent = formElement
-      }
-
+      allPromises.push(formElement.init())
       return formElement
     }
   }
 
+  const firstLevelFields = fieldsArray.filter(field => !field?.[formPrefix + 'fieldGroup'])
   for (const field of firstLevelFields) {
     const formElement = await createFormElement(field, formData)
 
     if (formElement) {
-      const wrapperBinding = formElement.Field.wrapperBinding.toString()
-      const binding = formElement.Field.binding.toString()
-      fields.set(wrapperBinding ? wrapperBinding : binding, formElement)
+      fields.set(formElement.Field.binding.toString(), formElement)
       formElement.parent = form
     }
   }
+
+  // For now we let all the inits finish and then continue.
+  await Promise.all(allPromises)
 
   return fields;
 }

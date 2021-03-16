@@ -48,7 +48,7 @@ export class Checkbox extends FormElementBase implements FormElement {
   }
 
   async serialize () {
-    let values = this.Values.getAllFromOneBinding()
+    let values = this.Values.getAllFromBinding()
 
     if (this.Field.saveEmptyValue) {
       if (this.Values.hasTranslations) {
@@ -69,7 +69,7 @@ export class Checkbox extends FormElementBase implements FormElement {
         }
       }
 
-      values = this.Values.getAllFromOneBinding()
+      values = this.Values.getAllFromBinding()
     }
 
     return values.length ? values : null

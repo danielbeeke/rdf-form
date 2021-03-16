@@ -7,12 +7,12 @@ export interface FormElement extends EventTarget {
 export interface FieldDefinitionOptions {
   required: boolean
   multiple: boolean
-  fieldWidget: null
+  fieldWidget: string
   disabled: boolean
   order: number
   rows: number
   subject: null | Array<any>
-  binding: string | Array<any>
+  binding: Array<any>
   translatable: boolean
   name: null
   label: string | Array<any>
@@ -31,8 +31,8 @@ export interface FieldDefinitionOptions {
   jsonLdKey: string
   saveEmptyValue: string
   saveMeta: boolean
-  wrapperBinding: string | Array<any>
-  wrapperType: string | Array<any>
+  innerBinding: string | Array<any>
+  innerType: string | Array<any>
   additionalBindings: Array<any>
   focalPoint: boolean
 }
