@@ -31,6 +31,10 @@ export interface FieldDefinitionOptions {
   jsonLdKey: string
   saveEmptyValue: string
   saveMeta: boolean
+  wrapperBinding: string | Array<any>
+  wrapperType: string | Array<any>
+  additionalBindings: Array<any>
+  focalPoint: boolean
 }
 
 export interface FieldDefinitionProxy extends FieldDefinitionOptions {

@@ -1,6 +1,4 @@
 import { Language } from './LanguageService'
-import { asArray } from './Helpers'
-import { bind } from 'cypress/types/bluebird'
 
 /**
  * This class sits between a field and the RDF JSON ld values.
@@ -12,26 +10,64 @@ import { bind } from 'cypress/types/bluebird'
 export class FieldValues {
 
   public jsonLdValueType = 'value'
-  private bindingValues = new Map<string, any>()
+  public bindingValues = new Map<string, any>()
   public bindings: Array<any>
+  public additionalBindings: Array<any>
   readonly defaultBinding: string
+  readonly hasSubValues: boolean
+  readonly wrapperBinding: string
 
   /**
    *
    * @param parentValues
    * @param binding
    */
-  constructor (parentValues, binding) {
+  constructor (parentValues, binding, wrapperBinding = null, additionalBindings = []) {
     this.bindings = binding
+    this.wrapperBinding = wrapperBinding
     this.defaultBinding = this.bindings[0]
+    this.additionalBindings = additionalBindings
 
-    for (const binding of this.bindings) {
-      this.bindingValues.set(binding.toString(), parentValues)
+    Language.addEventListener('language.removed', (event: CustomEvent) => {
+      const removedLanguage = event.detail
+
+      if (this.hasTranslations) {
+        for (const binding of this.bindings) {
+          let values = this.getAllFromOneBinding(binding)
+          const index = values.find(value => value?.['@language'] === removedLanguage)
+          if (index !== null) values.splice(index, 1)
+        }  
+      }
+    })
+
+    if (wrapperBinding && parentValues[wrapperBinding]) {
+      const bindingsValues = {}
+
+      const bindings = [binding, ...additionalBindings]
+
+      for (const innerBinding of bindings) {
+        for (const [index, item] of parentValues[wrapperBinding].entries()) {
+          if (item[innerBinding]) {
+            if (!bindingsValues[innerBinding]) bindingsValues[innerBinding] = []
+            bindingsValues[innerBinding].push(...item[innerBinding])
+          }
+        }  
+      }
+
+      for (const [binding, values] of Object.entries(bindingsValues)) {
+        this.bindingValues.set(binding, bindingsValues)
+      }
+    }
+    else {
+      for (const binding of this.bindings) {
+        this.bindingValues.set(binding.toString(), parentValues)
+      }
     }
   }
 
   _getValues (binding) {
-    let values = this.bindingValues.get(binding.toString())
+    let values = this.bindingValues.get(binding.toString()) ?? {}
+
     if (!values[binding.toString()]) {
       const newValues = []
       values[binding.toString()] = newValues
@@ -66,8 +102,17 @@ export class FieldValues {
     return this._getValues(this.defaultBinding).length
   }
 
-  getAll (binding = null) {
+  getAllFromOneBinding (binding = null) {
     return this._getValues(binding ?? this.defaultBinding)
+  }
+
+  getAll () {
+    const allValues = {};
+    [...this.bindingValues.keys()].forEach(binding => {
+      allValues[binding] = this.getAllFromOneBinding(binding)
+    })
+
+    return allValues
   }
 
   addItem (binding = null) {
@@ -139,7 +184,7 @@ export class FieldValues {
   get groupedValues () {
     const values = []
     for (const binding of this.bindings) {
-      const bindingValues = this.getAll(binding)
+      const bindingValues = this.getAllFromOneBinding(binding)
 
       for (const [index, value] of bindingValues.entries()) {
         if (!values[index]) values[index] = {}

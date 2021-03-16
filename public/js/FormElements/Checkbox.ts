@@ -33,7 +33,7 @@ export class Checkbox extends FormElementBase implements FormElement {
       const value = {}
       value['@' + this.jsonLdValueType] = event?.target?.checked ? 'true' : 'false'
       if (this.Values.hasTranslations) {
-        value['@language'] = this.Values.get(index)['@language']
+        value['@language'] = Language.currentL10nLanguage
       }
       this.Values.set(value, index)
     }
@@ -48,7 +48,7 @@ export class Checkbox extends FormElementBase implements FormElement {
   }
 
   async serialize () {
-    let values = this.Values.getAll()
+    let values = this.Values.getAllFromOneBinding()
 
     if (this.Field.saveEmptyValue) {
       if (this.Values.hasTranslations) {
@@ -69,7 +69,7 @@ export class Checkbox extends FormElementBase implements FormElement {
         }
       }
 
-      values = this.Values.getAll()
+      values = this.Values.getAllFromOneBinding()
     }
 
     return values.length ? values : null

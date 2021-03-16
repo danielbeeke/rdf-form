@@ -10,7 +10,7 @@ form:
     dcterms:title                 "Form ontology"@en ;
     dcterms:description           "An ontology for adding form definitions to Ontologies."@en ;
     vann:preferredNamespacePrefix "form" ;
-    vann:preferredNamespaceURI    <http://localhost:8080/form.ttl#> .
+    vann:preferredNamespaceURI    <http://mep/form#> .
 
 form:Form
     a          rdfs:Class ;
@@ -61,6 +61,11 @@ form:multiple
     rdfs:comment "This field may have multiple items."@en ;
     rdfs:label   "Multiple"@en .
 
+form:alternatives
+    rdf:type     rdf:Property ;
+    rdfs:comment "This field may have alternative values for one item. THis should be used in use with multiple."@en ;
+    rdfs:label   "Alternatives"@en .
+
 form:disabled
     rdf:type     rdf:Property ;
     rdfs:comment "This field is disabled."@en ;
@@ -81,6 +86,24 @@ form:binding
     rdfs:comment
                "The predicate(s) this field maps to. Some widgets have multiple bindings, like a geo location or an address field. Just supply them all."@en ;
     rdfs:label "Binding(s)"@en .
+
+form:additionalBindings
+    rdf:type   rdf:Property ;
+    rdfs:comment
+               "The predicate(s) this field maps to. Some widgets have multiple bindings, like a geo location or an address field. Just supply them all."@en ;
+    rdfs:label "Additional binding(s)"@en .
+
+form:wrapperBinding
+    rdf:type   rdf:Property ;
+    rdfs:comment
+               "A predicate that wraps the contents ."@en ;
+    rdfs:label "Wrapper binding"@en .
+
+form:wrapperType
+    rdf:type   rdf:Property ;
+    rdfs:comment
+               "A type that the wrapper has ."@en ;
+    rdfs:label "Wrapper type"@en .
 
 form:input
     rdf:type   rdf:Property ;
@@ -149,6 +172,10 @@ form:open
     rdfs:comment "The HTML open attribute."@en ;
     rdfs:label   "Open"@en .
 
+form:saveEmptyValue
+    rdf:type     rdf:Property ;
+    rdfs:comment "Useful for checkboxes if you want to save the false state also."@en ;
+    rdfs:label   "Save empty value"@en .
 
 form:container
     rdf:type     rdf:Property ;
@@ -181,3 +208,18 @@ form:subform
     rdf:type     rdf:Property ;
     rdfs:comment "Used for including a subform."@en ;
     rdfs:label   "Subform"@en .
+
+form:jsonLdKey
+    rdf:type     rdf:Property ;
+    rdfs:comment "Will this field save URI's or text values?."@en ;
+    rdfs:label   "JSON-ld key"@en .
+
+form:saveMeta
+    rdf:type     rdf:Property ;
+    rdfs:comment "Save meta data aside from the image."@en ;
+    rdfs:label   "Save meta"@en .
+
+form:focalPoint
+    rdf:type     rdf:Property ;
+    rdfs:comment "Save a focal point."@en ;
+    rdfs:label   "Focal point"@en .

@@ -5,7 +5,9 @@ import { lastPart } from "./Helpers";
 const booleanFields = [
   'multiple',
   'disabled',
-  'translatable'
+  'translatable',
+  'saveMeta',
+  'focalPoint',
 ]
 
 /**

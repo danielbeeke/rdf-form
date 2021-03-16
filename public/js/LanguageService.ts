@@ -41,6 +41,28 @@ class LanguageService extends EventTarget {
   }
 
   set l10nLanguages (languages) {
+    const oldLanguageCodes = Object.keys(l10nLanguages)
+    const newLanguageCodes = Object.keys(languages)
+
+    let languageCodesToAdd = newLanguageCodes.filter(x => !oldLanguageCodes.includes(x));
+    let languageCodesToDelete = oldLanguageCodes.filter(x => !newLanguageCodes.includes(x));
+
+    if (languageCodesToDelete.includes(currentL10nLanguage)) {
+      currentL10nLanguage = newLanguageCodes[0]
+    }
+
+    for (const langCode of languageCodesToAdd) {
+      this.dispatchEvent(new CustomEvent('language.added', {
+        detail: langCode
+      }))
+    }
+
+    for (const langCode of languageCodesToDelete) {
+      this.dispatchEvent(new CustomEvent('language.removed', {
+        detail: langCode
+      }))
+    }
+
     l10nLanguages = languages
     if (!currentL10nLanguage) {
       currentL10nLanguage = Object.keys(l10nLanguages)[0]

@@ -1,0 +1,38 @@
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix schema:  <http://schema.org/> .
+
+focalPoint:
+    rdf:type                      owl:Ontology ;
+    dcterms:title                 "Focalpoint ontology"@en ;
+    dcterms:description           """
+    An ontology for focal points
+    """@en ;
+
+focalPoint:FocalPoint
+    a            rdfs:Class ;
+    rdfs:label   "FocalPoint"@en ;
+    rdfs:comment "A focal point in an image or video."@en ;
+    rdf:type        owl:Thing, rdfs:Resource .
+
+focalPoint:x1
+    rdf:type     rdf:Property ;
+    rdfs:comment "The x1 axis."@en ;
+    rdfs:label   "x1"@en .
+
+focalPoint:y1
+    rdf:type     rdf:Property ;
+    rdfs:comment "The y1 axis."@en ;
+    rdfs:label   "y1"@en .
+
+focalPoint:x2
+    rdf:type     rdf:Property ;
+    rdfs:comment "The x2 axis."@en ;
+    rdfs:label   "x2"@en .
+
+focalPoint:y2
+    rdf:type     rdf:Property ;
+    rdfs:comment "The y2 axis."@en ;
+    rdfs:label   "y2"@en .

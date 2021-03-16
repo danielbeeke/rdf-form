@@ -124,8 +124,26 @@ export class FormElementBase extends EventTarget {
   }
 
   async serialize () {
-    const values = this.Values.getAll()
-    return values.length ? values : null
+    const values = this.Values.getAllFromOneBinding()
+    if (this.Field.wrapperBinding.toString()) {
+      if (values.length) {
+        const returnObject = {
+          '@type': this.Field.wrapperType.toString(),
+        }
+
+        for (const [binding, parentValues] of this.Values.bindingValues.entries()) {
+          returnObject[binding] = parentValues[binding]
+        }
+
+        return returnObject
+      } 
+      else {
+        return null
+      }
+    }
+    else {
+      return values.length ? values : null
+    } 
   }
 
   /*****************************************************************************************************************
@@ -166,7 +184,7 @@ export class FormElementBase extends EventTarget {
   }
 
   async updateMetas () {
-    for (const value of this.Values.getAll()) {
+    for (const value of this.Values.getAllFromOneBinding()) {
       const uri = value?.['@id']
 
       if (uri && !this.metas.get(uri)) {
@@ -346,7 +364,7 @@ export class FormElementBase extends EventTarget {
   async templateWrapper () {
     const itemsToRender = []
 
-    for (const [index, value] of this.Values.getAll().entries()) {
+    for (const [index, value] of this.Values.getAllFromOneBinding().entries()) {
       if (this.Values.hasTranslations && value?.['@language'] === Language.currentL10nLanguage) {
         itemsToRender.push([index, value])
       }
@@ -357,7 +375,7 @@ export class FormElementBase extends EventTarget {
     }
 
     if (itemsToRender.length === 0) {
-      itemsToRender.push([0, null])
+      itemsToRender.push([this.Values.length, null])
     }
 
     const actions = []

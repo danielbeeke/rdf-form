@@ -36,11 +36,12 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
 
     if (!parentValues[binding]) parentValues[binding] = []
 
-    const values = new FieldValues(parentValues, field[formPrefix + 'binding'].map(value => value['@id']))
+    const wrapperBinding = field[formPrefix + 'wrapperBinding']?.[0]?.['@id']
+    const values = new FieldValues(parentValues, field[formPrefix + 'binding'].map(value => value['@id']), wrapperBinding, field[formPrefix + 'additionalBindings']?.map(value => value['@id']))
 
     for (const childField of childFields) {
-      const childFormElement = await createFormElement(childField, values.getAll())
-      children.set(childFormElement.Field.binding, childFormElement)
+      const childFormElement = await createFormElement(childField, values.getAllFromOneBinding())
+      children.set(wrapperBinding ?? binding, childFormElement)
     }
 
     const formElement = formElementRegistry.get(field[formPrefix + 'fieldWidget'][0]['@value'], field, children, values, comunica, formPrefix, form.jsonLdContext)
@@ -60,7 +61,9 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
     const formElement = await createFormElement(field, formData)
 
     if (formElement) {
-      fields.set(formElement.Field.binding, formElement)
+      const wrapperBinding = formElement.Field.wrapperBinding.toString()
+      const binding = formElement.Field.binding.toString()
+      fields.set(wrapperBinding ? wrapperBinding : binding, formElement)
       formElement.parent = form
     }
   }

@@ -130,6 +130,7 @@ export class RdfForm extends HTMLElement {
     ])
 
     this.data = await attributeToJsonLd(this, 'data')
+
     this.jsonLdContext = this.data['@context']
 
     // The application may have needs for adding aliases to the JSON-ld context.
@@ -155,6 +156,8 @@ export class RdfForm extends HTMLElement {
     // and ship the form definition ontology files themselves.
     this.expandedData = this.data ? await JsonLdProcessor.expand(this.data): {}
     if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
+
+    console.log(this.expandedData)
 
     // Language initialisation.
     await ensureLanguages()
@@ -254,7 +257,7 @@ export class RdfForm extends HTMLElement {
         this.render()
       }}" rel="stylesheet" href="/css/rdf-form.css" />
 
-      <form autocomplete="off" onsubmit="${event => { event.preventDefault(); this.serialize() }}">
+      <form autocomplete="off" onsubmit="${event => { event.preventDefault(); this.save() }}">
 
       ${await Promise.all(regions.map(async region => this.html`
         <div class="${'region ' + region}" style="${'grid-area: ' + region}">
@@ -362,8 +365,7 @@ export class RdfForm extends HTMLElement {
         const selection = initialLanguages.map(([langCode, language]) => {
           return {
             text: Language.l10nLanguages[langCode] ?? language,
-            value: langCode,
-            mandatory: true // TODO think about how one should remove a language from an object.
+            value: langCode
           }
         })
 
@@ -393,10 +395,11 @@ export class RdfForm extends HTMLElement {
 
     const clonedData = JSON.parse(JSON.stringify(this.data))
 
-    const jsonLd = Object.assign({ '@context': {...this.jsonLdContext} }, clonedData)
+    const jsonLd = Object.assign({ '@context': {}}, clonedData)
+    Object.assign(jsonLd['@context'], this.jsonLdContext)
     const formElements = Array.from(this.formElements.values())
     for (const formElement of formElements) {
-      const binding = formElement.Field.binding
+      const binding = formElement.Values.wrapperBinding ?? formElement.Values.defaultBinding
       jsonLd[binding] = await formElement.serialize()
     }
 
@@ -406,9 +409,16 @@ export class RdfForm extends HTMLElement {
     }
 
     const compacted = await JsonLdProcessor.compact(jsonLd, jsonLd['@context']);
-    this.dispatchEvent(new CustomEvent('save', { detail: compacted }))
     this.isSaving = false
     this.render()
+
+    return compacted
+  }
+
+  async save () {
+    const compacted = await this.serialize()
+    this.dispatchEvent(new CustomEvent('save', { detail: compacted }))
+    return compacted
   }
 
   /**

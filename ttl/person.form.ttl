@@ -2,6 +2,7 @@
 @prefix form:       <http://localhost:8080/form.ttl#> .
 @prefix personForm: <http://localhost:8080/person.form.ttl#> .
 @prefix schema:     <http://schema.org/> .
+@prefix focalPoint:       <http://localhost:8080/focalPoint.ttl#> .
 
 <http://localhost:8080/person.form#personForm>
     form:binding schema:Person ;
@@ -36,3 +37,18 @@ personForm:familyName
     form:order        0 ;
     form:translatable true ;
     form:required     true .
+
+personForm:image
+    a                form:Field ;
+    form:fieldWidget "url-image" ;
+    form:label       "Image"@en ;
+    form:label       "Afbeelding"@nl ;
+    form:binding     schema:url ;
+    form:wrapperBinding     schema:image ;
+    form:wrapperType     schema:ImageObject ;
+    form:additionalBindings schema:width, schema:height, focalPoint:x1, focalPoint:y1, focalPoint:x2, focalPoint:y2 ;
+    form:saveMeta true ;
+    form:order       3 ;
+    form:focalPoint  true ;
+    form:multiple  true ;
+    form:translatable true .
