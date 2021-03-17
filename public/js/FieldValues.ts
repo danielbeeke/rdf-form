@@ -1,5 +1,6 @@
 import { Language } from './LanguageService'
-import { FieldDefinitionProxy } from './Types'
+import { FieldDefinition } from './Types'
+import { expand, lastPart } from './Helpers'
 
 /**
  * This class sits between a field and the RDF JSON ld values.
@@ -9,21 +10,30 @@ export class FieldValues {
 
   public jsonLdValueType = 'value'
   public bindingValues = new Map<string, any>()
-  public bindings: Array<any>
+  public bindings: Array<any> = []
   public additionalBindings: Array<any>
   readonly defaultBinding: string
   readonly hasSubValues: boolean
   readonly innerBinding: string
-  public Field: FieldDefinitionProxy
+  public Field: FieldDefinition
+  private formOntology: {}
 
   /**
    *
    * @param parentValues
    * @param binding
    */
-  constructor (field, values) {
+  constructor (field, parentValues, formOntology) {
     this.Field = field
-    this.bindings = Array.isArray(this.Field.binding) ? this.Field.binding : [this.Field.binding]
+    this.formOntology = formOntology
+    
+    for (const [fieldProperty, propertySetting] of Object.entries(this.Field)) {
+      const fieldMetaProperties = this.formOntology['@graph'].find(predicate => predicate?.['@id'] === 'form:' + fieldProperty)
+      if (fieldMetaProperties['form:isBindingProperty'] && Array.isArray(propertySetting)) {
+        this.bindings.push(...propertySetting)
+      }
+    }
+
     this.defaultBinding = this.bindings[0]
 
     Language.addEventListener('language.removed', (event: CustomEvent) => {
@@ -38,30 +48,48 @@ export class FieldValues {
       }
     })
 
-    console.log(this.Field)
+    // Grouped values inside a binding
+    if (this.Field.innerBinding) {
+      this.bindings = this.bindings.filter(binding => !this.Field.binding.includes(binding))
+    }
+
+    const outerBindings = this.Field.innerBinding ? this.Field.binding : false
+    let newParentValues = []
+
+    if (outerBindings) {
+      this.defaultBinding = this.Field.innerBinding[0]
+      for (const outerBinding of outerBindings) {
+        newParentValues.push(...parentValues[outerBinding])
+      }  
+    }
+    else {
+      newParentValues = parentValues
+    }
 
     for (const binding of this.bindings) {
-      const list = values?.[0]?.['@list']
+      const list = newParentValues?.[0]?.['@list']
+
       const thisBindingValues = []
       if (list) {
         for (const item of list) {
-          // console.log(item)
-          thisBindingValues.push(item[binding])
+          if (item[binding]) thisBindingValues.push(...item[binding])
         }
-        this.bindingValues.set(binding.toString(), thisBindingValues)
+
+        this.bindingValues.set(lastPart(binding), thisBindingValues)
       }
       else {
-        this.bindingValues.set(binding.toString(), values)
+        this.bindingValues.set(lastPart(binding), newParentValues[binding])
       }
     }
   }
 
   _getValues (binding) {
-    let values = this.bindingValues.get(binding.toString())
+    binding = lastPart(binding)
+    let values = this.bindingValues.get(binding)
 
     if (!values) {
       values = []
-      this.bindingValues.set(binding.toString(), values)
+      this.bindingValues.set(binding, values)
     }
 
     return values
@@ -171,23 +199,21 @@ export class FieldValues {
     values[index] = value
   }
 
-  get groupedValues () {
-    const values = []
-    for (const binding of this.bindings) {
-      const bindingValues = this.getAllFromBinding(binding)
-
-      for (const [index, value] of bindingValues.entries()) {
-        if (!values[index]) values[index] = {}
-        values[index][binding] = value
-      }
+  async serialize (jsonLd) {
+    let value: any = []
+    let pointer = value
+    if (this.Field.innerBinding) {
+      value = { [this.defaultBinding]: [] }
+      pointer = value[this.defaultBinding]
     }
 
-    return values
-  }
-
-  async serialize (jsonLd) {
-    const values = this.getAllFromBinding()
-    jsonLd[this.defaultBinding] = values.length ? values : null
+    for (const binding of this.bindings) {
+      const values = this.getAllFromBinding(binding)
+      for (const [index, value] of values.entries()) {
+        console.log(index, value)
+      }
+    }
+    // jsonLd[this.defaultBinding] = values.length ? values : null
   }
 
 }

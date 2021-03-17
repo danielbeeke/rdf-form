@@ -1,20 +1,44 @@
-import { FieldDefinitionOptions, FieldDefinitionProxy } from './Types'
+import { FieldDefinition } from './Types'
 import { Language } from "./LanguageService";
-import { lastPart } from "./Helpers";
 
-const booleanFields = [
-  'multiple',
-  'disabled',
-  'translatable',
-  'saveMeta',
-  'focalPoint',
-]
+const fields = {
+  name: 'string',
+  fieldWidget: 'string',
+  binding: 'stringArray',
+  innerBinding: 'stringArray',
+  
+  required: 'boolean',
+  multiple: 'boolean',
+  disabled: 'boolean',
+  translatable: 'boolean',
+  
+  order: 'number',
+  rows: 'number',
+  
+  label: 'l10nString',
+  description: 'l10nString',
+  emptyText: 'l10nString',
+  placeholder: 'l10nString',
+
+  autoCompleteSource: 'string',
+  autoCompleteQuery: 'string',
+  optionsSource: 'string',
+  optionsQuery: 'string',
+  
+  option: 'stringArray',
+  range: 'string',
+  fieldGroup: 'string',
+  prefix: 'string',
+  jsonLdKey: 'string',
+  saveEmptyValue: 'boolean',
+  dimensions: 'stringArray',
+  innerType: 'string',
+  focalPoint: 'stringArray'
+}
 
 /**
- * A proxy class that sits between the formElement and the field definition.
  * The field definitions are in RDF format.
  * This class makes it possible to use it as a simple object.
- * TODO Maybe this would be much better if it was a simple class that has everything in a declaritive manner instead of all these proxy stuff.
  *
  * Example:
  * formElement.Field.required
@@ -24,18 +48,32 @@ const booleanFields = [
  * @param formPrefix
  * @constructor
  */
-export function FieldDefinition(definition: any, formPrefix: string) : FieldDefinitionProxy {
-  return new Proxy(definition, {
-    get: function(definition: FieldDefinitionProxy, prop: keyof FieldDefinitionOptions, receiver: any) {
-      const value = definition[formPrefix + prop]
-      if (prop === 'prefix') return formPrefix
-      if (prop === 'name') return lastPart(definition['@id'])
-      if (prop === 'option') return value
+export function FieldDefinition(definition: any, formPrefix: string): FieldDefinition {
+  const convertedDefinition = {}
 
-      return value?.[0]?.['@language'] ? Language.multilingualValue(value) : value?.[0]?.['@value'] ?? value?.[0]?.['@id'] ?? (booleanFields.includes(prop) ? false : '')
-    },
-    getOwnPropertyDescriptor: function(target, key) {
-      return { value: this.get(target, key), enumerable: true, configurable: true };
+  for (const [predicate, type] of Object.entries(fields)) {
+    if (definition[formPrefix + predicate]) {
+      const firstItem = definition[formPrefix + predicate]?.[0]
+
+      switch (type) {
+        case 'string':
+          convertedDefinition[predicate] = firstItem?.['@value'] ?? firstItem?.['@id']
+          break;
+
+        case 'stringArray':
+          convertedDefinition[predicate] = definition[formPrefix + predicate].map(item => item?.['@value'] ?? item?.['@id'])
+          break;
+
+        case 'l10nString':
+          Object.defineProperty(convertedDefinition, predicate, { get: () =>Language.multilingualValue(definition[formPrefix + predicate])})
+          break;
+
+        case 'boolean':
+          convertedDefinition[predicate] = definition[formPrefix + predicate]?.[0]?.['@value'] === true
+          break;
+      }
     }
-  });
+  }
+
+  return <FieldDefinition> convertedDefinition
 }

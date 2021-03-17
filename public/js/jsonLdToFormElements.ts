@@ -28,10 +28,8 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
 
   const createFormElement = async (field, parentValues) => {
     const fieldDefinition = FieldDefinition(field, formPrefix)
-    if (!fieldDefinition.fieldWidget.toString()) return
-    if (!parentValues[fieldDefinition.binding.toString()]) parentValues[fieldDefinition.binding.toString()] = []
-    
-    const values = new FieldValues(fieldDefinition, parentValues[fieldDefinition.binding.toString()])
+    if (!fieldDefinition.fieldWidget) return
+    const values = new FieldValues(fieldDefinition, parentValues, form.formOntology)
     const formElement = formElementRegistry.get(fieldDefinition.fieldWidget, fieldDefinition, values, form.jsonLdContext, comunica)
 
     if (formElement) {
@@ -45,7 +43,7 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
     const formElement = await createFormElement(field, formData)
 
     if (formElement) {
-      fields.set(formElement.Field.binding.toString(), formElement)
+      fields.set(formElement.Field.binding, formElement)
       formElement.parent = form
     }
   }

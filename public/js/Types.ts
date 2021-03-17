@@ -1,21 +1,20 @@
 export interface FormElement extends EventTarget {
   init ():  Promise<any>;
   templateWrapper(index?: number): Promise<Promise<any>>;
-  Field: FieldDefinitionOptions
+  Field: FieldDefinition
 }
 
-export interface FieldDefinitionOptions {
+export type FieldDefinition = {
   required: boolean
   multiple: boolean
   fieldWidget: string
   disabled: boolean
   order: number
   rows: number
-  subject: null | Array<any>
-  binding: Array<any>
+  binding: Array<string>
   translatable: boolean
-  name: null
-  label: string | Array<any>
+  name: string
+  label: string
   input: null
   autoCompleteSource: string | Array<any>
   autoCompleteQuery: string | Array<any>
@@ -30,15 +29,10 @@ export interface FieldDefinitionOptions {
   prefix: string
   jsonLdKey: string
   saveEmptyValue: string
-  saveMeta: boolean
-  innerBinding: string | Array<any>
-  innerType: string | Array<any>
-  additionalBindings: Array<any>
-  focalPoint: boolean
-}
-
-export interface FieldDefinitionProxy extends FieldDefinitionOptions {
-  [Symbol.iterator](): IterableIterator<string>;
+  dimensions: boolean
+  innerBinding: Array<string>
+  innerType: string
+  focalPoint: Array<any>
 }
 
 export interface IDuration {

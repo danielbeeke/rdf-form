@@ -21,6 +21,7 @@ import { render, html } from './vendor/uhtml.js';
 import { FormElementRegistry } from './FormElementRegistry'
 import {jsonLdToFormElements, resolveSubForms} from './jsonLdToFormElements'
 import { SlimSelect } from "./vendor/slimselect.js";
+import { ttl2jsonld } from './vendor/ttl2jsonld.js'
 
 // Default formElements.
 import { String } from './FormElements/String'
@@ -52,7 +53,7 @@ import {ensureLanguages, languages, langCodesToObject, filterLanguages} from './
 export class RdfForm extends HTMLElement {
 
   public formElementRegistry: FormElementRegistry
-  public jsonLdContext: object
+  public jsonLdContext: { [key: string]: string }
   public proxy: any
   public language: string
   public html: any
@@ -72,6 +73,7 @@ export class RdfForm extends HTMLElement {
   private cssLoaded = false
   private hideLanguageControl = false
   private isSaving = false
+  public formOntology: {}
 
   async attributeChangedCallback(name, oldValue, newValue) {
     await this.connectedCallback()
@@ -146,6 +148,9 @@ export class RdfForm extends HTMLElement {
 
     // Append the form JSON-ld context to the context.
     this.jsonLdContext = {...this.jsonLdContext, ...this.formJsonLd['@context']}
+    if (!this.jsonLdContext?.form) throw new Error('Please supply a alias with the name form. THis is a requirement for Rdf-form')
+    
+    this.formOntology = await fetch(this.jsonLdContext?.form).then(async response => ttl2jsonld(await response.text()))
 
     this.data = selectCorrectGraph(this.data, this.getAttribute('data'))
 
@@ -193,13 +198,13 @@ export class RdfForm extends HTMLElement {
    */
   nestContainers () {
     for (const formElement of this.formElements.values()) {
-      const containerName = formElement.Field.container.toString() ? formElement.Field.container.toString() : 'default'
+      const containerName = formElement.Field.container ? formElement.Field.container : 'default'
       const containerDefinition = this.formJsonLd['@graph'].find(item => item['@type'] === 'form:Container' && lastPart(item['@id']) === containerName)
       const containerWidgetClass = this.containerWidgetTypes.get(containerDefinition?.['form:containerWidget'] ?? 'default')
       const container = this.containers.get(containerName) ?? new containerWidgetClass(containerDefinition)
       if (!this.containers.get(containerName)) this.containers.set(containerName, container)
       container.addFormElement(formElement)
-      this.fieldsByBinding.set(formElement.Field.binding.toString(), formElement)
+      this.fieldsByBinding.set(formElement.Field.binding, formElement)
 
       // Here we dispatch events of all the formElements on the form itself.
       // This makes it possible for application developers to hook onto changes of the form.

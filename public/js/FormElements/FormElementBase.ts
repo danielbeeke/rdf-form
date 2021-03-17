@@ -6,7 +6,7 @@
  */
 
 import { faTimes, faCog } from '../vendor/free-solid-svg-icons.js'
-import { FieldDefinitionOptions, FieldDefinitionProxy } from '../Types'
+import { FieldDefinition } from '../Types'
 import { debounce, fa, lastPart } from '../Helpers'
 import { ttl2jsonld } from '../vendor/ttl2jsonld.js'
 import { FieldValues } from '../FieldValues'
@@ -23,7 +23,7 @@ export class FormElementBase extends EventTarget {
   public expanded = new Map()
   public values: Array<any> = []
   public Values: FieldValues
-  public Field: FieldDefinitionProxy
+  public Field: FieldDefinition
   public html: any
   public parent: any
   public searchSuggestions: Map<string | number, Array<any>> = new Map()
@@ -45,7 +45,7 @@ export class FormElementBase extends EventTarget {
   }
 
   constructor (
-      field: FieldDefinitionProxy,
+      field: FieldDefinition,
       values: FieldValues,
       jsonLdContext = {},
       comunica,
@@ -55,7 +55,7 @@ export class FormElementBase extends EventTarget {
     this.html = html
     this.comunica = comunica
     this.Field = field
-    if (this.Field.jsonLdKey.toString()) this.jsonLdValueType = this.Field.jsonLdKey
+    if (this.Field.jsonLdKey) this.jsonLdValueType = this.Field.jsonLdKey
     this.pathContext['@language'] = Language.current
     this.pathContext = {...this.pathContext, ...jsonLdContext}
     this.Values = values

@@ -24,8 +24,8 @@ export class Reference extends FormElementBase implements FormElement {
         this.render();
 
         try {
-          const querySetting = this.Field.autoCompleteQuery.toString()
-          const sourceSetting = this.Field.autoCompleteSource.toString()
+          const querySetting = this.Field.autoCompleteQuery
+          const sourceSetting = this.Field.autoCompleteSource
 
           const {
             query,

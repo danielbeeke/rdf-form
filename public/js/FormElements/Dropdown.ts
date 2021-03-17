@@ -13,11 +13,11 @@ export class Dropdown extends FormElementBase implements FormElement {
 
     if (this.Field.option) {
       for (const option of this.Field.option) {
-        const valueItem = option[this.Field.prefix.toString() + 'value'][0]
+        const valueItem = option[this.Field.prefix + 'value'][0]
         const value = valueItem?.['@' + this.jsonLdValueType]
 
         const labels = {}
-        for (const label of option[this.Field.prefix.toString() + 'label']) {
+        for (const label of option[this.Field.prefix + 'label']) {
           labels[label?.['@language'] ?? 'und'] = label['@value']
         }
 
@@ -29,7 +29,7 @@ export class Dropdown extends FormElementBase implements FormElement {
     }
 
     if (!this.options.length) {
-      if (!this.Field.optionsQuery.toString() || !this.Field.optionsSource.toString()) {
+      if (!this.Field.optionsQuery || !this.Field.optionsSource) {
         throw new Error('optionsQuery and optionsSource are needed for the field dropdown. Please improve the form definition.')
       }
 
@@ -66,7 +66,7 @@ export class Dropdown extends FormElementBase implements FormElement {
     multiple="${this.Field.multiple ? true : null}"
     onchange="${event => this.on(event, index)}"
     >
-        ${!idValue && !this.Field.multiple ? this.html`<option disabled selected value>${this.Field.emptyText.toString() ? this.Field.emptyText.toString() : t`- Select a value -`}</option>` : this.html``}
+        ${!idValue && !this.Field.multiple ? this.html`<option disabled selected value>${this.Field.emptyText ? this.Field.emptyText : t`- Select a value -`}</option>` : this.html``}
         ${this.options.map(option => this.html`
             <option value="${option.uri}" selected="${option.uri === idValue ? true : null}">
                 ${option.label?.[Language.current] ?? option.label?.['und'] ?? option.label}

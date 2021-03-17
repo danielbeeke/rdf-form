@@ -1,8 +1,7 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
 import { html } from '../vendor/uhtml.js'
-import { lastPart, getImageDimensionsByUrl } from '../Helpers'
-import { Language, t } from '../LanguageService' 
+import { getImageDimensionsByUrl } from '../Helpers'
 
 export class UrlImage extends FormElementBase implements FormElement {
 
@@ -28,40 +27,29 @@ export class UrlImage extends FormElementBase implements FormElement {
   public x4: number
   public y4: number
 
-  async init () {
-    // for (const binding of this.Values.additionalBindings) {
-    //   if (lastPart(binding) === 'width') this.bindingMapping.width = binding
-    //   if (lastPart(binding) === 'height') this.bindingMapping.height = binding
-    //   if (lastPart(binding) === 'x1') this.bindingMapping.x1 = binding
-    //   if (lastPart(binding) === 'y1') this.bindingMapping.y1 = binding
-    //   if (lastPart(binding) === 'x2') this.bindingMapping.x2 = binding
-    //   if (lastPart(binding) === 'y2') this.bindingMapping.y2 = binding
-    // }
-  }
-
   async on(event, index) {
     super.on(event, index);
-    // if (this.Values.wrapperBinding && this.Field.saveMeta) {
-    //   const value = this.Values.get(index)
-    //   const url = value?.['@' + this.jsonLdValueType]
-    //   if (url) {
-    //     getImageDimensionsByUrl(url).then(({ width, height }) => {
-    //       if (this.bindingMapping.width) this.Values.set({ '@value': width }, index, this.bindingMapping.width)
-    //       if (this.bindingMapping.height) this.Values.set({ '@value': height }, index, this.bindingMapping.height)
-    //     })
-    //   }
-    // }
+    if (this.Field.dimensions) {
+      const url = this.Values.get(index, 'url')?.['@value']
+
+      if (url) {
+        getImageDimensionsByUrl(url).then(({ width, height }) => {
+          this.Values.set({ '@value': width }, index, 'width')
+          this.Values.set({ '@value': height }, index, 'height')
+        })
+      }
+    }
     if (event.type === 'change') this.render()
   }
 
   async templateItemFooter (index, value) {
     let image, focalPoint
-    const textValue = value?.['@' + this.jsonLdValueType] ?? null
+    const url = this.Values.get(index, 'url')?.['@value']
 
-    this.x1 = this.Values.get(index, this.bindingMapping.x1)?.['@value'] ?? null
-    this.y1 = this.Values.get(index, this.bindingMapping.y1)?.['@value'] ?? null
-    this.x2 = this.Values.get(index, this.bindingMapping.x2)?.['@value'] ?? null
-    this.y2 = this.Values.get(index, this.bindingMapping.y2)?.['@value'] ?? null
+    this.x1 = this.Values.get(index, 'x1')?.['@value'] ?? null
+    this.y1 = this.Values.get(index, 'y1')?.['@value'] ?? null
+    this.x2 = this.Values.get(index, 'x2')?.['@value'] ?? null
+    this.y2 = this.Values.get(index, 'y2')?.['@value'] ?? null
 
     const reCalc = () => {
       if (this.x3 === null || this.x4 === null) {
@@ -74,10 +62,10 @@ export class UrlImage extends FormElementBase implements FormElement {
       this.y1 = Math.round(Math.min(this.y3, this.y4))
       this.y2 = Math.round(Math.max(this.y3, this.y4))
 
-      this.Values.set({'@value': this.x1}, index, this.bindingMapping.x1)
-      this.Values.set({'@value': this.y1}, index, this.bindingMapping.y1)
-      this.Values.set({'@value': this.x2}, index, this.bindingMapping.x2)
-      this.Values.set({'@value': this.y2}, index, this.bindingMapping.y2)  
+      this.Values.set({'@value': this.x1}, index, 'x1')
+      this.Values.set({'@value': this.y1}, index, 'y1')
+      this.Values.set({'@value': this.x2}, index, 'x2')
+      this.Values.set({'@value': this.y2}, index, 'y2')  
       setStyle()
     }
 
@@ -131,9 +119,9 @@ export class UrlImage extends FormElementBase implements FormElement {
       }
     };
 
-    return textValue ? this.html`
+    return url ? this.html`
       <div class="image-wrapper">
-        ${this.Field.saveMeta ? html`
+        ${this.Field.dimensions ? html`
           <div ref="${element => { focalPoint = element; setStyle() }}" class="focal-point"></div>
         ` : ''}
         <img 
@@ -142,13 +130,13 @@ export class UrlImage extends FormElementBase implements FormElement {
           onmousemove="${onmousemove}" 
           onmouseup="${onmouseup}" 
           ref="${element => image = element}"
-          src="${textValue}" />
+          src="${url}" />
       </div>
     ` : ''
   }
 
   async templateItem (index, value, placeholder = null): Promise<typeof html | HTMLElement> {
-    const textValue = value?.['@' + this.jsonLdValueType] ?? null
+    const url = this.Values.get(index, 'url')?.['@value']
 
     return this.html`
     <input
@@ -156,7 +144,7 @@ export class UrlImage extends FormElementBase implements FormElement {
       onkeyup="${event => this.on(event, index)}"
       type="text"
       placeholder="${placeholder ?? this.Field.placeholder}"
-      .value="${textValue}"
+      .value="${url}"
       required="${this.isRequired(index)}"
     >`
   }

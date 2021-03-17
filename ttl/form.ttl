@@ -83,6 +83,7 @@ form:rows
 
 form:binding
     rdf:type   rdf:Property ;
+    form:isBindingProperty true ;
     rdfs:comment
                "The predicate(s) this field maps to. Some widgets have multiple bindings, like a geo location or an address field. Just supply them all."@en ;
     rdfs:label "Binding(s)"@en .
@@ -95,6 +96,7 @@ form:additionalBindings
 
 form:innerBinding
     rdf:type   rdf:Property ;
+    form:isBindingProperty true ;
     rdfs:comment
                "A predicate that wraps the contents ."@en ;
     rdfs:label "Wrapper binding"@en .
@@ -104,12 +106,6 @@ form:innerType
     rdfs:comment
                "A type that the wrapper has ."@en ;
     rdfs:label "Wrapper type"@en .
-
-form:input
-    rdf:type   rdf:Property ;
-    rdfs:comment
-               "The input for the subject field. This is only used in combination with the subject field to auto generate a slug for the subject."@en ;
-    rdfs:label "Subject input"@en .
 
 form:translatable
     rdf:type   rdf:Property ;
@@ -155,12 +151,6 @@ form:placeholder
     rdf:type     rdf:Property ;
     rdfs:comment "The text to display when the text field is empty as a placeholder."@en ;
     rdfs:label   "Placeholder text"@en .
-
-form:subject
-    rdf:type   rdf:Property ;
-    rdfs:comment
-               "If you use this property, the form builder should use the value of this field as the name of the subject that is created"@en ;
-    rdfs:label "Subject creator"@en .
 
 form:fieldGroup
     rdf:type     rdf:Property ;
