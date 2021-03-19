@@ -44,7 +44,7 @@ export class UrlImage extends FormElementBase implements FormElement {
 
   async templateItemFooter (index, value) {
     let image, focalPoint
-    const url = this.Values.get(index, 'url')?.['@value']
+    const url = this.Values.get(index)?.['@value']
 
     this.x1 = this.Values.get(index, 'x1')?.['@value'] ?? null
     this.y1 = this.Values.get(index, 'y1')?.['@value'] ?? null
@@ -136,7 +136,8 @@ export class UrlImage extends FormElementBase implements FormElement {
   }
 
   async templateItem (index, value, placeholder = null): Promise<typeof html | HTMLElement> {
-    const url = this.Values.get(index, 'url')?.['@value']
+    const url = this.Values.get(index)?.['@value']
+    console.log(this.Values.defaultBinding)
 
     return this.html`
     <input
