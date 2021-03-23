@@ -160,6 +160,7 @@ export class RdfForm extends HTMLElement {
     // It makes it possible for an application developer to completely detach from any hosted code of RDF form
     // and ship the form definition ontology files themselves.
     this.expandedData = this.data ? await JsonLdProcessor.expand(this.data): {}
+
     if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
 
     // Language initialisation.
@@ -396,7 +397,8 @@ export class RdfForm extends HTMLElement {
     this.isSaving = true
     this.render()
 
-    const clonedData = JSON.parse(JSON.stringify(this.data))
+    // const clonedData = JSON.parse(JSON.stringify(this.data))
+    const clonedData = {}
 
     const jsonLd = Object.assign({ '@context': {}}, clonedData)
     Object.assign(jsonLd['@context'], this.jsonLdContext)
@@ -405,7 +407,8 @@ export class RdfForm extends HTMLElement {
 
     // Sets the target RDF classes
     if (this.formInfo?.['form:binding'] && !jsonLd['@type']) {
-      jsonLd['@type'] = Array.isArray(this.formInfo['form:binding']) ? this.formInfo['form:binding'].map(value => value['@id']) : this.formInfo['form:binding']['@id']
+      const types = Array.isArray(this.formInfo['form:binding']) ? this.formInfo['form:binding'].map(value => value['@id']) : [this.formInfo['form:binding']['@id']]
+      jsonLd['@type'] = types
     }
 
     const compacted = await JsonLdProcessor.compact(jsonLd, jsonLd['@context']);

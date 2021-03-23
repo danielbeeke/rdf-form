@@ -1,6 +1,6 @@
 @prefix schema: <http://schema.org/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix focalPoint:       <http://localhost:8080/focalPoint.ttl#> .
+@prefix focalPoint:       <http://localhost:8070/focalPoint.ttl#> .
 
 []
     a schema:Person ;

@@ -12,20 +12,7 @@ export class Dropdown extends FormElementBase implements FormElement {
     await super.init();
 
     if (this.Field.option) {
-      for (const option of this.Field.option) {
-        const valueItem = option[this.Field.prefix + 'value'][0]
-        const value = valueItem?.['@' + this.jsonLdValueType]
-
-        const labels = {}
-        for (const label of option[this.Field.prefix + 'label']) {
-          labels[label?.['@language'] ?? 'und'] = label['@value']
-        }
-
-        this.options.push({
-          uri: value,
-          label: labels
-        })
-      }
+      this.options.push(...this.Field.option)
     }
 
     if (!this.options.length) {

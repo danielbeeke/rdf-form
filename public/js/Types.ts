@@ -17,7 +17,7 @@ export type FieldDefinition = {
   label: string
   input: null
   autoCompleteSource: string | Array<any>
-  autoCompleteQuery: string | Array<any>
+  autoCompleteQuery: string
   optionsSource: string | Array<any>
   optionsQuery: string | Array<any>
   emptyText: string | Array<any>

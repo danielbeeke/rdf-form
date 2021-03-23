@@ -6,123 +6,109 @@ import { getImageDimensionsByUrl } from '../Helpers'
 export class UrlImage extends FormElementBase implements FormElement {
 
   static type: string = 'url-image'
-
   public jsonLdValueType = 'value'
-  public bindingMapping = {
-    width: null,
-    height: null,
-    x1: null,
-    y1: null,
-    x2: null,
-    y2: null,
-  }
-
+  
   public isDragging = false
-  public x1: number
-  public y1: number
-  public x2: number
-  public y2: number
-  public x3: number
-  public y3: number
-  public x4: number
-  public y4: number
 
-  async on(event, index) {
+  private focalPoints: Map<number, {x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number}> = new Map()
+
+  async on(event: Event, index: number) {
     super.on(event, index);
     if (this.Field.dimensions) {
-      const url = this.Values.get(index, 'url')?.['@value']
+      const url = this.Values.getValue(index, 'url')
 
       if (url) {
         getImageDimensionsByUrl(url).then(({ width, height }) => {
-          this.Values.set({ '@value': width }, index, 'width')
-          this.Values.set({ '@value': height }, index, 'height')
+          this.Values.setValue(width, index, 'width')
+          this.Values.setValue(height, index, 'height')
         })
       }
     }
     if (event.type === 'change') this.render()
   }
 
-  async templateItemFooter (index, value) {
-    let image, focalPoint
-    const url = this.Values.get(index)?.['@value']
+  reset (index: number) {
+    this.focalPoints.set(index, { x1: null, y1: null, x2: null, y2: null, x3: null, y3: null, x4: null, y4: null })
+  }
 
-    this.x1 = this.Values.get(index, 'x1')?.['@value'] ?? null
-    this.y1 = this.Values.get(index, 'y1')?.['@value'] ?? null
-    this.x2 = this.Values.get(index, 'x2')?.['@value'] ?? null
-    this.y2 = this.Values.get(index, 'y2')?.['@value'] ?? null
+  getFocalPoint (index: number) {
+    if (!this.focalPoints.has(index)) this.reset(index)
+    return this.focalPoints.get(index)
+  }
 
-    const reCalc = () => {
-      if (this.x3 === null || this.x4 === null) {
-        focalPoint.removeAttribute('style')
-        return
-      }
-
-      this.x1 = Math.round(Math.min(this.x3, this.x4))
-      this.x2 = Math.round(Math.max(this.x3, this.x4))
-      this.y1 = Math.round(Math.min(this.y3, this.y4))
-      this.y2 = Math.round(Math.max(this.y3, this.y4))
-
-      this.Values.set({'@value': this.x1}, index, 'x1')
-      this.Values.set({'@value': this.y1}, index, 'y1')
-      this.Values.set({'@value': this.x2}, index, 'x2')
-      this.Values.set({'@value': this.y2}, index, 'y2')  
-      setStyle()
+  reCalc = (focalPointDiv: HTMLDivElement, index: number, focalPoint) => {
+    if (focalPoint.x3 === null || focalPoint.x4 === null) {
+      this.reset(index)
+      focalPointDiv.removeAttribute('style')
+      return
     }
 
-    const setStyle = () => {
-      focalPoint.style.left = this.x1 + '%'
-      focalPoint.style.top = this.y1 + '%'
-      focalPoint.style.width = (this.x2 - this.x1) + '%'
-      focalPoint.style.height = (this.y2 - this.y1) + '%'
-    }
+    focalPoint.x1 = Math.round(Math.min(focalPoint.x3, focalPoint.x4))
+    focalPoint.x2 = Math.round(Math.max(focalPoint.x3, focalPoint.x4))
+    focalPoint.y1 = Math.round(Math.min(focalPoint.y3, focalPoint.y4))
+    focalPoint.y2 = Math.round(Math.max(focalPoint.y3, focalPoint.y4))
 
-    const reset = () => {
-      this.x1 = null
-      this.y1 = null
-      this.x2 = null
-      this.y2 = null
-      this.x3 = null
-      this.y3 = null
-      this.x4 = null
-      this.y4 = null
-    }
+    this.setStyle(focalPointDiv, focalPoint)
+  }
 
-    const onmousedown = (e) => {      
-      reset()
+  setStyle = (focalPointDiv: HTMLDivElement, focalPoint) => {
+    focalPointDiv.style.left = focalPoint.x1 + '%'
+    focalPointDiv.style.top = focalPoint.y1 + '%'
+    focalPointDiv.style.width = (focalPoint.x2 - focalPoint.x1) + '%'
+    focalPointDiv.style.height = (focalPoint.y2 - focalPoint.y1) + '%'
+  }
+
+  async templateItemFooter (index: number) {
+    let image, focalPointDiv
+    const focalPoint = this.getFocalPoint(index)
+
+    const url = this.Values.getValue(index)
+
+    focalPoint.x1 = this.Values.getValue(index, 'x1')
+    focalPoint.y1 = this.Values.getValue(index, 'y1')
+    focalPoint.x2 = this.Values.getValue(index, 'x2')
+    focalPoint.y2 = this.Values.getValue(index, 'y2')
+
+    const onmousedown = (event: MouseEvent) => {      
+      event.preventDefault()
+      this.reset(index)
       this.isDragging = true
+      this.reCalc(focalPointDiv, index, focalPoint)
+      focalPoint.x3 = 100 / image.width * event.offsetX
+      focalPoint.y3 = 100 / image.height * event.offsetY
+    }
 
-      e.returnValue = false
-      e.preventDefault()
-      this.x3 = 100 / image.width * e.offsetX
-      this.y3 = 100 / image.height * e.offsetY
-      reCalc()
-    };
-
-    const onmousemove = (e) => {
+    const onmousemove = (event: MouseEvent) => {
       if (this.isDragging) {
-        this.x4 = 100 / image.width * e.offsetX
-        this.y4 = 100 / image.height * e.offsetY
-        reCalc()  
+        focalPoint.x4 = 100 / image.width * event.offsetX
+        focalPoint.y4 = 100 / image.height * event.offsetY
+        this.reCalc(focalPointDiv, index, focalPoint)
       }
-    };
+    }
 
-    const onmouseup = (e) => {
+    const onmouseup = (event: MouseEvent) => {
       this.isDragging = false
-      const endX = 100 / image.width * e.offsetX
-      const endY = 100 / image.height * e.offsetY
-      reCalc()
+      const endX = 100 / image.width * event.offsetX
+      const endY = 100 / image.height * event.offsetY
+      this.reCalc(focalPointDiv, index, focalPoint)
 
       const allowedDelta = 4
-      if (Math.abs(endX - this.x3) < allowedDelta && Math.abs(endY - this.y3) < allowedDelta) {
-        focalPoint.removeAttribute('style')
-        reset()
+      if (Math.abs(endX - focalPoint.x3) < allowedDelta && Math.abs(endY - focalPoint.y3) < allowedDelta) {
+        focalPointDiv.removeAttribute('style')
+        this.reset(index)
       }
-    };
+      else {
+        this.Values.setValue(focalPoint.x1, index, 'x1')
+        this.Values.setValue(focalPoint.y1, index, 'y1')
+        this.Values.setValue(focalPoint.x2, index, 'x2')
+        this.Values.setValue(focalPoint.y2, index, 'y2')    
+      }
+    }
 
     return url ? this.html`
       <div class="image-wrapper">
         ${this.Field.dimensions ? html`
-          <div ref="${element => { focalPoint = element; setStyle() }}" class="focal-point"></div>
+          <div ref="${element => { focalPointDiv = element; this.setStyle(focalPointDiv, focalPoint) }}" class="focal-point"></div>
         ` : ''}
         <img 
           onclick="${onclick}" 
@@ -135,9 +121,8 @@ export class UrlImage extends FormElementBase implements FormElement {
     ` : ''
   }
 
-  async templateItem (index, value, placeholder = null): Promise<typeof html | HTMLElement> {
-    const url = this.Values.get(index)?.['@value']
-    console.log(this.Values.defaultBinding)
+  async templateItem (index: number, value, placeholder = null): Promise<typeof html | HTMLElement> {
+    const url = this.Values.getValue(index)
 
     return this.html`
     <input

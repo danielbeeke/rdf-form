@@ -60,6 +60,8 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
  * @param formDefinition
  */
 export const resolveSubForms = async (formDefinition) => {
+  if (!formDefinition['@graph']) throw new Error('Missing fields inside form definition')
+  
   const formPrefix = formDefinition['@context']['form']
 
   for (const field of formDefinition['@graph']) {

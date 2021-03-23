@@ -1,8 +1,9 @@
 import { FieldDefinition } from './Types'
 import { Language } from "./LanguageService";
+import { lastPart } from './Helpers';
 
 const fields = {
-  name: 'string',
+  name: 'name',
   fieldWidget: 'string',
   binding: 'stringArray',
   innerBinding: 'stringArray',
@@ -24,8 +25,9 @@ const fields = {
   autoCompleteQuery: 'string',
   optionsSource: 'string',
   optionsQuery: 'string',
+  container: 'string',
   
-  option: 'stringArray',
+  option: 'options',
   range: 'string',
   fieldGroup: 'string',
   prefix: 'string',
@@ -49,7 +51,9 @@ const fields = {
  * @constructor
  */
 export function FieldDefinition(definition: any, formPrefix: string): FieldDefinition {
-  const convertedDefinition = {}
+  const convertedDefinition = {
+    'name': lastPart(definition['@id'])
+  }
 
   for (const [predicate, type] of Object.entries(fields)) {
     if (definition[formPrefix + predicate]) {
@@ -59,13 +63,24 @@ export function FieldDefinition(definition: any, formPrefix: string): FieldDefin
         case 'string':
           convertedDefinition[predicate] = firstItem?.['@value'] ?? firstItem?.['@id']
           break;
+          
+        case 'options':
+          Object.defineProperty(convertedDefinition, predicate, { get: () => {
+            return definition[formPrefix + predicate].map(option => {
+              return {
+                value: option[formPrefix + 'label']?.[0]?.['@id'] ?? option[formPrefix + 'label']?.[0]?.['@value'],
+                label: Language.multilingualValue(option[formPrefix + 'label'])
+              }
+            }) 
+          }})
+          break;
 
         case 'stringArray':
           convertedDefinition[predicate] = definition[formPrefix + predicate].map(item => item?.['@value'] ?? item?.['@id'])
           break;
 
         case 'l10nString':
-          Object.defineProperty(convertedDefinition, predicate, { get: () =>Language.multilingualValue(definition[formPrefix + predicate])})
+          Object.defineProperty(convertedDefinition, predicate, { get: () => Language.multilingualValue(definition[formPrefix + predicate])})
           break;
 
         case 'boolean':

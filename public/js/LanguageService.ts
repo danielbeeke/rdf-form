@@ -89,7 +89,8 @@ class LanguageService extends EventTarget {
     if (!Array.isArray(values)) values = [values]
     const currentLanguageMatch = values.find(value => value['@language'] === this.current)
     const fallbackLanguageMatch = values.find(value => value['@language'] === this.fallback)
-    return currentLanguageMatch?.['@value'] ?? fallbackLanguageMatch?.['@value'] ?? values
+    const fallbackNoLanguageMatch = values.find(value => !value['@language'])
+    return currentLanguageMatch?.['@value'] ?? fallbackLanguageMatch?.['@value'] ?? fallbackNoLanguageMatch?.['@value'] ?? values
   }
 
   /**

@@ -192,7 +192,9 @@ export class FormElementBase extends EventTarget {
           if (!meta.thumbnail && imageLastParts.includes(lastPart(predicate))) {
             const valueInPreferredLanguage = (value as Array<any>).find(item => item['@language'] === Language.current)
             const valueInUndeterminedLanguage = (value as Array<any>).find(item => item['@language'] === 'und')
-            meta.thumbnail = valueInPreferredLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@value'] ?? value?.[0]?.['@value']
+            meta.thumbnail = valueInPreferredLanguage?.['@value'] ?? valueInPreferredLanguage?.['@id'] ?? 
+            valueInUndeterminedLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@id'] ?? 
+            value?.[0]?.['@value'] ?? value?.[0]?.['@id']
           }
         }
 
