@@ -1,5 +1,5 @@
 import { ContainerWidgetBase } from "./ContainerWidgetBase";
-import {lastPart} from "../Helpers";
+import {lastPart} from "../helpers/lastPart";
 import { Language } from "../LanguageService";
 
 /**

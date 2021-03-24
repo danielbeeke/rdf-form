@@ -1,7 +1,7 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import { sparqlQueryToList } from '../Helpers'
 import { t, Language} from '../LanguageService'
+import { sparqlQueryToList } from '../helpers/sparqlQueryToList'
 
 export class Dropdown extends FormElementBase implements FormElement {
 

@@ -7,7 +7,9 @@
 
 import { faTimes, faCog } from '../vendor/free-solid-svg-icons.js'
 import { FieldDefinition } from '../Types'
-import { debounce, fa, lastPart } from '../Helpers'
+import { fa } from '../helpers/fa'
+import {lastPart} from "../helpers/lastPart";
+import { debounce } from '../helpers/debounce'
 import { ttl2jsonld } from '../vendor/ttl2jsonld.js'
 import { FieldValues } from '../FieldValues'
 import { t, Language} from '../LanguageService'

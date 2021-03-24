@@ -1,5 +1,5 @@
 import { FormElement} from "../Types";
-import {lastPart} from "../Helpers";
+import {lastPart} from "../helpers/lastPart";
 import { html } from "../vendor/uhtml.js";
 
 /**

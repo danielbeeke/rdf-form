@@ -1,6 +1,10 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
-import { debounce, fa, searchSuggestionsSparqlQuery, dbpediaSuggestions, sparqlQueryToList } from '../Helpers'
+import { fa } from '../helpers/fa'
+import { debounce } from '../helpers/debounce'
+import { searchSuggestionsSparqlQuery } from '../helpers/searchSuggestionsSparqlQuery'
+import { sparqlQueryToList } from '../helpers/sparqlQueryToList'
+import { dbpediaSuggestions } from '../helpers/dbpediaSuggestions'
 import { faPencilAlt, faCheck, faTimes } from '../vendor/free-solid-svg-icons.js'
 import { Language, t } from '../LanguageService'
 

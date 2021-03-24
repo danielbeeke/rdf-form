@@ -45,10 +45,12 @@ import { Details } from './ContainerWidgets/Details'
 import { Default } from './ContainerWidgets/Default'
 
 import { Language, t } from './LanguageService'
-import {attributeToJsonLd, debounce, lastPart, selectCorrectGraph} from './Helpers'
+import { attributeToJsonLd } from './helpers/attribute'
+import { lastPart } from './helpers/lastPart'
+import { selectCorrectGraph } from './helpers/selectCorrectGraph'
 import {ContainerWidgetBase} from "./ContainerWidgets/ContainerWidgetBase";
 import {FormElement} from "./Types";
-import {ensureLanguages, languages, langCodesToObject, filterLanguages} from './getLanguageLabel'
+import {ensureLanguages, langCodesToObject, filterLanguages} from './getLanguageLabel'
 
 export class RdfForm extends HTMLElement {
 

@@ -1,6 +1,6 @@
 import { Language } from './LanguageService'
 import { FieldDefinition } from './Types'
-import { expand, lastPart } from './Helpers'
+import {lastPart} from "./helpers/lastPart";
 
 /**
  * This class sits between a field and the RDF JSON ld values.
@@ -179,6 +179,8 @@ export class FieldValues {
   }
 
   // TODO support multi binding
+  // TODO check if this does work.. 
+  // this.bindingValues?.[index] looks wrong.
   enableTranslations () {
     const values = this._getValues(this.defaultBinding) ?? []
 

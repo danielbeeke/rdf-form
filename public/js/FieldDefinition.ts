@@ -1,6 +1,6 @@
 import { FieldDefinition } from './Types'
 import { Language } from "./LanguageService";
-import { lastPart } from './Helpers';
+import {lastPart} from "./helpers/lastPart";
 
 const fields = {
   name: 'name',

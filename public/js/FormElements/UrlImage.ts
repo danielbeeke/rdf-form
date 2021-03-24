@@ -1,7 +1,7 @@
 import { FormElement } from '../Types'
 import { FormElementBase } from './FormElementBase'
 import { html } from '../vendor/uhtml.js'
-import { getImageDimensionsByUrl } from '../Helpers'
+import { getImageDimensionsByUrl } from '../helpers/getImageDimensionsByUrl'
 
 export class UrlImage extends FormElementBase implements FormElement {
 

@@ -1,6 +1,6 @@
 import { FormElementRegistry } from './FormElementRegistry'
 import { jsonld as JsonLdProcessor } from './vendor/jsonld.js';
-import { lastPart } from "./Helpers";
+import {lastPart} from "./helpers/lastPart";
 import { FieldValues } from "./FieldValues";
 import {ttl2jsonld} from "./vendor/ttl2jsonld";
 import { FieldDefinition } from './FieldDefinition'

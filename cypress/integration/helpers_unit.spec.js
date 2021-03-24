@@ -1,12 +1,8 @@
-import {
-  lastPart,
-  dbpediaSuggestions,
-  searchSuggestionsSparqlQuery,
-  attributeToText,
-  attributeToJsonLd,
-  attributeToQuads,
-  selectCorrectGraph,
-} from '../../public/js/Helpers'
+import { selectCorrectGraph } from '../../public/js/helpers/selectCorrectGraph'
+import { searchSuggestionsSparqlQuery } from '../../public/js/helpers/searchSuggestionsSparqlQuery'
+import { lastPart } from '../../public/js/helpers/lastPart'
+import { dbpediaSuggestions } from '../../public/js/helpers/dbpediaSuggestions'
+import { attributeToText, attributeToJsonLd, attributeToQuads, } from '../../public/js/helpers/attribute'
 
 describe('attributeToText and attributeToJsonLd', function () {
   it('should get the attribute and fetch if it is a URL', async function () {
