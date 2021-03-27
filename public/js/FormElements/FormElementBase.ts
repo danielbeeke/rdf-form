@@ -6,7 +6,7 @@
  */
 
 import { faTimes, faCog } from '../vendor/free-solid-svg-icons.js'
-import { FieldDefinition } from '../Types'
+import { FieldDefinition, FormElement } from '../Types'
 import { fa } from '../helpers/fa'
 import {lastPart} from "../helpers/lastPart";
 import { debounce } from '../helpers/debounce'
@@ -26,6 +26,7 @@ export class FormElementBase extends EventTarget {
   public values: Array<any> = []
   public Values: FieldValues
   public Field: FieldDefinition
+  public children: Map<string, FormElement> = new Map()
   public html: any
   public parent: any
   public searchSuggestions: Map<string | number, Array<any>> = new Map()
@@ -49,6 +50,7 @@ export class FormElementBase extends EventTarget {
   constructor (
       field: FieldDefinition,
       values: FieldValues,
+      children: Map<string, FormElement>,
       jsonLdContext = {},
       comunica,
       renderCallback: any,
@@ -56,6 +58,7 @@ export class FormElementBase extends EventTarget {
     super()
     this.html = html
     this.comunica = comunica
+    this.children = children
     this.Field = field
     if (this.Field.jsonLdKey) this.jsonLdValueType = this.Field.jsonLdKey
     this.pathContext['@language'] = Language.current
@@ -261,7 +264,7 @@ export class FormElementBase extends EventTarget {
     return this.html`
       <div class="reference-label">
         ${label === false ? this.html`<span class="reference-loading">${t.direct('Could not load data')}</span>` : this.html`
-          ${thumbnail ? this.html`<div class="image"><img src="${thumbnail}"></div>` : ''}
+          ${thumbnail ? this.html`<div class="image"><img src="${`//images.weserv.nl/?url=${thumbnail}&w=100&h=100`}"></div>` : ''}
           ${label ? this.html`<a href="${uri}" target="_blank">${label}</a>` : this.html`<span class="reference-loading">${t.direct('Loading...')}</span>`}
         `}
       </div>
@@ -311,7 +314,7 @@ export class FormElementBase extends EventTarget {
 
         this.render()
       }}">
-        ${suggestion.image ? this.html`<div class="image"><img src="${suggestion.image}"></div>` : ''}
+        ${suggestion.image ? this.html`<div class="image"><img src="${`//images.weserv.nl/?url=${suggestion.image}&w=100&h=100`}"></div>` : ''}
         <span class="title">${suggestion.label?.[Language.current] ?? suggestion.label}</span>
       </li>`)}
     </ul>
@@ -334,17 +337,22 @@ export class FormElementBase extends EventTarget {
    * Called via the RdfForm
    * @see RdfForm.render()
    */
-  async templateWrapper () {
+  async templateWrapper (childIndex = null) {
     const itemsToRender = []
 
-    for (const [index, value] of this.Values.getAllFromBinding().entries()) {
-      if (this.Values.hasTranslations && value?.['@language'] === Language.currentL10nLanguage) {
-        itemsToRender.push([index, value])
-      }
-
-      if (!this.Values.hasTranslations) {
-        itemsToRender.push([index, value])
-      }
+    if (childIndex === null) {
+      for (const [index, value] of this.Values.getAllFromBinding().entries()) {
+        if (this.Values.hasTranslations && value?.['@language'] === Language.currentL10nLanguage) {
+          itemsToRender.push([index, value])
+        }
+  
+        if (!this.Values.hasTranslations) {
+          itemsToRender.push([index, value])
+        }
+      }  
+    }
+    else {
+      itemsToRender.push([childIndex, this.Values.get(childIndex)])
     }
 
     if (itemsToRender.length === 0) {
@@ -391,5 +399,27 @@ export class FormElementBase extends EventTarget {
     </div>`
   }
 
+  async serialize (jsonLd) {
+    if (this.children.size) {
+      const childSerialization = {}
+      for (const childElement of this.children.values()) {
+        await childElement.Values.serialize(childSerialization)
+      }
+      const deFlatMapped = []
+      for (const [binding, bindingValues] of Object.entries(childSerialization)) {
+        /** @ts-ignore */
+        for (const [index, bindingValue] of bindingValues.entries()) {
+          if (!deFlatMapped[index]) deFlatMapped[index] = {}
+          deFlatMapped[index][binding] = [bindingValue]
+        }
+      }
+
+      const outerBinding = this.Field.innerBinding?.length ? this.Field.binding[0] : null  
+      jsonLd[outerBinding ?? this.Values.defaultBinding] = [{ '@list': deFlatMapped }]
+    }
+    else {
+      await this.Values.serialize(jsonLd)
+    }
+  }
 }
 

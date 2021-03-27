@@ -1,7 +1,10 @@
+import { FieldValues } from "./FieldValues";
+
 export interface FormElement extends EventTarget {
   init ():  Promise<any>;
   templateWrapper(index?: number): Promise<Promise<any>>;
   Field: FieldDefinition
+  Values: FieldValues
 }
 
 export type FieldDefinition = {

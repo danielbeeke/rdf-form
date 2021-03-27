@@ -30,7 +30,18 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
     const fieldDefinition = FieldDefinition(field, formPrefix)
     if (!fieldDefinition.fieldWidget) return
     const values = new FieldValues(fieldDefinition, parentValues, form.formOntology)
-    const formElement = formElementRegistry.get(fieldDefinition.fieldWidget, fieldDefinition, values, form.jsonLdContext, comunica)
+    const childFields = field[formPrefix + 'fieldWidget'][0]['@value'] === 'group' ? fieldsArray.filter(field => field?.[formPrefix + 'fieldGroup']?.[0]?.['@value'] === fieldDefinition.name) : []
+    const children = new Map()
+
+    for (const childField of childFields) {
+      const childFieldDefinition = FieldDefinition(childField, formPrefix)
+      const childFieldName = lastPart(childField['@id'])
+      const childParentValues = values.getForChildElement(childFieldDefinition)
+      const childFormElement = await createFormElement(childField, childParentValues)
+      children.set(childFieldName, childFormElement)
+    }
+
+    const formElement = formElementRegistry.get(fieldDefinition.fieldWidget, fieldDefinition, values, children, form.jsonLdContext, comunica)
 
     if (formElement) {
       allPromises.push(formElement.init())
@@ -39,6 +50,7 @@ export async function jsonLdToFormElements (form, jsonLd, formElementRegistry: F
   }
 
   const firstLevelFields = fieldsArray.filter(field => !field?.[formPrefix + 'fieldGroup'])
+
   for (const field of firstLevelFields) {
     const formElement = await createFormElement(field, formData)
 

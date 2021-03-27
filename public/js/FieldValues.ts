@@ -12,12 +12,12 @@ export class FieldValues {
   public bindingValues = new Map<string, any>()
   public bindings: Array<any> = []
   public additionalBindings: Array<any>
-  readonly defaultBinding: string
-  readonly hasSubValues: boolean
-  readonly innerBinding: string
+  public defaultBinding: string
+  private innerBinding: string
   public Field: FieldDefinition
   private formOntology: {}
   private isList: boolean = false
+  private isGroup: boolean = false
 
   /**
    *
@@ -28,19 +28,47 @@ export class FieldValues {
     this.Field = field
     this.formOntology = formOntology
 
-    let bindingPropertyCounter = 0
+    // Goes through all the fields properties, check which items have bindings.
     for (const [fieldProperty, propertySetting] of Object.entries(this.Field)) {
       const fieldMetaProperties = this.formOntology['@graph'].find(predicate => predicate?.['@id'] === 'form:' + fieldProperty)
       if (fieldMetaProperties && fieldMetaProperties['form:isBindingProperty'] && Array.isArray(propertySetting)) {
         this.bindings.push(...propertySetting)
-        bindingPropertyCounter++
       }
     }
 
-    if (bindingPropertyCounter > 1 || this.innerBinding) {
-      this.isList = true
+    // This initiates the values, it noramlizes the values into a common format.
+    if (this.bindings.length > 1 || this.innerBinding) {
+      this.initList(parentValues)
+    } 
+    else if (this.Field.fieldWidget === 'group') {
+      this.initGroup(parentValues)
     }
+    else {
+      this.initDefault(parentValues)
+    }    
 
+    Language.addEventListener('language.removed', (event: CustomEvent) => {
+      const removedLanguage = event.detail
+
+      if (this.hasTranslations) {
+        for (const binding of this.bindings) {
+          let values = this.getAllFromBinding(binding)
+          const index = values.find(value => value?.['@language'] === removedLanguage)
+          if (index !== null) values.splice(index, 1)
+        }  
+      }
+    })
+  }
+
+  initGroup (parentValues) {
+    this.isGroup = true
+    this.defaultBinding = this.bindings[0]
+    const values = parentValues[this.defaultBinding]?.[0]?.['@list'] ?? parentValues[this.defaultBinding]
+    this.bindingValues.set(lastPart(this.defaultBinding), values)
+  }
+
+  initList (parentValues) {
+    this.isList = true
     this.defaultBinding = this.bindings[0]
 
     // Grouped values inside a binding
@@ -64,33 +92,24 @@ export class FieldValues {
 
     for (const binding of this.bindings) {
       const thisBindingValues = []
-      if (this.isList) {
-        const list = newParentValues?.[0]?.['@list'] ?? []
+      const list = newParentValues?.[0]?.['@list'] ?? []
 
-        for (const item of list) {
-          if (item[binding]) {
-            thisBindingValues.push(...item[binding])
-          }
+      for (const item of list) {
+        if (item[binding]) {
+          thisBindingValues.push(...item[binding])
         }
+      }
 
-        this.bindingValues.set(lastPart(binding), thisBindingValues)
-      }
-      else {
-        this.bindingValues.set(lastPart(binding), newParentValues[binding])
-      }
+      this.bindingValues.set(lastPart(binding), thisBindingValues)
     }
+  }
 
-    Language.addEventListener('language.removed', (event: CustomEvent) => {
-      const removedLanguage = event.detail
+  initDefault (parentValues) {
+    this.defaultBinding = this.bindings[0]
 
-      if (this.hasTranslations) {
-        for (const binding of this.bindings) {
-          let values = this.getAllFromBinding(binding)
-          const index = values.find(value => value?.['@language'] === removedLanguage)
-          if (index !== null) values.splice(index, 1)
-        }  
-      }
-    })
+    for (const binding of this.bindings) {
+      this.bindingValues.set(lastPart(binding), parentValues[binding])
+    }
   }
 
   _getValues (binding) {
@@ -223,6 +242,10 @@ export class FieldValues {
     values.splice(1)
   }
 
+  /**
+   * The serialize does not know about its children.
+   * The child nesting logic happens inside the form.
+   */
   async serialize (jsonLd) {
     // TODO For now we only support one outerBinding..
     let value: any = []
@@ -238,6 +261,7 @@ export class FieldValues {
 
     const listValues = []
     for (const binding of this.bindings) {
+      if (this.isGroup) continue;
       const values = this.getAllFromBinding(binding)
       for (const [index, bindingValue] of values.entries()) {
         if (this.isList) {
@@ -257,4 +281,9 @@ export class FieldValues {
     jsonLd[outerBinding ?? this.defaultBinding] = value
   }
 
+  getForChildElement (childField: FieldDefinition) {
+    const values = this.getAllFromBinding()
+    const childBinding = childField.binding[0] // TODO needs improvement? What if innerBinding?
+    return { [childBinding]: values.flatMap(value => value?.[childBinding]) }
+  }
 }

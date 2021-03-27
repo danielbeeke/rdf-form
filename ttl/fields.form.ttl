@@ -2,8 +2,9 @@
 @prefix form:       <http://localhost:8070/form.ttl#> .
 @prefix fieldsForm: <http://localhost:8070/fields.form.ttl#> .
 @prefix schema:     <http://schema.org/> .
+@prefix recipe:     <http://rdf.danielbeeke.nl/recipe/recipe-dev.ttl#> .
 
-<http://localhost:8070/person.form#fieldsForm>
+<http://localhost:8070/fields.form#fieldsForm>
     form:binding schema:Thing ;
     a            form:Form .
 
@@ -13,8 +14,7 @@ fieldsForm:string
     form:label        "String" ;
     form:binding      schema:name ;
     form:order        0 ;
-    form:translatable true ;
-    form:required     true .
+    form:translatable true .
 
 fieldsForm:references
     a                 form:Field ;
@@ -22,5 +22,68 @@ fieldsForm:references
     form:label        "references"@en ;
     form:binding      schema:author ;
     form:order        0 ;
-    form:multiple true ;
-    form:required     true .
+    form:multiple true .
+
+
+fieldsForm:ingredients
+    a                 form:Field ;
+    form:fieldWidget "group" ;
+    form:label       "Ingredients"@en ;
+    form:label       "Ingrediënten"@nl ;
+    form:binding     recipe:ingredients ;
+    form:multiple    true ;
+    form:order       2 .
+
+fieldsForm:ingredient
+    a                 form:Field ;
+    form:fieldWidget       "reference" ;
+    form:label             "Ingredient"@en ;
+    form:label             "Ingrediënt"@nl ;
+    form:fieldGroup        "ingredients" ;
+    form:binding           recipe:ingredient ;
+    form:placeholder       "Search for an ingredient."@en ;
+    form:placeholder       "Zoek naar een ingredient."@nl ;
+    form:autoCompleteQuery """
+
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX dbo:  <http://dbpedia.org/ontology/>
+    PREFIX bif: <bif:>
+
+    SELECT DISTINCT ?uri ?label ?image {
+
+      ?o dbo:ingredient ?uri .
+      ?uri rdfs:label ?label .
+      ?uri dbo:thumbnail ?image .
+      ?label bif:contains "'SEARCH_TERM'" .
+
+      filter langMatches(lang(?label), "LANGUAGE")
+    }
+
+    LIMIT 10
+
+    """ ;
+    form:order             1 .
+
+fieldsForm:quantity
+    a                 form:Field ;
+    form:fieldWidget "number" ;
+    form:label       "Quantity"@en ;
+    form:label       "Aantal"@nl ;
+    form:binding     recipe:quantity ;
+    form:fieldGroup  "ingredients" ;
+    form:order       2 .
+
+fieldsForm:measurementUnit
+    a                 form:Field ;
+    form:fieldWidget "dropdown" ;
+    form:label       "Unit"@en ;
+    form:label       "Soort"@nl ;
+    form:binding     recipe:measurementUnit ;
+    form:option      [ form:label "Litre"@en ;
+                       form:label "Liter"@nl ;
+                       form:value <https://www.wikidata.org/wiki/Q11582> ; ] ;
+    form:option      [ form:label "Millilitre"@en ;
+                       form:label "Milliliter"@nl ;
+                       form:value <https://www.wikidata.org/wiki/Q2332346> ; ] ;
+    form:fieldGroup  "ingredients" ;
+    form:order       3 .

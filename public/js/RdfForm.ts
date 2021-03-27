@@ -405,7 +405,9 @@ export class RdfForm extends HTMLElement {
     const jsonLd = Object.assign({ '@context': {}}, clonedData)
     Object.assign(jsonLd['@context'], this.jsonLdContext)
     const formElements = Array.from(this.formElements.values())
-    for (const formElement of formElements) await formElement.Values.serialize(jsonLd)
+    for (const formElement of formElements) {
+      await formElement.serialize(jsonLd)
+    }
 
     // Sets the target RDF classes
     if (this.formInfo?.['form:binding'] && !jsonLd['@type']) {

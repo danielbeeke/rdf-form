@@ -55,7 +55,7 @@ export class Dropdown extends FormElementBase implements FormElement {
     >
         ${!idValue && !this.Field.multiple ? this.html`<option disabled selected value>${this.Field.emptyText ? this.Field.emptyText : t`- Select a value -`}</option>` : this.html``}
         ${this.options.map(option => this.html`
-            <option value="${option.uri}" selected="${option.uri === idValue ? true : null}">
+            <option value="${option.uri}" .selected="${option.uri === idValue ? true : null}">
                 ${option.label?.[Language.current] ?? option.label?.['und'] ?? option.label}
               </option>
         `)}
