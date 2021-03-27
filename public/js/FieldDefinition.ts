@@ -67,8 +67,9 @@ export function FieldDefinition(definition: any, formPrefix: string): FieldDefin
         case 'options':
           Object.defineProperty(convertedDefinition, predicate, { get: () => {
             return definition[formPrefix + predicate].map(option => {
+              const valueItem = option[formPrefix + 'value']?.[0]
               return {
-                value: option[formPrefix + 'label']?.[0]?.['@id'] ?? option[formPrefix + 'label']?.[0]?.['@value'],
+                uri: valueItem?.['@id'] ?? valueItem?.['@value'],
                 label: Language.multilingualValue(option[formPrefix + 'label'])
               }
             }) 
