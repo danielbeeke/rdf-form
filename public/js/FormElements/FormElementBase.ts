@@ -6,8 +6,8 @@
  */
 
 import { faTimes, faCog } from '../vendor/free-solid-svg-icons.js'
-import { FieldDefinition, FormElement } from '../Types'
 import { fa } from '../helpers/fa'
+import { FieldDefinition, FormElement } from '../Types'
 import {lastPart} from "../helpers/lastPart";
 import { debounce } from '../helpers/debounce'
 import { ttl2jsonld } from '../vendor/ttl2jsonld.js'
@@ -285,7 +285,7 @@ export class FormElementBase extends EventTarget {
   }
 
   async templateRemoveButton (index: number) {
-    this.html`
+    return this.html`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.render()
@@ -384,7 +384,7 @@ export class FormElementBase extends EventTarget {
           return this.html`
           <div class="item" expanded="${this.shouldShowExpanded(index)}" loading="${this.isLoading.get(index)}">
             ${await this.templateItem(index, value)}
-            ${this.isRemovable(index) ? await this.templateRemoveButton(index) : ''}
+            ${this.isRemovable(index) && childIndex === null ? await this.templateRemoveButton(index) : ''}
             ${templateItemFooter ? this.html`<div class="item-footer">${templateItemFooter}</div>` : ''}
           </div>
         `}))}
