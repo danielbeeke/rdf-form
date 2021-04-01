@@ -194,12 +194,16 @@ export class FormElementBase extends EventTarget {
             meta.label = valueInPreferredLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@value'] ?? value?.[0]?.['@value']
           }
 
+          if (meta.label?.substr(0, 2) === '_:') meta.label = false
+
           if (!meta.thumbnail && imageLastParts.includes(lastPart(predicate))) {
             const valueInPreferredLanguage = (value as Array<any>).find(item => item['@language'] === Language.current)
             const valueInUndeterminedLanguage = (value as Array<any>).find(item => item['@language'] === 'und')
             meta.thumbnail = valueInPreferredLanguage?.['@value'] ?? valueInPreferredLanguage?.['@id'] ?? 
             valueInUndeterminedLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@id'] ?? 
             value?.[0]?.['@value'] ?? value?.[0]?.['@id']
+
+            if (meta.thumbnail?.substr(0, 2) === '_:') meta.thumbnail = false
           }
         }
 
@@ -260,7 +264,7 @@ export class FormElementBase extends EventTarget {
   async templateReferenceLabel (meta, uri: string) {
     const label = meta?.label
     const thumbnail = meta?.thumbnail
-    
+
     return this.html`
       <div class="reference-label">
         ${label === false ? this.html`<span class="reference-loading">${t.direct('Could not load data')}</span>` : this.html`

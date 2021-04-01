@@ -10,6 +10,7 @@
     schema:familyName "Doe" ;
     schema:telephone "(425) 123-4567" ;
     schema:image ( [
+        a schema:ImageObject ;
         focalPoint:x1 20 ;
         focalPoint:y1 20 ;
         focalPoint:x2 80 ;
