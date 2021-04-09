@@ -11,6 +11,7 @@ const fields = {
   required: 'boolean',
   multiple: 'boolean',
   disabled: 'boolean',
+  readonly: 'boolean',
   translatable: 'boolean',
   
   order: 'number',

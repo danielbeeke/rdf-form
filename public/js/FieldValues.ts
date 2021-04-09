@@ -3,6 +3,63 @@ import { FieldDefinition } from './Types'
 import {lastPart} from "./helpers/lastPart";
 
 /**
+ * This proxy makes it possible to access a structure that you normally would flatMap as a normal array.
+ * 
+ * @param rootTarget 
+ * @param rootProp 
+ * @returns 
+ */
+ export const groupItemProxy = (rootTarget, rootProp) => {
+  return new Proxy(rootTarget, {
+    get: function (target, prop, receiver) {
+      if (prop !== Symbol.iterator && prop !== 'length'  && prop !== 'some') {
+        return target?.[prop]?.[rootProp]?.[0]
+      }
+
+      return Reflect.get(target, prop, receiver);
+    }
+  })
+}
+
+export const groupProxy = (data) => {
+  return new Proxy(data, {
+    get: function (target, prop, receiver) {
+      if (target?.[0]?.[prop]) return { [prop]: groupItemProxy(target, prop) }
+      if (prop === 'splice') return (start, deleteCount) => target.splice(start, deleteCount)
+      return Reflect.get(target, prop, receiver);
+    }
+  })
+}
+
+export const wrapWithProxy = (data, bindings, isGroup) => {
+  const aliasses = {}
+
+  for (const binding of bindings) {
+    aliasses[lastPart(binding)] = binding
+  }
+
+  console.log(data)
+
+  return new Proxy(data, {
+    get: function (target, prop, receiver) {
+      if (prop in aliasses) {
+        const predicate = aliasses[prop]
+
+        if (isGroup) {
+          return groupProxy(target[predicate]?.[0]?.['@list'])
+        }
+        else {
+          if (!target[predicate]) target[predicate] = []
+          return target[predicate]
+        }
+      }
+
+      return target[prop]
+    },
+  })
+}
+
+/**
  * This class sits between a field and the RDF JSON ld values.
  * All mutations to the data happen here.
  */
@@ -18,6 +75,7 @@ export class FieldValues {
   private formOntology: {}
   private isList: boolean = false
   private isGroup: boolean = false
+  public parentValues
 
   /**
    *
@@ -36,16 +94,12 @@ export class FieldValues {
       }
     }
 
-    // This initiates the values, it noramlizes the values into a common format.
-    if (this.bindings.length > 1 || this.innerBinding) {
-      this.initList(parentValues)
-    } 
-    else if (this.Field.fieldWidget === 'group') {
-      this.initGroup(parentValues)
-    }
-    else {
-      this.initDefault(parentValues)
-    }    
+    this.defaultBinding = this.Field.innerBinding ? this.Field.innerBinding[0] : this.bindings[0]
+    if (this.bindings.length > 1 || this.innerBinding) this.isList = true
+    if (this.Field.fieldWidget === 'group') this.isGroup = true
+    // Grouped values inside a binding
+    if (this.Field.innerBinding) this.bindings = this.bindings.filter(binding => !this.Field.binding.includes(binding))
+    this.parentValues = wrapWithProxy(parentValues, this.bindings, this.isGroup)
 
     Language.addEventListener('language.removed', (event: CustomEvent) => {
       const removedLanguage = event.detail
@@ -60,69 +114,10 @@ export class FieldValues {
     })
   }
 
-  initGroup (parentValues) {
-    this.isGroup = true
-    this.defaultBinding = this.bindings[0]
-    const values = parentValues[this.defaultBinding]?.[0]?.['@list'] ?? parentValues[this.defaultBinding]
-    this.bindingValues.set(lastPart(this.defaultBinding), values)
-  }
-
-  initList (parentValues) {
-    this.isList = true
-    this.defaultBinding = this.bindings[0]
-
-    // Grouped values inside a binding
-    if (this.Field.innerBinding) {
-      this.bindings = this.bindings.filter(binding => !this.Field.binding.includes(binding))
-    }
-
-    const outerBindings = this.Field.innerBinding ? this.Field.binding : false
-    let newParentValues = []
-
-    if (outerBindings) {
-      this.defaultBinding = this.Field.innerBinding[0]
-
-      for (const outerBinding of outerBindings) {
-        if (parentValues[outerBinding]) newParentValues.push(...parentValues[outerBinding])
-      }  
-    }
-    else {
-      newParentValues = parentValues
-    }
-
-    for (const binding of this.bindings) {
-      const thisBindingValues = []
-      const list = newParentValues?.[0]?.['@list'] ?? []
-
-      for (const item of list) {
-        if (item[binding]) {
-          thisBindingValues.push(...item[binding])
-        }
-      }
-
-      this.bindingValues.set(lastPart(binding), thisBindingValues)
-    }
-  }
-
-  initDefault (parentValues) {
-    this.defaultBinding = this.bindings[0]
-
-    for (const binding of this.bindings) {
-      this.bindingValues.set(lastPart(binding), parentValues[binding])
-    }
-  }
-
   _getValues (binding) {
     if (!binding) binding = this.defaultBinding
     binding = lastPart(binding)
-    let values = this.bindingValues.get(binding)
-
-    if (!values) {
-      values = []
-      this.bindingValues.set(binding, values)
-    }
-
-    return values
+    return this.parentValues[binding]
   }
 
   get (index = 0, binding = null) {
@@ -135,19 +130,24 @@ export class FieldValues {
     return values?.[index]?.['@' + this.jsonLdValueType] ?? null
   }
 
-  set (value, index, binding = null) {
+  set (newValue, index, binding = null) {
     const values = this._getValues(binding ?? this.defaultBinding)
-    values[index] = value
+    values[index] = newValue
   }
 
-  setValue (innerValue, index, binding = null) {
+  setValue (newValue, index, binding = null) {
     const values = this._getValues(binding ?? this.defaultBinding)
-    if (!values[index]) values[index] = {}
-    values[index]['@' + this.jsonLdValueType] = innerValue
+
+    if (!values[index]) {
+      values[index] = {}
+    }
+    values[index]['@' + this.jsonLdValueType] = newValue
+    if (this.hasTranslations) values[index]['@language'] = Language.currentL10nLanguage
   }
 
   get hasTranslations () {
-    return !!this._getValues(this.defaultBinding).some(item => item?.['@language'])
+    const values = this._getValues(this.defaultBinding)
+    return values && !!values.some(item => item?.['@language'])
   }
 
   get anotherTranslationIsPossible () {
@@ -170,25 +170,26 @@ export class FieldValues {
     return this._getValues(binding ?? this.defaultBinding)
   }
 
-  getAll () {
-    const allValues = {};
-    [...this.bindingValues.keys()].forEach(binding => {
-      allValues[binding] = this.getAllFromBinding(binding)
-    })
-
-    return allValues
-  }
-
   addItem (binding = null) {
     const values = this._getValues(binding ?? this.defaultBinding)
-
+    
     const createItem = () => {
-      const newItem = {}
-      newItem['@' + this.jsonLdValueType] = ''
-      if (this.hasTranslations) newItem['@language'] = Language.currentL10nLanguage
-      return newItem
+      if (this.isGroup) {
+        const newItem = JSON.parse(JSON.stringify(values[0]))
+        for (const [predicate, value] of Object.entries(newItem)) {
+          if (value?.[0]?.['@value']) value[0]['@value'] = ''
+          if (value?.[0]?.['@id']) value[0]['@id'] = ''
+        }
+        return newItem
+      }
+      else {
+        const newItem = {}
+        newItem['@' + this.jsonLdValueType] = ''
+        if (this.hasTranslations) newItem['@language'] = Language.currentL10nLanguage  
+        return newItem
+      }
     }
-
+    
     values.push(createItem())
   }
 
@@ -198,92 +199,53 @@ export class FieldValues {
   }
 
   // TODO support multi binding
-  // TODO check if this does work.. 
-  // this.bindingValues?.[index] looks wrong.
   enableTranslations () {
-    const values = this._getValues(this.defaultBinding) ?? []
+    for (const binding of this.bindings) {
+      const values = this._getValues(binding) ?? []
 
-    let usedLanguages = this._getValues(this.defaultBinding).map(value => value['@language'])
-    let unusedLanguages = Object.keys(Language.l10nLanguages).filter(language => !usedLanguages.includes(language))
-
-    for (const [index, unusedLanguage] of unusedLanguages.entries()) {
-      let value = values[index]
-      if (typeof value === 'object') {
-        values[index]['@language'] = unusedLanguage
-      }
-      else {
-        values[index] = {
-          '@value': this.bindingValues?.[index] ?? '',
-          '@language': unusedLanguage
-        }
-      }
-    }
-
-    if (values.length > unusedLanguages.length) {
-      for (let index = unusedLanguages.length; index <= values.length; index++) {
+      let usedLanguages = values.map(value => value['@language'])
+      let unusedLanguages = Object.keys(Language.l10nLanguages).filter(language => !usedLanguages.includes(language))
+  
+      for (const [index, unusedLanguage] of unusedLanguages.entries()) {
         let value = values[index]
         if (typeof value === 'object') {
-          values[index]['@language'] = Language.current
+          values[index]['@language'] = unusedLanguage
         }
         else {
           values[index] = {
-            '@value':  this.bindingValues?.[index] ?? '',
-            '@language': Language.current
+            '@value': '',
+            '@language': unusedLanguage
+          }
+        }
+      }
+  
+      if (values.length > unusedLanguages.length) {
+        for (let index = unusedLanguages.length; index <= values.length; index++) {
+          let value = values[index]
+          if (typeof value === 'object') {
+            values[index]['@language'] = Language.current
+          }
+          else {
+            values[index] = {
+              '@value':  '',
+              '@language': Language.current
+            }
           }
         }
       }
     }
   }
 
-  // TODO support multi binding
   removeTranslations () {
-    let values = this._getValues(this.defaultBinding)
-    delete values?.[0]?.['@language']
-    values.splice(1)
-  }
-
-  /**
-   * The serialize does not know about its children.
-   * The child nesting logic happens inside the form.
-   */
-  async serialize (jsonLd) {
-    // TODO For now we only support one outerBinding..
-    let value: any = []
-    let pointer = value
-
-    const outerBinding = this.Field.innerBinding?.length ? this.Field.binding[0] : null
-
-    if (this.isList) {
-      const list = {'@list': []}
-      pointer.push(list)
-      pointer = list['@list']
-    }
-
-    const listValues = []
     for (const binding of this.bindings) {
-      if (this.isGroup) continue;
-      const values = this.getAllFromBinding(binding)
-      for (const [index, bindingValue] of values.entries()) {
-        if (this.isList) {
-          if (!listValues[index]) listValues[index] = {}
-          listValues[index][binding] = bindingValue
-        }
-        else {
-          pointer.push(bindingValue)
-        }
-      }
+      let values = this._getValues(binding)
+      delete values?.[0]?.['@language']
+      values.splice(1)  
     }
-
-    if (this.isList) {
-      pointer.push(...listValues)
-    }
-
-    jsonLd[outerBinding ?? this.defaultBinding] = value
   }
 
   getForChildElement (childField: FieldDefinition) {
-    const values = this.getAllFromBinding()
     const childBinding = childField.binding[0] // TODO needs improvement? What if innerBinding?
-    return { [childBinding]: values.flatMap(value => value?.[childBinding]) }
+    return this.parentValues[lastPart(this.defaultBinding)][childBinding]
   }
 }

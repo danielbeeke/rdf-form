@@ -19,9 +19,10 @@ describe('It fetches the ttl data correctly', function () {
     cy.visit('http://localhost:8070/person-form.html')
 
     cy.get('rdf-form').shadow()
-    .find('.form-element[name="name"] .menu-wrapper .menu-button').click()
-    cy.get('rdf-form').shadow()
-    .find('.form-element[name="name"] .menu-wrapper .button.add').click()
+    .find('.language-control-wrapper .ss-values').click().wait(100)
+
+    cy.get('rdf-form').shadow().find('.language-control-wrapper input').type('Engl', { force: true })
+    cy.get('rdf-form').shadow().find('.ss-option:first').click()
 
     cy.get('rdf-form').shadow()
     .find('.language-control-wrapper .ss-values').click().wait(100)
@@ -29,7 +30,13 @@ describe('It fetches the ttl data correctly', function () {
     cy.get('rdf-form').shadow().find('.language-control-wrapper input').type('Fren', { force: true })
     cy.get('rdf-form').shadow().find('.ss-option:first').click()
 
+
     cy.get('rdf-form').shadow().wait(100).find('.language-tab').its('length').should('eq', 2)
+
+    cy.get('rdf-form').shadow()
+    .find('.form-element[name="name"] .menu-wrapper .menu-button').click()
+    cy.get('rdf-form').shadow()
+    .find('.form-element[name="name"] .menu-wrapper .button.add').click()
 
     cy.get('rdf-form').shadow().find('.language-tab[lang="fr"]').click()
 

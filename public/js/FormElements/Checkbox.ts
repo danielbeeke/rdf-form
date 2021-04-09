@@ -30,12 +30,7 @@ export class Checkbox extends FormElementBase implements FormElement {
    */
   on (event, index) {
     if (['click'].includes(event.type)) {
-      const value = {}
-      value['@' + this.jsonLdValueType] = event?.target?.checked ? 'true' : 'false'
-      if (this.Values.hasTranslations) {
-        value['@language'] = Language.currentL10nLanguage
-      }
-      this.Values.set(value, index)
+      this.Values.setValue(event?.target?.checked ? 'true' : 'false', index)
     }
 
     this.dispatchEvent(new CustomEvent(event.type, {
@@ -63,9 +58,7 @@ export class Checkbox extends FormElementBase implements FormElement {
       }
       else {
         if (!values.length) {
-          this.Values.set({
-            '@value': 'false'
-          }, 0)  
+          this.Values.setValue('false', 0)  
         }
       }
 

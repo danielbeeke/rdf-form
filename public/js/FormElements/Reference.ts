@@ -12,6 +12,7 @@ export class Reference extends FormElementBase implements FormElement {
 
   static type: string = 'reference'
   private searchTerms: Map<string, string> = new Map<string, string>()
+  public jsonLdValueType: string = 'id'
 
   async init(): Promise<void> {
     await super.init();
@@ -62,21 +63,15 @@ export class Reference extends FormElementBase implements FormElement {
       }
     }, 400))
 
-    Language.addEventListener('language-change', () => {
-      this.updateMetas().then(() => this.render())
-    })
+    const updater = () => this.updateMetas().then(() => this.render())
 
-    this.addEventListener('change', event => {
-      this.updateMetas().then(() => this.render())
-    })
-
-    this.updateMetas().then(() => this.render())
+    Language.addEventListener('language-change', updater)
+    this.addEventListener('change', updater)
+    updater()
   }
 
   async ourTemplateRemoveButton (index) {
-    // TODO fix this `this.parent?.formElementRegistry`.
-    // This hack is done for nested fields in fieldgroups.
-    return this.parent?.formElementRegistry ? this.html`
+    return this.parent.constructor.name === 'RdfForm' ? this.html`
     <button type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.searchTerms.delete(index)
@@ -90,7 +85,7 @@ export class Reference extends FormElementBase implements FormElement {
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
       if (event?.target?.value && event?.target?.value.substr(0, 4) === 'http' || this.Values.get(index) && this.Values.get(index)['@value']) {
-        this.Values.set({'@id': event?.target?.value}, index)
+        this.Values.setValue(event?.target?.value, index)
       }
       else {
         this.searchTerms.set(index, event?.target?.value)

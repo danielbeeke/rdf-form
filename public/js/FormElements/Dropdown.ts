@@ -7,6 +7,7 @@ export class Dropdown extends FormElementBase implements FormElement {
 
   static type: string = 'dropdown'
   public options = []
+  public jsonLdValueType: string = 'id'
 
   async init(): Promise<void> {
     await super.init();
@@ -30,9 +31,7 @@ export class Dropdown extends FormElementBase implements FormElement {
 
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
-      const value = this.Values.get(index) ?? {}
-      value['@' + this.jsonLdValueType] = event?.target?.value
-      this.Values.set(value, index)
+      this.Values.setValue(event?.target?.value, index)
     }
 
     this.dispatchEvent(new CustomEvent(event.type, {

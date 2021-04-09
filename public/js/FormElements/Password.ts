@@ -11,7 +11,7 @@ export class Password extends FormElementBase implements FormElement {
 
   async init(): Promise<any> {
     super.init();
-    this.hasInitialValue = !!this.Values.get(0)
+    this.hasInitialValue = !!this.Values.getValue()
   }
 
   isRequired (index) {
@@ -46,9 +46,7 @@ export class Password extends FormElementBase implements FormElement {
 
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
-      const value = {}
-      value['@' + this.jsonLdValueType] = this.password === this.passwordConfirm ? this.password : ''
-      this.Values.set(value, index)
+      this.Values.setValue(this.password === this.passwordConfirm ? this.password : '', index)
     }
 
     this.dispatchEvent(new CustomEvent(event.type, {
@@ -60,9 +58,9 @@ export class Password extends FormElementBase implements FormElement {
     }))
   }
 
-  async serialize () {
+  async serialize (jsonLd) {
     if (!this.password) return null
-    return await super.serialize()
+    return await super.serialize(jsonLd)
   }
 
 }

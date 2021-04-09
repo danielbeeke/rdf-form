@@ -30,7 +30,7 @@ describe('attributeToQuads', () => {
     element.setAttribute('data',  'http://localhost:8070/fields.form.ttl')
     const formDefinition = await attributeToQuads(element, 'data')
     const thingQuad = formDefinition.find(field => field.object.id === 'http://schema.org/Thing')
-    expect(thingQuad.subject.id).to.be.equal('http://localhost:8070/person.form#fieldsForm')
+    expect(thingQuad.subject.id).to.be.equal('http://localhost:8070/fields.form#fieldsForm')
   })
 })
 
@@ -97,6 +97,6 @@ describe('searchSuggestionsSparqlQuery', async () => {
     `, null, 'Lorem')
 
     expect(source.value).to.be.equal('https://dbpedia.org/sparql')
-    expect(query).to.contain('"""Lorem*"""')
+    expect(query).to.contain('"""Lorem"""')
   })
 })

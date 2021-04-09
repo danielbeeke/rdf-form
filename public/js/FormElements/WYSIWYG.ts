@@ -19,7 +19,7 @@ export class WYSIWYG extends FormElementBase implements FormElement {
       this.editors.set(language, init({
         element: element,
         defaultParagraphSeparator: 'p',
-        onChange: html => this.Values.set({'@value': html, '@language': language}, index),
+        onChange: html => this.Values.setValue(html, index),
       }))
 
       /** @ts-ignore */

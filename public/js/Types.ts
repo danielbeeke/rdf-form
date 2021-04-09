@@ -5,6 +5,7 @@ export interface FormElement extends EventTarget {
   templateWrapper(index?: number): Promise<Promise<any>>;
   Field: FieldDefinition
   Values: FieldValues
+  parent?: FormElement
 }
 
 export type FieldDefinition = {
@@ -12,6 +13,7 @@ export type FieldDefinition = {
   multiple: boolean
   fieldWidget: string
   disabled: boolean
+  readonly: boolean
   order: number
   rows: number
   binding: Array<string>

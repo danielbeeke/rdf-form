@@ -59,12 +59,13 @@ export class FormElementBase extends EventTarget {
     this.html = html
     this.comunica = comunica
     this.children = children
+    for (const child of children.values()) child.parent = this
+
     this.Field = field
     if (this.Field.jsonLdKey) this.jsonLdValueType = this.Field.jsonLdKey
     this.pathContext['@language'] = Language.current
     this.pathContext = {...this.pathContext, ...jsonLdContext}
     this.Values = values
-    this.Values.jsonLdValueType = this.jsonLdValueType
     this.t = t
 
     if (renderCallback) {
@@ -74,7 +75,9 @@ export class FormElementBase extends EventTarget {
     }
   }
 
-  async init () {}
+  async init () {
+    this.Values.jsonLdValueType = this.jsonLdValueType
+  }
 
   /************************************************************************
    * Getters and setters.
@@ -126,25 +129,20 @@ export class FormElementBase extends EventTarget {
 
   async selectSuggestion (suggestionUrl, index) {
     this.searchSuggestions.set(index, [])
-    this.Values.set({ '@id': suggestionUrl }, index)
+    this.Values.setValue(suggestionUrl, index)
     this.expanded.set(index, false)
     await this.updateMetas()
   }
 
   async selectValue (value, index) {
-    this.Values.set({ '@value': value }, index)
+    this.Values.set(value, index)
     this.expanded.set(index, false)
     this.searchSuggestions.set(index, [])
   }
 
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
-      const value = {}
-      value['@' + this.jsonLdValueType] = event?.target?.value
-      if (this.Values.hasTranslations) {
-        value['@language'] = Language.currentL10nLanguage
-      }
-      this.Values.set(value, index)
+      this.Values.setValue(event?.target?.value, index)
       if (index === null) this.render()
     }
 
@@ -251,8 +249,10 @@ export class FormElementBase extends EventTarget {
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
       type="text"
+      disabled="${this.Field.disabled ? true : null}"
+      readonly="${this.Field.readonly ? true : null}"
       placeholder="${placeholder ?? this.Field.placeholder}"
-      .value="${textValue}"
+      .value="${textValue ? textValue : ''}"
       required="${this.isRequired(index)}"
     >`
   }
@@ -290,7 +290,7 @@ export class FormElementBase extends EventTarget {
 
   async templateRemoveButton (index: number) {
     return this.html`
-    <button type="button" class="button remove" onclick="${() => {
+    <button index="${index}" type="button" class="button remove" onclick="${() => {
       this.Values.removeItem(index)
       this.render()
       }}">
@@ -404,26 +404,7 @@ export class FormElementBase extends EventTarget {
   }
 
   async serialize (jsonLd) {
-    if (this.children.size) {
-      const childSerialization = {}
-      for (const childElement of this.children.values()) {
-        await childElement.Values.serialize(childSerialization)
-      }
-      const deFlatMapped = []
-      for (const [binding, bindingValues] of Object.entries(childSerialization)) {
-        /** @ts-ignore */
-        for (const [index, bindingValue] of bindingValues.entries()) {
-          if (!deFlatMapped[index]) deFlatMapped[index] = {}
-          deFlatMapped[index][binding] = [bindingValue]
-        }
-      }
-
-      const outerBinding = this.Field.innerBinding?.length ? this.Field.binding[0] : null  
-      jsonLd[outerBinding ?? this.Values.defaultBinding] = [{ '@list': deFlatMapped }]
-    }
-    else {
-      await this.Values.serialize(jsonLd)
-    }
+    
   }
 }
 

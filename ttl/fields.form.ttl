@@ -24,7 +24,6 @@ fieldsForm:references
     form:order        0 ;
     form:multiple true .
 
-
 fieldsForm:ingredients
     a                 form:Field ;
     form:fieldWidget "group" ;
@@ -79,6 +78,9 @@ fieldsForm:measurementUnit
     form:label       "Unit"@en ;
     form:label       "Soort"@nl ;
     form:binding     recipe:measurementUnit ;
+    form:option      [ form:label "- Select -"@en ;
+                       form:label "- Selecteer -"@nl ;
+                       form:value "" ; ] ;
     form:option      [ form:label "Litre"@en ;
                        form:label "Liter"@nl ;
                        form:value <https://www.wikidata.org/wiki/Q11582> ; ] ;

@@ -399,8 +399,7 @@ export class RdfForm extends HTMLElement {
     this.isSaving = true
     this.render()
 
-    const clonedData = JSON.parse(JSON.stringify(this.data))
-    // const clonedData = {}
+    const clonedData = JSON.parse(JSON.stringify(this.expandedData))
 
     const jsonLd = Object.assign({ '@context': {}}, clonedData)
     Object.assign(jsonLd['@context'], this.jsonLdContext)
