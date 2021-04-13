@@ -6,13 +6,13 @@ import { Language } from '../LanguageService'
  * @param comunica
  */
  export async function sparqlQueryToList (query, source, comunica) {
-  const config = {
-    httpProxyHandler: comunica.httpProxyHandler
-  }
+  const config = { httpProxyHandler: comunica.httpProxyHandler }
 
   // TODO maybe use tokens that will less likely collide.
   query = query.toString().replace(/LANGUAGE/g, Language.current)
   if (typeof source === 'object' && source instanceof String) source = source.toString()
+
+  console.log(query)
 
   const result = await comunica.query(query, Object.assign({ sources: [source] }, config));
 
@@ -40,11 +40,9 @@ import { Language } from '../LanguageService'
       items.set(uri, { label, uri, image })
     }
     else {
-      // TODO Show multiliqual items.
-      // let existingItem = items.get(uri)
-      // console.log(existingItem.label, label)
-      // Object.assign(existingItem.label, label)
-      // items.set(uri, existingItem)
+      let existingItem = items.get(uri)
+      Object.assign(existingItem.label, label)
+      items.set(uri, existingItem)
     }
   }
 

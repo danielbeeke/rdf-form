@@ -1,3 +1,4 @@
+// @ts-nocheck
 export var Comunica = function(e) {
   var t = {};
 

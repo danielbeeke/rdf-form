@@ -15,5 +15,8 @@
     "allowJs": true,
     "baseUrl": "./",
     "paths": {}
-  }
+  },
+  "exclude": [
+    "**/*.spec.js"
+  ]
 }

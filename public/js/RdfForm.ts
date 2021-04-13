@@ -19,7 +19,7 @@ import { jsonld as JsonLdProcessor } from './vendor/jsonld.js';
 import { render, html } from './vendor/uhtml.js';
 
 import { FormElementRegistry } from './FormElementRegistry'
-import {jsonLdToFormElements, resolveSubForms} from './jsonLdToFormElements'
+import { jsonLdToFormElements, resolveSubForms } from './jsonLdToFormElements'
 import { SlimSelect } from "./vendor/slimselect.js";
 import { ttl2jsonld } from './vendor/ttl2jsonld.js'
 

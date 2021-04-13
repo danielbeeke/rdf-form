@@ -12,7 +12,7 @@ import {lastPart} from "./helpers/lastPart";
  export const groupItemProxy = (rootTarget, rootProp) => {
   return new Proxy(rootTarget, {
     get: function (target, prop, receiver) {
-      if (prop !== Symbol.iterator && prop !== 'length'  && prop !== 'some') {
+      if (![Symbol.iterator, 'length', 'some', 'entries'].includes(prop)) {
         return target?.[prop]?.[rootProp]?.[0]
       }
 
@@ -31,22 +31,55 @@ export const groupProxy = (data) => {
   })
 }
 
-export const wrapWithProxy = (data, bindings, isGroup) => {
+export const listProxy = (data, aliasses, binding) => {
+  return new Proxy(data, {
+    get: function (target, prop, receiver) {
+      if (![Symbol.iterator, 'length', 'some', 'entries'].includes(prop)) {
+        return listItemProxy(target[prop], aliasses, binding)
+      }
+      return Reflect.get(target, prop, receiver);
+    }
+  })
+}
+
+export const listItemProxy = (rootTarget, aliases, binding) => {
+  return new Proxy(rootTarget, {
+    get: function (target, prop, receiver) {
+      if (['@value', '@type', '@id', '@language'].includes(prop.toString())) {
+        return target[aliases[binding]]?.[0][prop]
+      }
+
+      if (![Symbol.iterator, 'length', 'some', 'entries'].includes(prop)) {
+        if (aliases[prop]) {
+          return target[aliases[prop]]
+        }
+      }
+
+      return Reflect.get(target, prop, receiver);
+    }
+  })
+}
+
+export const wrapWithProxy = (data, bindings, isGroup, isList, outerBinding) => {
   const aliasses = {}
 
   for (const binding of bindings) {
     aliasses[lastPart(binding)] = binding
   }
 
-  console.log(data)
-
+  if (outerBinding) aliasses[lastPart(outerBinding)] = outerBinding
+  
   return new Proxy(data, {
     get: function (target, prop, receiver) {
       if (prop in aliasses) {
-        const predicate = aliasses[prop]
+        const predicate = outerBinding ? outerBinding : aliasses[prop]
 
         if (isGroup) {
           return groupProxy(target[predicate]?.[0]?.['@list'])
+        }
+        else if (isList) {
+          const listBinding = prop === lastPart(outerBinding) ? lastPart(bindings[0]) : prop
+          return listProxy(target[predicate]?.[0]?.['@list'], aliasses, listBinding)
         }
         else {
           if (!target[predicate]) target[predicate] = []
@@ -99,7 +132,7 @@ export class FieldValues {
     if (this.Field.fieldWidget === 'group') this.isGroup = true
     // Grouped values inside a binding
     if (this.Field.innerBinding) this.bindings = this.bindings.filter(binding => !this.Field.binding.includes(binding))
-    this.parentValues = wrapWithProxy(parentValues, this.bindings, this.isGroup)
+    this.parentValues = wrapWithProxy(parentValues, this.bindings, this.isGroup, this.isList, this.Field.innerBinding ? this.Field.binding[0] : null)
 
     Language.addEventListener('language.removed', (event: CustomEvent) => {
       const removedLanguage = event.detail
@@ -198,7 +231,6 @@ export class FieldValues {
     values.splice(index, 1)
   }
 
-  // TODO support multi binding
   enableTranslations () {
     for (const binding of this.bindings) {
       const values = this._getValues(binding) ?? []

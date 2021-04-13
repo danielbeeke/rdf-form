@@ -15,7 +15,7 @@ export class UrlImage extends FormElementBase implements FormElement {
   async on(event: Event, index: number) {
     super.on(event, index);
     if (this.Field.dimensions) {
-      const url = this.Values.getValue(index, 'url')
+      const url = this.Values.getValue(index)
 
       if (url) {
         getImageDimensionsByUrl(url).then(({ width, height }) => {
