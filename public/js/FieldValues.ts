@@ -35,9 +35,8 @@ export class FieldValues {
   private formOntology: {}
   private isList: boolean = false
   public isGroup: boolean = false
-  public parentValues
-  public orginalParentValues
-  public groupItemIndex = null
+  public _parentValues
+  public itemValues
   public aliasses = {}
 
   /**
@@ -66,7 +65,7 @@ export class FieldValues {
     if (!parentValues) parentValues = {}
 
     for (const binding of this.bindings) this.aliasses[lastPart(binding)] = binding
-    this.parentValues = JsonLdProxy(parentValues, this.aliasses, this)
+    this._parentValues = JsonLdProxy(parentValues, this.aliasses, this)
 
     Language.addEventListener('language.removed', (event: CustomEvent) => {
       const removedLanguage = event.detail
@@ -81,14 +80,18 @@ export class FieldValues {
     })
   }
 
+  get parentValues () {
+    if (this.itemValues) {
+      return this.itemValues
+    }
+    else {
+      return this._parentValues
+    }
+  }
+
   _getValues (binding) {
     if (!binding) binding = this.defaultBinding
     binding = lastPart(binding)
-
-    if (this.groupItemIndex !== null) {
-      return this.parentValues[this.groupItemIndex]?.[this.aliasses[binding]] ?? []
-    }
-
     return this.parentValues?.[this.aliasses[binding]] ?? []
   }
 
@@ -118,14 +121,9 @@ export class FieldValues {
     if (this.hasTranslations) values[index]['@language'] = Language.currentL10nLanguage
   }
 
-  setGroupItemIndex (index) {
-    this.groupItemIndex = index
-  }
-
   get hasTranslations () {
     if (this.Field.translatable === 'always') return true
     const values = this._getValues(this.defaultBinding)
-    // console.log(values)
     const hasTranslations = values && !!values.some(item => item?.['@language'])
     return hasTranslations
   }
@@ -147,18 +145,7 @@ export class FieldValues {
   }
 
   getAllFromBinding (binding = null) {
-    if (Array.isArray(this.parentValues)) {
-      const values = []
-      for (const index of this.parentValues.keys()) {
-        this.setGroupItemIndex(index)
-        values.push(...this._getValues(binding ?? this.defaultBinding))
-        this.setGroupItemIndex(null)
-      }
-      return values
-    }
-    else {
-      return this._getValues(binding ?? this.defaultBinding) ?? []
-    }
+    return this._getValues(binding ?? this.defaultBinding) ?? []
   }
 
   addItem (binding = null) {

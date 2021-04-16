@@ -51,3 +51,10 @@ personForm:image
     form:order          3 ;
     form:multiple       true ;
     form:translatable   true .
+
+personForm:reference
+    a             form:Field ;
+    form:subform  <http://localhost:8070/subform.ttl> ;
+    form:label    "References"@en ;
+    form:label    "Referenties"@nl ;
+    form:order    8 .

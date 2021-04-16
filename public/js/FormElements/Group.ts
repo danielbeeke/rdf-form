@@ -11,11 +11,12 @@ export class Group extends FormElementBase implements FormElement {
 
   async templateItem (index, value) {
     const childFormElements = Array.from(this.children.values())
-    return await Promise.all(childFormElements.map(async (formElement, innerIndex) => {
+    const returnValues = await Promise.all(childFormElements.map(async (formElement, innerIndex) => {
+      formElement.Values.itemValues = this.Values._parentValues[this.Values.defaultBinding]?.[index]
       const itemTemplate = await formElement.templateWrapper(index)
-      return this.html`${itemTemplate}`
-    })
-    )
+      return this.html`${itemTemplate}`  
+    }))
+    return returnValues
   }
 
 }

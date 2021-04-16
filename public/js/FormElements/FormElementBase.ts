@@ -23,7 +23,6 @@ export class FormElementBase extends EventTarget {
   static type: string = 'base'
 
   public expanded = new Map()
-  public values: Array<any> = []
   public Values: FieldValues
   public Field: FieldDefinition
   public children: Map<string, FormElement> = new Map()
@@ -71,7 +70,7 @@ export class FormElementBase extends EventTarget {
     if (renderCallback) {
       this.render = debounce(() => {
         renderCallback()
-      }, 100)
+      }, 50)
     }
   }
 
@@ -156,6 +155,8 @@ export class FormElementBase extends EventTarget {
   }
 
   async updateMetas () {
+    console.log('updateMeta')
+    console.log(this.Values.getAllFromBinding())
     for (const value of this.Values.getAllFromBinding()) {
       const uri = value?.['@id']
 
@@ -348,24 +349,17 @@ export class FormElementBase extends EventTarget {
    * @see RdfForm.render()
    */
   async templateWrapper (childIndex = null) {
-    if (childIndex !== null) this.Values.setGroupItemIndex(childIndex)
-
     const itemsToRender = []
 
-    if (childIndex === null) {
-      for (const [index, value] of this.Values.getAllFromBinding().entries()) {
-        if (this.Values.hasTranslations && value?.['@language'] === Language.currentL10nLanguage) {
-          itemsToRender.push([index, value])
-        }
-  
-        if (!this.Values.hasTranslations) {
-          itemsToRender.push([index, value])
-        }
-      }  
-    }
-    else {
-        itemsToRender.push([childIndex, this.Values.get()])
-    }
+    for (const [index, value] of this.Values.getAllFromBinding().entries()) {
+      if (this.Values.hasTranslations && value?.['@language'] === Language.currentL10nLanguage) {
+        itemsToRender.push([index, value])
+      }
+
+      if (!this.Values.hasTranslations) {
+        itemsToRender.push([index, value])
+      }
+    }  
 
     if (itemsToRender.length === 0) {
       itemsToRender.push([this.Values.length, null])
@@ -411,8 +405,6 @@ export class FormElementBase extends EventTarget {
       ${await this.templateActions(actions)}
 
     </div>`
-
-    this.Values.setGroupItemIndex(null)
 
     return template
   }

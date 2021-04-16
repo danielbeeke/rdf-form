@@ -47,6 +47,7 @@ import { Default } from './ContainerWidgets/Default'
 import { Language, t } from './LanguageService'
 import { attributeToJsonLd } from './helpers/attribute'
 import { lastPart } from './helpers/lastPart'
+import { debounce } from './helpers/debounce'
 import { selectCorrectGraph } from './helpers/selectCorrectGraph'
 import {ContainerWidgetBase} from "./ContainerWidgets/ContainerWidgetBase";
 import {FormElement} from "./Types";
@@ -98,6 +99,10 @@ export class RdfForm extends HTMLElement {
     // We fix it by calling init() when changing attributes.
     if (!this.getAttribute('form')) return
     this.initiated = true
+    const originalRender = this.render
+
+    /** @ts-ignore */
+    this.render = debounce(() => originalRender.apply(this), 100)
 
     this.formJsonLd = await resolveSubForms(await attributeToJsonLd(this, 'form'));
 

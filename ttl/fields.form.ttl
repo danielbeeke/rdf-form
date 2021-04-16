@@ -25,14 +25,6 @@ fieldsForm:abstract
     form:translatable "always" .
 
 
-fieldsForm:references
-    a                 form:Field ;
-    form:fieldWidget  "reference" ;
-    form:label        "references"@en ;
-    form:binding      schema:author ;
-    form:order        0 ;
-    form:multiple true .
-
 fieldsForm:ingredients
     a                 form:Field ;
     form:fieldWidget "group" ;
