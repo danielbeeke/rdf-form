@@ -165,8 +165,6 @@ export class RdfForm extends HTMLElement {
 
     if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
 
-    console.log(this.expandedData)
-
     const usedLanguages = await Language.extractUsedLanguages(this.expandedData)
     const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? (
       usedLanguages.length ? await langCodesToObject(usedLanguages) : {}

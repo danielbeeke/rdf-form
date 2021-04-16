@@ -348,6 +348,8 @@ export class FormElementBase extends EventTarget {
    * @see RdfForm.render()
    */
   async templateWrapper (childIndex = null) {
+    if (childIndex !== null) this.Values.setGroupItemIndex(childIndex)
+
     const itemsToRender = []
 
     if (childIndex === null) {
@@ -362,13 +364,8 @@ export class FormElementBase extends EventTarget {
       }  
     }
     else {
-      itemsToRender.push([childIndex, this.Values.get(childIndex)])
-
-      if (this.Field.name === 'translationString' && itemsToRender[0][0] === 0) {
-        console.log(itemsToRender)
-      }
+        itemsToRender.push([childIndex, this.Values.get()])
     }
-
 
     if (itemsToRender.length === 0) {
       itemsToRender.push([this.Values.length, null])
@@ -383,7 +380,7 @@ export class FormElementBase extends EventTarget {
       }}">${t.direct('Add item')}</button>`
     }
 
-    return this.html`
+    const template = this.html`
     <div class="form-element" name="${this.Field.name}" type="${this.getType()}">
 
       ${await this.templateLabel(itemsToRender)}
@@ -396,13 +393,15 @@ export class FormElementBase extends EventTarget {
 
           const templateItemFooter = await this.templateItemFooter(index, value)
 
-          return this.html`
+          const template =  this.html`
           <div class="item" expanded="${this.shouldShowExpanded(index)}" loading="${this.isLoading.get(index)}">
             ${await this.templateItem(index, value)}
             ${this.isRemovable(index) && childIndex === null ? await this.templateRemoveButton(index) : ''}
             ${templateItemFooter ? this.html`<div class="item-footer">${templateItemFooter}</div>` : ''}
           </div>
-        `}))}
+          `
+          return template })
+        )}
 
         </div>
       `}
@@ -412,6 +411,10 @@ export class FormElementBase extends EventTarget {
       ${await this.templateActions(actions)}
 
     </div>`
+
+    this.Values.setGroupItemIndex(null)
+
+    return template
   }
 
   async serialize (jsonLd) {

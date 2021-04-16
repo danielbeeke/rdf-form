@@ -5,11 +5,6 @@ export class Number extends FormElementBase implements FormElement {
 
   static type: string = 'number'
 
-  async init () {
-    // debugger
-    // this.Values.getValue()
-  }
-
   on (event, index) {
     if (['keyup', 'change'].includes(event.type)) {
       this.Values.setValue(parseInt(event?.target?.value), index)
