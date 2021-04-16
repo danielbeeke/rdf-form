@@ -1,12 +1,15 @@
 import { CoreComponent } from '../types/CoreComponent'
 import { ttl2jsonld } from '../vendor/ttl2jsonld'
 import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js'
+import { JsonLdProxy } from './JsonLdProxy'
 
 export class RdfFormData extends EventTarget implements CoreComponent {
 
   public ready: boolean = false
   private dataAsTextOrUrl: string
   private sourceData: any
+  public get: () => any
+  private sourceDataCompacted: object
 
   constructor (dataAsTextOrUrl: string = null) {
     super()
@@ -32,13 +35,21 @@ export class RdfFormData extends EventTarget implements CoreComponent {
       this.sourceData = JSON.parse(dataText)
     }
     catch (e) {
-      const sourceDataCompacted = ttl2jsonld(dataText)
-      this.sourceData = await JsonLdProcessor.expand(sourceDataCompacted);        
+      this.sourceDataCompacted = ttl2jsonld(dataText)
+      this.sourceData = await JsonLdProcessor.expand(this.sourceDataCompacted);
     }
 
     if (Array.isArray(this.sourceData)) this.sourceData = this.sourceData.pop()
 
     this.ready = true
     this.dispatchEvent(new CustomEvent('ready'))
+  }
+
+  get context () {
+    return this.sourceDataCompacted['@context']
+  }
+
+  createProxy () {
+    return JsonLdProxy(this.sourceData, this.context)
   }
 }

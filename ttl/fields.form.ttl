@@ -90,3 +90,11 @@ fieldsForm:measurementUnit
                        form:value <https://www.wikidata.org/wiki/Q2332346> ; ] ;
     form:fieldGroup  "ingredients" ;
     form:order       3 .
+
+fieldsForm:reference
+    a             form:Field ;
+    form:subform  <http://localhost:8070/subform.ttl> ;
+    form:label    "References"@en ;
+    form:container "test" ;
+    form:label    "Referenties"@nl ;
+    form:order    8 .
