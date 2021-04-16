@@ -12,7 +12,7 @@ const fields = {
   multiple: 'boolean',
   disabled: 'boolean',
   readonly: 'boolean',
-  translatable: 'boolean',
+  translatable: 'superBoolean',
   
   order: 'number',
   rows: 'number',
@@ -83,6 +83,15 @@ export function FieldDefinition(definition: any, formPrefix: string): FieldDefin
 
         case 'l10nString':
           Object.defineProperty(convertedDefinition, predicate, { get: () => Language.multilingualValue(definition[formPrefix + predicate])})
+          break;
+
+        case 'superBoolean':
+          if (definition[formPrefix + predicate]?.[0]?.['@value'] === 'always') {
+            convertedDefinition[predicate] = 'always'  
+          }
+          else {
+            convertedDefinition[predicate] = definition[formPrefix + predicate]?.[0]?.['@value'] === true
+          }
           break;
 
         case 'boolean':

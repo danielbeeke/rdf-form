@@ -2,17 +2,13 @@ import { Language } from './LanguageService'
 import { FieldDefinition } from './Types'
 import {lastPart} from "./helpers/lastPart";
 
-/**
- * This proxy makes it possible to access a structure that you normally would flatMap as a normal array.
- * 
- * @param rootTarget 
- * @param rootProp 
- * @returns 
- */
- export const groupItemProxy = (rootTarget, rootProp) => {
+
+export const groupItemProxy = (rootTarget, rootProp, groupItemIndexGetter) => {
   return new Proxy(rootTarget, {
     get: function (target, prop, receiver) {
+      console.log(groupItemIndexGetter())
       if (![Symbol.iterator, 'length', 'some', 'entries'].includes(prop)) {
+        // TODO it is not yet possible to have fields with multiple items inside a group.
         return target?.[prop]?.[rootProp]?.[0]
       }
 
@@ -21,10 +17,10 @@ import {lastPart} from "./helpers/lastPart";
   })
 }
 
-export const groupProxy = (data) => {
+export const groupProxy = (data, jsonLdValueType, groupItemIndexGetter) => {
   return new Proxy(data, {
     get: function (target, prop, receiver) {
-      if (target?.[0]?.[prop]) return { [prop]: groupItemProxy(target, prop) }
+      if (target?.[0]?.[prop]) return { [prop]: groupItemProxy(target, prop, groupItemIndexGetter) }
       if (prop === 'splice') return (start, deleteCount) => target.splice(start, deleteCount)
       return Reflect.get(target, prop, receiver);
     }
@@ -37,18 +33,21 @@ export const listProxy = (data, aliasses, binding) => {
       if (![Symbol.iterator, 'length', 'some', 'entries'].includes(prop)) {
         return listItemProxy(target[prop], aliasses, binding)
       }
+
       return Reflect.get(target, prop, receiver);
     }
   })
 }
 
 export const listItemProxy = (rootTarget, aliases, binding) => {
+  if (!rootTarget) return
   return new Proxy(rootTarget, {
     get: function (target, prop, receiver) {
       if (['@value', '@type', '@id', '@language'].includes(prop.toString())) {
         return target[aliases[binding]]?.[0][prop]
       }
 
+      // TODO can this be removed?
       if (![Symbol.iterator, 'length', 'some', 'entries'].includes(prop)) {
         if (aliases[prop]) {
           return target[aliases[prop]]
@@ -56,11 +55,19 @@ export const listItemProxy = (rootTarget, aliases, binding) => {
       }
 
       return Reflect.get(target, prop, receiver);
+    },
+    set: function (target, prop, value) {
+      if (['@value', '@type', '@id', '@language'].includes(prop.toString())) {
+        target[aliases[binding]][0][prop] = value
+        return true
+      }
+
+      return Reflect.set(target, prop, value);
     }
   })
 }
 
-export const wrapWithProxy = (data, bindings, isGroup, isList, outerBinding) => {
+export const wrapWithProxy = (data, bindings, isGroup, isList, outerBinding, jsonLdValueType, groupItemIndexGetter) => {
   const aliasses = {}
 
   for (const binding of bindings) {
@@ -68,29 +75,52 @@ export const wrapWithProxy = (data, bindings, isGroup, isList, outerBinding) => 
   }
 
   if (outerBinding) aliasses[lastPart(outerBinding)] = outerBinding
-  
+
   return new Proxy(data, {
     get: function (target, prop, receiver) {
       if (prop in aliasses) {
         const predicate = outerBinding ? outerBinding : aliasses[prop]
 
         if (isGroup) {
-          return groupProxy(target[predicate]?.[0]?.['@list'])
+          return groupProxy(target[predicate]?.[0]?.['@list'], jsonLdValueType, groupItemIndexGetter)
         }
-        else if (isList) {
-          const listBinding = prop === lastPart(outerBinding) ? lastPart(bindings[0]) : prop
+        else 
+        if (isList || isGroup) {
+          const listBinding = outerBinding && prop === lastPart(outerBinding) ? lastPart(bindings[0]) : prop
           return listProxy(target[predicate]?.[0]?.['@list'], aliasses, listBinding)
         }
         else {
-          if (!target[predicate]) target[predicate] = []
+          if (!target[predicate]) {
+            target[predicate] = []
+          }
           return target[predicate]
         }
       }
 
       return target[prop]
-    },
+    }
   })
+} 
+
+export function JsonLdProxy (jsonLd) {
+  if (typeof jsonLd !== 'object') return jsonLd
+
+  return new Proxy(jsonLd, {
+    get(target, prop, receiver) {
+      const isOurProperty = !Reflect.has({}, prop) && !Reflect.has([], prop)
+      if (Reflect.has(target, prop) && isOurProperty) {
+        return JsonLdProxy(target[prop])
+      }
+
+      if (target?.['@list'] && isOurProperty) {
+        return JsonLdProxy(target['@list'])
+      }
+
+      return Reflect.get(target, prop, receiver)
+    }
+  });
 }
+
 
 /**
  * This class sits between a field and the RDF JSON ld values.
@@ -107,8 +137,9 @@ export class FieldValues {
   public Field: FieldDefinition
   private formOntology: {}
   private isList: boolean = false
-  private isGroup: boolean = false
+  public isGroup: boolean = false
   public parentValues
+  private groupItemIndex = null
 
   /**
    *
@@ -130,9 +161,14 @@ export class FieldValues {
     this.defaultBinding = this.Field.innerBinding ? this.Field.innerBinding[0] : this.bindings[0]
     if (this.bindings.length > 1 || this.innerBinding) this.isList = true
     if (this.Field.fieldWidget === 'group') this.isGroup = true
+    
     // Grouped values inside a binding
     if (this.Field.innerBinding) this.bindings = this.bindings.filter(binding => !this.Field.binding.includes(binding))
-    this.parentValues = wrapWithProxy(parentValues, this.bindings, this.isGroup, this.isList, this.Field.innerBinding ? this.Field.binding[0] : null)
+    if (!parentValues) {
+      parentValues = {}
+    }
+    this.parentValues = wrapWithProxy(parentValues, this.bindings, this.isGroup, this.isList, this.Field.innerBinding ? this.Field.binding[0] : null, this.jsonLdValueType, () => this.groupItemIndex)
+    this.parentValues = JsonLdProxy(parentValues)
 
     Language.addEventListener('language.removed', (event: CustomEvent) => {
       const removedLanguage = event.detail
@@ -150,7 +186,7 @@ export class FieldValues {
   _getValues (binding) {
     if (!binding) binding = this.defaultBinding
     binding = lastPart(binding)
-    return this.parentValues[binding]
+    return this.parentValues?.[binding] ?? []
   }
 
   get (index = 0, binding = null) {
@@ -174,13 +210,20 @@ export class FieldValues {
     if (!values[index]) {
       values[index] = {}
     }
+
     values[index]['@' + this.jsonLdValueType] = newValue
     if (this.hasTranslations) values[index]['@language'] = Language.currentL10nLanguage
   }
 
+  setGroupItemIndex (index) {
+    this.groupItemIndex = index
+  }
+
   get hasTranslations () {
+    if (this.Field.translatable === 'always') return true
     const values = this._getValues(this.defaultBinding)
-    return values && !!values.some(item => item?.['@language'])
+    const hasTranslations = values && !!values.some(item => item?.['@language'])
+    return hasTranslations
   }
 
   get anotherTranslationIsPossible () {
@@ -200,7 +243,7 @@ export class FieldValues {
   }
 
   getAllFromBinding (binding = null) {
-    return this._getValues(binding ?? this.defaultBinding)
+    return this._getValues(binding ?? this.defaultBinding) ?? []
   }
 
   addItem (binding = null) {
@@ -278,6 +321,16 @@ export class FieldValues {
 
   getForChildElement (childField: FieldDefinition) {
     const childBinding = childField.binding[0] // TODO needs improvement? What if innerBinding?
-    return this.parentValues[lastPart(this.defaultBinding)][childBinding]
+
+    if (!this.parentValues[lastPart(this.defaultBinding)]) {
+      this.parentValues[lastPart(this.defaultBinding)] = {}
+    }
+
+    if (!this.parentValues[lastPart(this.defaultBinding)]?.[childBinding]) {
+      this.parentValues[lastPart(this.defaultBinding)][childBinding] = []
+    }
+    
+    const values = this.parentValues[lastPart(this.defaultBinding)][childBinding]
+    return values ?? []
   }
 }

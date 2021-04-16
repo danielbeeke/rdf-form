@@ -16,8 +16,8 @@ export type FieldDefinition = {
   readonly: boolean
   order: number
   rows: number
-  binding: Array<string>
-  translatable: boolean
+  binding: Array<string> 
+  translatable: boolean | string
   name: string
   label: string
   input: null

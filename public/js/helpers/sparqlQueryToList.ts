@@ -12,8 +12,6 @@ import { Language } from '../LanguageService'
   query = query.toString().replace(/LANGUAGE/g, Language.current)
   if (typeof source === 'object' && source instanceof String) source = source.toString()
 
-  console.log(query)
-
   const result = await comunica.query(query, Object.assign({ sources: [source] }, config));
 
   /** @ts-ignore */

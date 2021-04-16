@@ -101,7 +101,15 @@ class LanguageService extends EventTarget {
     const languageCodes = new Set<string>()
     for (const [predicate, values] of Object.entries(jsonLd)) {
       for (const value of values) {
-        if (value?.['@language']) languageCodes.add(value['@language'])
+        if (value?.['@language']) {
+          languageCodes.add(value['@language'])
+        }
+        else if (value?.['@list']) {
+          const innerLangCodes  = await this.extractUsedLanguages(value?.['@list'][0]);
+          for (const innerLangCode of innerLangCodes) {
+            languageCodes.add(innerLangCode)
+          }
+        }
       }
     }
 

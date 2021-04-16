@@ -112,11 +112,11 @@ export class FormElementBase extends EventTarget {
   getMenuButtons () {
     const buttons = []
 
-    if (this.Field.translatable && !this.Values.hasTranslations && Object.keys(Language.l10nLanguages).length) {
+    if (this.Field.translatable === true && !this.Values.hasTranslations && Object.keys(Language.l10nLanguages).length) {
       buttons.push(this.createButton('add', () => this.Values.enableTranslations(), 'Create translation'))
     }
 
-    if (this.Field.translatable && this.Values.hasTranslations) {
+    if (this.Field.translatable === true && this.Values.hasTranslations) {
       buttons.push(this.createButton('remove', () => this.Values.removeTranslations(), 'Remove translations'))
     }
 
@@ -220,10 +220,16 @@ export class FormElementBase extends EventTarget {
    * Extending classes may override one or more of them.
    ************************************************************************/
 
-  async templateLabel () {
-
+  async templateLabel (itemsToRender) {
     const languageCount = Object.keys(Language.l10nLanguages).length
-    const languageLabel = this.Values.hasTranslations ? Language.l10nLanguages[Language.currentL10nLanguage] : (languageCount ? t.direct('Language independent') : null)
+    let languageLabel = this.Values.hasTranslations ? Language.l10nLanguages[Language.currentL10nLanguage] : (languageCount ? t.direct('Language independent') : null)
+
+    if (!this.Values.isGroup && itemsToRender?.[0]?.[1]?.['@language'] && itemsToRender?.[0]?.[1]?.['@value']) {
+      languageLabel = Language.l10nLanguages[itemsToRender?.[0]?.[1]?.['@language']]
+    }
+
+    // Groups themselves have no language (yet).
+    if (this.Values.isGroup) languageLabel = ''
 
     return this.Field.label ? this.html`
     <label class="label">
@@ -249,7 +255,7 @@ export class FormElementBase extends EventTarget {
       onchange="${event => this.on(event, index)}"
       onkeyup="${event => this.on(event, index)}"
       type="text"
-      disabled="${this.Field.disabled ? true : null}"
+      disabled="${this.Field.translatable === 'always' && Language.currentL10nLanguage === undefined || this.Field.disabled ? true : null}"
       readonly="${this.Field.readonly ? true : null}"
       placeholder="${placeholder ?? this.Field.placeholder}"
       .value="${textValue ? textValue : ''}"
@@ -357,7 +363,12 @@ export class FormElementBase extends EventTarget {
     }
     else {
       itemsToRender.push([childIndex, this.Values.get(childIndex)])
+
+      if (this.Field.name === 'translationString' && itemsToRender[0][0] === 0) {
+        console.log(itemsToRender)
+      }
     }
+
 
     if (itemsToRender.length === 0) {
       itemsToRender.push([this.Values.length, null])
@@ -375,7 +386,7 @@ export class FormElementBase extends EventTarget {
     return this.html`
     <div class="form-element" name="${this.Field.name}" type="${this.getType()}">
 
-      ${await this.templateLabel()}
+      ${await this.templateLabel(itemsToRender)}
 
       ${this.html`
         <div class="items">

@@ -50,7 +50,7 @@ import { lastPart } from './helpers/lastPart'
 import { selectCorrectGraph } from './helpers/selectCorrectGraph'
 import {ContainerWidgetBase} from "./ContainerWidgets/ContainerWidgetBase";
 import {FormElement} from "./Types";
-import {ensureLanguages, langCodesToObject, filterLanguages} from './getLanguageLabel'
+import {langCodesToObject, filterLanguages} from './getLanguageLabel'
 
 export class RdfForm extends HTMLElement {
 
@@ -165,8 +165,8 @@ export class RdfForm extends HTMLElement {
 
     if (Array.isArray(this.expandedData)) this.expandedData = this.expandedData.pop()
 
-    // Language initialisation.
-    await ensureLanguages()
+    console.log(this.expandedData)
+
     const usedLanguages = await Language.extractUsedLanguages(this.expandedData)
     const defaultLanguages = JSON.parse(this.getAttribute('languages')) ?? (
       usedLanguages.length ? await langCodesToObject(usedLanguages) : {}

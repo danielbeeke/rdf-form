@@ -16,6 +16,15 @@ fieldsForm:string
     form:order        0 ;
     form:translatable true .
 
+fieldsForm:abstract
+    a                 form:Field ;
+    form:fieldWidget  "string" ;
+    form:label        "Abstract" ;
+    form:binding      schema:abstract ;
+    form:order        0 ;
+    form:translatable "always" .
+
+
 fieldsForm:references
     a                 form:Field ;
     form:fieldWidget  "reference" ;
