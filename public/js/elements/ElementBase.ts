@@ -18,16 +18,16 @@ export class ElementBase extends EventTarget {
 
   protected wrapperAttributes = {
     open: false,
-    class: []
+    class: ['form-element']
+  }
+
+  protected labelAttributes = {
+    class: ['label']
   }
 
   constructor (...args: any[]) {
     super()
     const [ definition, bindings, value, index ] = args
-
-    if (definition['form:label']?._ === 'String')  {
-      console.log(value, index)
-    }
 
     this.definition = definition
     this.bindings = bindings
@@ -46,10 +46,10 @@ export class ElementBase extends EventTarget {
   wrapper (innerTemplates: Array<typeof html> = []) {
     const type = kebabize(this.constructor.name)
     return html`
-    <div type="${type}">
+    <div ref=${attributesDiff(this.wrapperAttributes)} type="${type}">
       ${this.label()}
       ${innerTemplates.length ? html`
-        <div class="inner">
+        <div class="items">
           ${innerTemplates}
         </div>
       ` : ''}
@@ -60,13 +60,7 @@ export class ElementBase extends EventTarget {
     return html`
     <div class="item">
       ${this.input()}
-
-      ${childTemplates.length ? html`
-      <div class="children">
-        ${childTemplates}
-      </div>
-    ` : ''}
-
+      ${childTemplates}
     </div>`
   }
 
@@ -82,7 +76,7 @@ export class ElementBase extends EventTarget {
   }
 
   label () {
-    return html`<label>${this.definition['form:label']._}</label>`
+    return html`<label ref=${attributesDiff(this.labelAttributes)}>${this.definition['form:label']._}</label>`
   }
 
 }

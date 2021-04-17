@@ -21,7 +21,7 @@ export class Renderer extends EventTarget implements CoreComponent {
     this.dispatchEvent(new CustomEvent('ready'))
   }
 
-  render (formDefinition: FormDefinition, registry: Registry, formData: any, element: HTMLElement) {
+  render (formDefinition: FormDefinition, registry: Registry, formData: any, element: HTMLElement & { shadow: any }) {
     const templates = this.nest(formDefinition.chain, registry, formData)
 
     const formSubmit = (event) => {
@@ -30,7 +30,9 @@ export class Renderer extends EventTarget implements CoreComponent {
       element.dispatchEvent(new CustomEvent('submit', { detail: formData.$ }))
     }
 
-    render(element, html`
+    render(element.shadow, html`
+      <link rel="stylesheet" href="/css/rdf-form.css" />
+
       <form onsubmit=${formSubmit}>
       ${templates}
       <button>${t`Submit`}</button>

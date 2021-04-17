@@ -125,7 +125,7 @@ fieldsForm:image
 
 fieldsForm:imageWrapper
     a                   form:Container ;
-    form:widget         "details" ;
+    form:widget         "wrapper" ;
     form:binding        schema:image ;
     form:order          10 ;
     form:open           true ;

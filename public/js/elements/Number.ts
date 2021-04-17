@@ -6,4 +6,10 @@ export class Number extends ElementBase {
     super(...args)
     this.attributes.type = 'number'
   }
+
+  async on (event) {
+    if (['keyup', 'change'].includes(event.type)) {
+      this.value[`@${this.jsonldKey}`] = parseInt(event.target.value)
+    }
+  }
 }

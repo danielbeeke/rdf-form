@@ -13,6 +13,7 @@ class RdfForm2 extends HTMLElement implements CoreComponent {
   private renderer: Renderer
   private language: LanguageService
   public ready: boolean = false
+  public shadow: any
 
   constructor () {
     super()
@@ -40,6 +41,10 @@ class RdfForm2 extends HTMLElement implements CoreComponent {
         }
       })
     }
+  }
+
+  connectedCallback () {
+    this.shadow = this.attachShadow({ mode: 'open' })
   }
 
   render () {

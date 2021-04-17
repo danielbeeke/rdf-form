@@ -107,7 +107,7 @@ export class UrlImage extends FormElementBase implements FormElement {
 
     return url ? this.html`
       <div class="image-wrapper">
-        ${this.Field.dimensions ? html`
+        ${this.Field.focalPoint ? html`
           <div ref="${element => { focalPointDiv = element; this.setStyle(focalPointDiv, focalPoint) }}" class="focal-point"></div>
         ` : ''}
         <img 

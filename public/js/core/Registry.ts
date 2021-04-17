@@ -15,6 +15,7 @@ export class Registry extends EventTarget implements CoreComponent {
       './Number',
       './Details',
       './UrlImage',
+      './Wrapper',
       './Unknown',
     ]))
     this.init()

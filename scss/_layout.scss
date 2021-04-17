@@ -1,11 +1,11 @@
 :host form {
-  display: grid;
-  grid-template-columns: 3fr 480px;
-  grid-template-rows: auto auto;
-  grid-template-areas:
-    "top top"
-    "main sidebar";
-  gap: 20px;
+  // display: grid;
+  // grid-template-columns: 3fr 480px;
+  // grid-template-rows: auto auto;
+  // grid-template-areas:
+  //   "top top"
+  //   "main sidebar";
+  // gap: 20px;
 
   .region.sidebar {
     border-radius: var(--radius);
