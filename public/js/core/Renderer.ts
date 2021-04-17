@@ -44,24 +44,24 @@ export class Renderer extends EventTarget implements CoreComponent {
     for (const [bindings, [field, children]] of formDefinition.entries()) {
       const mainBinding = field['form:binding']?._
 
-      const wrapperFieldInstance = this.fieldInstances.get(field) ?? registry.setupElement(field)
+      const wrapperFieldInstance = this.fieldInstances.get(field) ?? registry.setupElement(field, bindings)
       if (!this.fieldInstances.has(field)) this.fieldInstances.set(field, wrapperFieldInstance)
       const innerTemplates = []
       const isContainer = lastPart(field['@type'][0]) === 'Container'
 
       if (mainBinding) {
-
         /**
          * Existing values.
          */
         if (formData[mainBinding]) {
+
           for (const [index, value] of formData[mainBinding].entries()) {
-            const fieldInstance = this.fieldInstances.get(value) ?? registry.setupElement(field, value)
+            const fieldInstance = this.fieldInstances.get(value) ?? registry.setupElement(field, bindings, formData, index)
             if (!this.fieldInstances.has(value)) this.fieldInstances.set(value, fieldInstance)
 
             let childValues
             
-            if (field['form:widget']?._ === 'group') {
+            if (field['form:widget']?._ === 'group' || isContainer) {
               childValues = formData[mainBinding][index]
             }
             else {

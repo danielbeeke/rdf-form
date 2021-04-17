@@ -3,6 +3,7 @@
 @prefix fieldsForm: <http://localhost:8070/fields.form.ttl#> .
 @prefix schema:     <http://schema.org/> .
 @prefix recipe:     <http://rdf.danielbeeke.nl/recipe/recipe-dev.ttl#> .
+@prefix focalPoint:       <http://localhost:8070/focalPoint.ttl#> .
 
 <http://localhost:8070/fields.form#fieldsForm>
     form:binding schema:Thing ;
@@ -106,3 +107,27 @@ fieldsForm:reference
     form:label    "References"@en ;
     form:label    "Referenties"@nl ;
     form:order    8 .
+
+
+fieldsForm:image
+    a                   form:Field ;
+    form:widget         "url-image" ;
+    form:label          "Image"@en ;
+    form:container      "imageWrapper" ;
+    form:label          "Afbeelding"@nl ;
+    form:type           schema:ImageObject ;
+    form:binding        schema:url ;
+    form:focalPoint     focalPoint:x1, focalPoint:y1, focalPoint:x2, focalPoint:y2 ;
+    form:dimensions     schema:width, schema:height ;
+    form:order          3 ;
+    form:multiple       true ;
+    form:translatable   true .
+
+fieldsForm:imageWrapper
+    a                   form:Container ;
+    form:widget         "details" ;
+    form:binding        schema:image ;
+    form:order          10 ;
+    form:open           true ;
+    form:label          "Images"@en ;
+    form:label          "Afbeeldingen"@nl .

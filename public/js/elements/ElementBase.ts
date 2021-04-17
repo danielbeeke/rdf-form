@@ -5,7 +5,9 @@ import { attributesDiff } from '../helpers/attributesDiff'
 export class ElementBase extends EventTarget {
 
   protected definition: object
+  protected bindings: Array<string>
   protected value: any
+  protected values: any
   protected jsonldKey = 'value'
   protected attributes = {
     disabled: false,
@@ -21,13 +23,21 @@ export class ElementBase extends EventTarget {
 
   constructor (...args: any[]) {
     super()
-    const [ definition, value ] = args
+    const [ definition, bindings, value, index ] = args
+
+    if (definition['form:label']?._ === 'String')  {
+      console.log(value, index)
+    }
 
     this.definition = definition
-    this.value = value
+    this.bindings = bindings
+
+    const mainBinding = definition['form:binding']?._
+    this.values = value ?? {}
+    this.value = value ? value[mainBinding][index] : null
   }
 
-  on (event) {
+  async on (event) {
     if (['keyup', 'change'].includes(event.type)) {
       this.value[`@${this.jsonldKey}`] = event.target.value
     }

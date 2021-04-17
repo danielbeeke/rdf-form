@@ -130,7 +130,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
       const fieldMetaProperties = this.ontology.find(predicate => lastPart(predicate?.['@id']) === lastPart(fieldProperty))
       if (fieldMetaProperties && fieldMetaProperties['form:isBindingProperty'] && Array.isArray(propertySetting)) {
         /* @ts-ignore */
-        bindings.push(propertySetting._)
+        bindings.push(...propertySetting.$.flatMap(item => item['@id']))
       }
     }
     return bindings

@@ -101,6 +101,12 @@ form:innerBinding
                "A predicate that wraps the contents ."@en ;
     rdfs:label "Wrapper binding"@en .
 
+form:type
+    rdf:type   rdf:Property ;
+    rdfs:comment
+               "A type that the wrapper has ."@en ;
+    rdfs:label "Type"@en .
+
 form:innerType
     rdf:type   rdf:Property ;
     rdfs:comment

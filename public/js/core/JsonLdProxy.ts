@@ -1,3 +1,4 @@
+import { lastPart } from '../helpers/lastPart'
 import { Language } from './Language'
 
 export const JsonLdProxy = (data, context) => {
@@ -20,6 +21,14 @@ export const JsonLdProxy = (data, context) => {
       if (prop === '$') return target
       if (prop === 'isProxy') return true
       if (prop === '_') return Language.multilingualValue(target)
+      if (prop[0] === '*') {
+        const lastPartToFind = prop.toString().substr(1)
+        for (const key of Object.keys(target)) {
+          if (lastPart(key) === lastPartToFind) {
+            prop = key
+          }
+        }
+      }
       
       const isOurProperty = !Reflect.has({}, prop) && !Reflect.has([], prop) && Reflect.has(target, prop)
 
