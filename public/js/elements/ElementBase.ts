@@ -1,10 +1,23 @@
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
 import { kebabize } from '../helpers/kebabize'
+import { attributesDiff } from '../helpers/attributesDiff'
 
 export class ElementBase extends EventTarget {
 
   protected definition: object
   protected value: any
+  protected jsonldKey = 'value'
+  protected attributes = {
+    disabled: false,
+    readonly: false,
+    type: 'input',
+    class: []
+  }
+
+  protected wrapperAttributes = {
+    open: false,
+    class: []
+  }
 
   constructor (...args: any[]) {
     super()
@@ -12,6 +25,12 @@ export class ElementBase extends EventTarget {
 
     this.definition = definition
     this.value = value
+  }
+
+  on (event) {
+    if (['keyup', 'change'].includes(event.type)) {
+      this.value[`@${this.jsonldKey}`] = event.target.value
+    }
   }
 
   wrapper (innerTemplates: Array<typeof html> = []) {
@@ -43,7 +62,12 @@ export class ElementBase extends EventTarget {
 
   input () {
     return html`
-      <input .value=${this.value?._ ?? ''} />
+      <input 
+        ref=${attributesDiff(this.attributes)} 
+        .value=${this.value?._ ?? ''} 
+        onchange=${(event) => this.on(event)}
+        onkeyup=${(event) => this.on(event)}
+      />
     `
   }
 

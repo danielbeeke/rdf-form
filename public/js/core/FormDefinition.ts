@@ -107,14 +107,19 @@ export class FormDefinition extends EventTarget implements CoreComponent {
 
       for (const field of fields) {
         const fieldBindings = this.getBindingsOfField(field)
-        const children = field['form:widget']?._ === 'group' ? this.elements.filter(innerField => innerField?.['form:group']?._ === lastPart(field['@id'])) : []
-        chain.set(fieldBindings, [field, recursiveChainCreator(children)])
+        let children = []
+        if (field['form:widget']?._ === 'group' || lastPart(field['@type'][0]) === 'Container') {
+          const nestingType = field['form:widget']?._ === 'group' ? 'group' : 'container'
+          children = this.elements.filter(innerField => innerField?.[`form:${nestingType}`]?._ === lastPart(field['@id']))
+        }
+
+        chain.set(fieldBindings.length ? fieldBindings : field.$, [field, recursiveChainCreator(children)])
       }
 
       return chain
     }
 
-    const firstLevelFields = this.elements.filter(field => !field['form:group'])
+    const firstLevelFields = this.elements.filter(field => !field['form:group'] && !field['form:container'])
     return recursiveChainCreator(firstLevelFields)
   }
 

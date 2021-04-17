@@ -13,6 +13,7 @@ export class Registry extends EventTarget implements CoreComponent {
       './Group', 
       './String',
       './Number',
+      './Details',
       './Unknown',
     ]))
     this.init()

@@ -7,7 +7,7 @@ import { CoreComponent } from '../types/CoreComponent'
  * Using t.direct('Lorem Ipsum') returns a string.
  */
 
- import { I18n } from '../i18n'
+ import { I18n } from './i18n'
 
  let currentUiLanguage = 'en'
  let currentL10nLanguage: string
@@ -20,6 +20,11 @@ export class LanguageService extends EventTarget implements CoreComponent {
 
   constructor () {
     super()
+    this.init()
+  }
+
+  async init () {
+    await this.setUiLanguage('en')
     this.ready = true
     this.dispatchEvent(new CustomEvent('ready'))
   }

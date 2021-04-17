@@ -8,6 +8,14 @@
     form:binding schema:Thing ;
     a            form:Form .
 
+fieldsForm:main
+    a                    form:Container ;
+    form:widget "details" ;
+    form:order           -1 ;
+    form:open            true ;
+    form:label           "Main"@en ;
+    form:label           "Main"@nl .
+
 fieldsForm:string
     a                 form:Field ;
     form:widget  "string" ;
@@ -98,11 +106,3 @@ fieldsForm:reference
     form:label    "References"@en ;
     form:label    "Referenties"@nl ;
     form:order    8 .
-
-fieldsForm:main
-    a                    form:Container ;
-    form:widget "details" ;
-    form:order           -1 ;
-    form:open            true ;
-    form:label           "Main"@en ;
-    form:label           "Main"@nl .

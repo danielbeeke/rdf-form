@@ -4,6 +4,8 @@ import { CoreComponent } from '../types/CoreComponent'
 import { ElementInstance } from '../types/ElementInstance'
 import { FormDefinition } from './FormDefinition'
 import { Registry } from './Registry'
+import { lastPart } from '../helpers/lastPart'
+import { t } from './Language'
 
 export class Renderer extends EventTarget implements CoreComponent {
   public ready: boolean = false
@@ -21,8 +23,18 @@ export class Renderer extends EventTarget implements CoreComponent {
 
   render (formDefinition: FormDefinition, registry: Registry, formData: any, element: HTMLElement) {
     const templates = this.nest(formDefinition.chain, registry, formData)
+
+    const formSubmit = (event) => {
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      element.dispatchEvent(new CustomEvent('submit', { detail: formData.$ }))
+    }
+
     render(element, html`
+      <form onsubmit=${formSubmit}>
       ${templates}
+      <button>${t`Submit`}</button>
+      </form>
     `)
   }
 
@@ -35,7 +47,10 @@ export class Renderer extends EventTarget implements CoreComponent {
       const wrapperFieldInstance = this.fieldInstances.get(field) ?? registry.setupElement(field)
       if (!this.fieldInstances.has(field)) this.fieldInstances.set(field, wrapperFieldInstance)
       const innerTemplates = []
+      const isContainer = lastPart(field['@type'][0]) === 'Container'
+
       if (mainBinding) {
+
         /**
          * Existing values.
          */
@@ -43,7 +58,17 @@ export class Renderer extends EventTarget implements CoreComponent {
           for (const [index, value] of formData[mainBinding].entries()) {
             const fieldInstance = this.fieldInstances.get(value) ?? registry.setupElement(field, value)
             if (!this.fieldInstances.has(value)) this.fieldInstances.set(value, fieldInstance)
-            const childTemplates = children.size ? this.nest(children, registry, formData[mainBinding][index]) : []
+
+            let childValues
+            
+            if (field['form:widget']?._ === 'group') {
+              childValues = formData[mainBinding][index]
+            }
+            else {
+              childValues = formData[mainBinding]
+            }
+
+            const childTemplates = children.size ? this.nest(children, registry, childValues) : []
             innerTemplates.push(fieldInstance.item(childTemplates))
           }  
         }
@@ -57,8 +82,15 @@ export class Renderer extends EventTarget implements CoreComponent {
         }
       }
 
-      templates.push(wrapperFieldInstance.wrapper(innerTemplates))
+      /**
+       * Containers
+       */
+      else if (isContainer) {
+        const childTemplates = children.size ? this.nest(children, registry, formData) : []
+        innerTemplates.push(wrapperFieldInstance.item(childTemplates))
+      }
 
+      templates.push(wrapperFieldInstance.wrapper(innerTemplates))
     }
 
     return templates

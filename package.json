@@ -21,8 +21,7 @@
     "rdf-dereference": "^1.6.0",
     "rdf-parse": "^1.6.1",
     "rdf-store-stream": "^1.0.1",
-    "tinyduration": "^3.2.0",
-    "uhtml": "^2.1.4"
+    "tinyduration": "^3.2.0"
   },
   "types": "dist/types/index.d.ts",
   "devDependencies": {
