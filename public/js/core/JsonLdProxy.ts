@@ -1,3 +1,5 @@
+import { Language } from './Language'
+
 export const JsonLdProxy = (data, context) => {
   if (typeof data !== 'object') return data
 
@@ -17,7 +19,8 @@ export const JsonLdProxy = (data, context) => {
       prop = convertProp(prop)
       if (prop === '$') return target
       if (prop === 'isProxy') return true
-
+      if (prop === '_') return Language.multilingualValue(target)
+      
       const isOurProperty = !Reflect.has({}, prop) && !Reflect.has([], prop) && Reflect.has(target, prop)
 
       if (target[prop]?.[0]?.['@list'] && isOurProperty) {

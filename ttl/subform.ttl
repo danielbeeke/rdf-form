@@ -10,7 +10,7 @@
 
 references:keywords
     a                 form:Field ;
-    form:fieldWidget  "string" ;
+    form:widget  "string" ;
     form:label        "Keywords"@en ;
     form:label        "Sleutelwoorden"@nl ;
     form:binding      schema:keywords ;

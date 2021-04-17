@@ -9,6 +9,7 @@ export class RdfFormData extends EventTarget implements CoreComponent {
   private dataAsTextOrUrl: string
   private sourceData: any
   public get: () => any
+  public proxy: object = {}
   private sourceDataCompacted: object
 
   constructor (dataAsTextOrUrl: string = null) {
@@ -41,6 +42,7 @@ export class RdfFormData extends EventTarget implements CoreComponent {
 
     if (Array.isArray(this.sourceData)) this.sourceData = this.sourceData.pop()
 
+    this.createProxy()
     this.ready = true
     this.dispatchEvent(new CustomEvent('ready'))
   }
@@ -50,6 +52,6 @@ export class RdfFormData extends EventTarget implements CoreComponent {
   }
 
   createProxy () {
-    return JsonLdProxy(this.sourceData, this.context)
+    this.proxy = JsonLdProxy(this.sourceData, this.context)
   }
 }

@@ -5,6 +5,10 @@ import { lastPart } from '../helpers/lastPart'
 import { CoreComponent } from '../types/CoreComponent'
 import { JsonLdProxy } from './JsonLdProxy'
 
+export const only = (...type) => {
+  return (item: ExpandedJsonLdObject) => item['@type'].some(rdfClass => type.includes(lastPart(rdfClass)))
+}
+
 export class FormDefinition extends EventTarget implements CoreComponent {
 
   private formUrl: string
@@ -47,16 +51,20 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   }
 
   get info () {
-    return this.sourceDefinitionExpanded.find((item: ExpandedJsonLdObject) => item['@type'].some(rdfClass => lastPart(rdfClass) === 'Form'))
+    return this.sourceDefinitionExpanded.find(only('Form'))
   }
 
   get fields (): Array<any> {
-    return this.resolvedFormDefinition
+    return this.resolvedFormDefinition.filter(only('Field'))
+  }
+
+  get elements (): Array<any> {
+    return this.resolvedFormDefinition.filter(only('Field', 'Container'))
   }
 
   async resolveSubForms () {
     const resolvedFormDefinition = JsonLdProxy(JSON.parse(JSON.stringify(this.sourceDefinitionExpanded)), this.context)
-    const fields = resolvedFormDefinition.filter((item: ExpandedJsonLdObject) => item['@type'].some(rdfClass => lastPart(rdfClass) === 'Field'))
+    const fields = resolvedFormDefinition.filter(only('Field'))
 
     for (const field of fields) {
       const subformUrl = <Array<{'@id': string}>> field['form:subform']
@@ -68,7 +76,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
         const subformTurtle = await subformResponse.text()
         const subformDefinitionCompacted = ttl2jsonld(subformTurtle)
         const subformDefinitionExpanded = JsonLdProxy(await JsonLdProcessor.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context']);
-        const subFormfields = subformDefinitionExpanded.filter((item: ExpandedJsonLdObject) => item['@type'].some(rdfClass => lastPart(rdfClass) === 'Field'))
+        const subFormfields = subformDefinitionExpanded.filter(only('Field'))
 
         Object.assign(this.context, subformDefinitionCompacted['@context'])
 
@@ -79,12 +87,12 @@ export class FormDefinition extends EventTarget implements CoreComponent {
           }
   
           if (field['form:order']) {
-            subFormfield['form:order'] = [{ '@value': field['form:order'][0]['@value'] + parseFloat('0.' + subFormfield['form:order'])}]
+            subFormfield['form:order'] = [{ '@value': field['form:order']._ + parseFloat('0.' + subFormfield['form:order']._)}]
           }
         }
   
-        const fieldIndex = resolvedFormDefinition.indexOf(field)
-        resolvedFormDefinition.splice(fieldIndex, 1, ...subFormfields)
+        const fieldIndex = resolvedFormDefinition.map(field => field.$).indexOf(field.$)
+        resolvedFormDefinition.$.splice(fieldIndex, 1, ...subFormfields.map(field => field.$))
       }
     }
 
@@ -94,16 +102,19 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   createChain () {
     const recursiveChainCreator = (fields) => {
       const chain = new Map()
+
+      fields.sort((a, b) => a['form:order']._ - b['form:order']._)
+
       for (const field of fields) {
         const fieldBindings = this.getBindingsOfField(field)
-        const children = field['form:fieldWidget'][0]['@value'] === 'group' ? this.fields.filter(innerField => innerField?.['form:fieldGroup']?.[0]?.['@value'] === lastPart(field['@id'])) : []
-        chain.set(fieldBindings, recursiveChainCreator(children))
+        const children = field['form:widget']?._ === 'group' ? this.elements.filter(innerField => innerField?.['form:group']?._ === lastPart(field['@id'])) : []
+        chain.set(fieldBindings, [field, recursiveChainCreator(children)])
       }
 
       return chain
     }
 
-    const firstLevelFields = this.fields.filter(field => !field['form:fieldGroup'] && field['@type'].some(rdfClass => lastPart(rdfClass) === 'Field'))
+    const firstLevelFields = this.elements.filter(field => !field['form:group'])
     return recursiveChainCreator(firstLevelFields)
   }
 
@@ -113,7 +124,8 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     for (const [fieldProperty, propertySetting] of Object.entries(field)) {
       const fieldMetaProperties = this.ontology.find(predicate => lastPart(predicate?.['@id']) === lastPart(fieldProperty))
       if (fieldMetaProperties && fieldMetaProperties['form:isBindingProperty'] && Array.isArray(propertySetting)) {
-        bindings.push(propertySetting[0]['@id'])
+        /* @ts-ignore */
+        bindings.push(propertySetting._)
       }
     }
     return bindings

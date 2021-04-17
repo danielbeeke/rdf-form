@@ -10,15 +10,16 @@
 
 fieldsForm:string
     a                 form:Field ;
-    form:fieldWidget  "string" ;
+    form:widget  "string" ;
     form:label        "String" ;
     form:binding      schema:name ;
+    form:container   "main" ;
     form:order        0 ;
     form:translatable true .
 
 fieldsForm:abstract
     a                 form:Field ;
-    form:fieldWidget  "string" ;
+    form:widget  "string" ;
     form:label        "Abstract" ;
     form:binding      schema:abstract ;
     form:order        0 ;
@@ -27,7 +28,7 @@ fieldsForm:abstract
 
 fieldsForm:ingredients
     a                 form:Field ;
-    form:fieldWidget "group" ;
+    form:widget "group" ;
     form:label       "Ingredients"@en ;
     form:label       "Ingrediënten"@nl ;
     form:binding     recipe:ingredients ;
@@ -36,10 +37,10 @@ fieldsForm:ingredients
 
 fieldsForm:ingredient
     a                 form:Field ;
-    form:fieldWidget       "reference" ;
+    form:widget       "reference" ;
     form:label             "Ingredient"@en ;
     form:label             "Ingrediënt"@nl ;
-    form:fieldGroup        "ingredients" ;
+    form:group        "ingredients" ;
     form:binding           recipe:ingredient ;
     form:placeholder       "Search for an ingredient."@en ;
     form:placeholder       "Zoek naar een ingredient."@nl ;
@@ -66,16 +67,16 @@ fieldsForm:ingredient
 
 fieldsForm:quantity
     a                 form:Field ;
-    form:fieldWidget "number" ;
+    form:widget "number" ;
     form:label       "Quantity"@en ;
     form:label       "Aantal"@nl ;
     form:binding     recipe:quantity ;
-    form:fieldGroup  "ingredients" ;
+    form:group  "ingredients" ;
     form:order       2 .
 
 fieldsForm:measurementUnit
     a                 form:Field ;
-    form:fieldWidget "dropdown" ;
+    form:widget "dropdown" ;
     form:label       "Unit"@en ;
     form:label       "Soort"@nl ;
     form:binding     recipe:measurementUnit ;
@@ -88,13 +89,20 @@ fieldsForm:measurementUnit
     form:option      [ form:label "Millilitre"@en ;
                        form:label "Milliliter"@nl ;
                        form:value <https://www.wikidata.org/wiki/Q2332346> ; ] ;
-    form:fieldGroup  "ingredients" ;
+    form:group  "ingredients" ;
     form:order       3 .
 
 fieldsForm:reference
     a             form:Field ;
     form:subform  <http://localhost:8070/subform.ttl> ;
     form:label    "References"@en ;
-    form:container "test" ;
     form:label    "Referenties"@nl ;
     form:order    8 .
+
+fieldsForm:main
+    a                    form:Container ;
+    form:widget "details" ;
+    form:order           -1 ;
+    form:open            true ;
+    form:label           "Main"@en ;
+    form:label           "Main"@nl .
