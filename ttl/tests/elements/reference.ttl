@@ -1,0 +1,11 @@
+@prefix schema: <http://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix recipe:     <http://rdf.danielbeeke.nl/recipe/recipe-dev.ttl#> .
+@prefix focalPoint:       <http://localhost:8070/focalPoint.ttl#> .
+
+[]
+a schema:Thing ;
+recipe:ingredient      <http://dbpedia.org/resource/Tomato> ;
+recipe:ingredient      <http://dbpedia.org/resource/Tomato_sauce> ;
+recipe:ingredient      <http://dbpedia.org/resource/Oregano> ;
+recipe:ingredient      <http://dbpedia.org/resource/Garlic> .

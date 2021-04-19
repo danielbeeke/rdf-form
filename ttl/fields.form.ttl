@@ -11,7 +11,7 @@
 
 fieldsForm:main
     a                    form:Container ;
-    form:widget "details" ;
+    form:widget "wrapper" ;
     form:order           -1 ;
     form:open            true ;
     form:label           "Main"@en ;
@@ -25,6 +25,12 @@ fieldsForm:string
     form:container   "main" ;
     form:order        0 ;
     form:translatable true .
+
+fieldsForm:languagePicker
+    a                 form:UiComponent ;
+    form:container   "main" ;
+    form:label        "Language picker"@en ;
+    form:widget  "language-picker" .
 
 fieldsForm:abstract
     a                 form:Field ;

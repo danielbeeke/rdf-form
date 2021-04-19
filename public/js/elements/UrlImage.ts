@@ -1,9 +1,10 @@
 import { ElementBase } from './ElementBase'
+import { getImageDimensionsByUrl } from '../helpers/getImageDimensionsByUrl'
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
 
 export class UrlImage extends ElementBase {
 
-  protected focalPoint: {x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number}
+  protected focalPoint: { x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number }
   protected isDragging = false
   protected focalPointDiv: HTMLDivElement = null
 
@@ -20,7 +21,19 @@ export class UrlImage extends ElementBase {
       x4: this.values['*x4']?._,
       y4: this.values['*y4']?._,
     }
+  }
 
+  async on(event: Event) {
+    super.on(event);
+    const dimensionsEnabled = this.definition['form:dimensions'].length > 0
+    const url = this.value?._
+
+    if (dimensionsEnabled && url) {
+      getImageDimensionsByUrl(url).then(({ width, height }) => {
+        this.values['*width'][0]['@value'] = width
+        this.values['*height'][0]['@value'] = height
+      })
+    }
   }
 
   input () {
@@ -51,8 +64,8 @@ export class UrlImage extends ElementBase {
       const endY = 100 / image.height * event.offsetY
       this.reCalc()
 
-      const allowedDelta = 4
-      if (Math.abs(endX - this.focalPoint.x3) < allowedDelta && Math.abs(endY - this.focalPoint.y3) < allowedDelta) {
+      const allowedMouseMove = 4
+      if (Math.abs(endX - this.focalPoint.x3) < allowedMouseMove && Math.abs(endY - this.focalPoint.y3) < allowedMouseMove) {
         this.focalPointDiv.removeAttribute('style')
         this.reset()
       }

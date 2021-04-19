@@ -59,7 +59,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   }
 
   get elements (): Array<any> {
-    return this.resolvedFormDefinition.filter(only('Field', 'Container'))
+    return this.resolvedFormDefinition.filter(only('Field', 'Container', 'UiComponent'))
   }
 
   async resolveSubForms () {
@@ -103,7 +103,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     const recursiveChainCreator = (fields) => {
       const chain = new Map()
 
-      fields.sort((a, b) => a['form:order']._ - b['form:order']._)
+      fields.sort((a, b) => a['form:order']?._ ?? 0 - b['form:order']?._ ?? 0)
 
       for (const field of fields) {
         const fieldBindings = this.getBindingsOfField(field)

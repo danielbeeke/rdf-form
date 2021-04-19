@@ -9,7 +9,7 @@ export class RdfFormData extends EventTarget implements CoreComponent {
   private dataAsTextOrUrl: string
   private sourceData: any
   public get: () => any
-  public proxy: object = {}
+  public proxy = { $: null }
   private sourceDataCompacted: object
 
   constructor (dataAsTextOrUrl: string = null) {
@@ -20,9 +20,7 @@ export class RdfFormData extends EventTarget implements CoreComponent {
 
   async init () {
     let dataText
-    if (!this.dataAsTextOrUrl) {
-      this.sourceData = []
-    }
+    if (!this.dataAsTextOrUrl) this.sourceData = []
 
     if (this.dataAsTextOrUrl.startsWith('http') || this.dataAsTextOrUrl.startsWith('blob') || this.dataAsTextOrUrl.substr(0, 1) === '/') {
       const dataResponse = await fetch(this.dataAsTextOrUrl)

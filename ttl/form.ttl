@@ -34,6 +34,11 @@ form:Container
     rdfs:label   "Container"@en ;
     rdfs:comment "A container of fields."@en .
 
+form:UiComponent
+    a            rdfs:Class ;
+    rdfs:label   "UI component"@en ;
+    rdfs:comment "A UI component of RDF form."@en .
+
 form:label
     rdf:type     rdf:Property ;
     rdfs:comment "The label to display above the field."@en ;

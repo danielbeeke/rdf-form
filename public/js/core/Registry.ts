@@ -16,6 +16,9 @@ export class Registry extends EventTarget implements CoreComponent {
       './Details',
       './UrlImage',
       './Wrapper',
+      './Reference',
+      './Dropdown',
+      './LanguagePicker',
       './Unknown',
     ]))
     this.init()
@@ -44,9 +47,9 @@ export class Registry extends EventTarget implements CoreComponent {
     this.dispatchEvent(new CustomEvent('ready'))
   }
 
-  setupElement (definition, bindings: Array<string>, value = null, index = 0): ElementInstance {
+  setupElement (definition, bindings: Array<string>, value = null, index = 0, render = () => null, comunica: any): ElementInstance {
     const widget = this.fieldClasses.has(definition['form:widget']._) ? definition['form:widget']._ : 'unknown'
     const elementClass = this.fieldClasses.get(widget)
-    return new elementClass(definition, bindings, value, index)
+    return new elementClass(definition, bindings, value, index, render, comunica)
   }
 }

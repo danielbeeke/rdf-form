@@ -1,0 +1,39 @@
+@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix form:       <http://localhost:8070/form.ttl#> .
+@prefix fieldsForm: <http://localhost:8070/fields.form.ttl#> .
+@prefix schema:     <http://schema.org/> .
+@prefix recipe:     <http://rdf.danielbeeke.nl/recipe/recipe-dev.ttl#> .
+@prefix focalPoint:       <http://localhost:8070/focalPoint.ttl#> .
+
+<http://localhost:8070/fields.form#fieldsForm>
+    form:binding schema:Thing ;
+    a            form:Form .
+
+fieldsForm:ingredient
+    a                 form:Field ;
+    form:widget       "reference" ;
+    form:label             "Ingredient"@en ;
+    form:label             "Ingrediënt"@nl ;
+    form:binding           recipe:ingredient ;
+    form:placeholder       "Search for an ingredient."@en ;
+    form:placeholder       "Zoek naar een ingredient."@nl ;
+    form:autoCompleteQuery """
+
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX dbo:  <http://dbpedia.org/ontology/>
+    PREFIX bif: <bif:>
+
+    SELECT DISTINCT ?uri ?label ?image {
+
+      ?o dbo:ingredient ?uri .
+      ?uri rdfs:label ?label .
+      ?uri dbo:thumbnail ?image .
+      ?label bif:contains "'SEARCH_TERM'" .
+
+      filter langMatches(lang(?label), "LANGUAGE")
+    }
+
+    LIMIT 10
+
+    """ ;
+    form:order             1 .
