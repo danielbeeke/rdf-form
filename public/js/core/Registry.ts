@@ -48,9 +48,9 @@ export class Registry extends EventTarget implements CoreComponent {
     this.dispatchEvent(new CustomEvent('ready'))
   }
 
-  setupElement (definition, bindings: Array<string>, value = null, index = 0, render = () => null, comunica: any, parent): ElementInstance {
+  setupElement (definition, bindings: Array<string>, value = null, parentValues = null, index = 0, render = () => null, comunica: any, parent): ElementInstance {
     const widget = this.fieldClasses.has(definition['form:widget']._) ? definition['form:widget']._ : 'unknown'
     const elementClass = this.fieldClasses.get(widget)
-    return new elementClass(definition, bindings, value, index, render, comunica, parent)
+    return new elementClass(definition, bindings, value, parentValues, index, render, comunica, parent)
   }
 }

@@ -61,10 +61,10 @@ export class Renderer extends EventTarget implements CoreComponent {
     for (const [bindings, [field, children]] of formDefinition.entries()) {
       const mainBinding = field['form:binding']?._
 
-      const wrapperFieldInstance = this.fieldInstances.get(field.$) ?? registry.setupElement(
-        field, bindings, null, 0, () => this.render(), this.form.comunica, parent
+      const wrapperFieldInstance = registry.setupElement(
+        field, bindings, null, formData, null, () => this.render(), this.form.comunica, parent
       )
-      if (!this.fieldInstances.has(field.$)) this.fieldInstances.set(field.$, wrapperFieldInstance)
+
       const innerTemplates = []
       const isContainer = lastPart(field['@type'][0]) === 'Container'
       const isUiComponent = lastPart(field['@type'][0]) === 'UiComponent'
@@ -74,32 +74,20 @@ export class Renderer extends EventTarget implements CoreComponent {
         /**
          * Existing values.
          */
-        if (formData[mainBinding]) {
-          const applicableValues = [...formData[mainBinding].entries()].filter(([index, value]) => !value['@language'] || value['@language'] === Language.l10nLanguage) 
+        const applicableValues = formData[mainBinding] ? [...formData[mainBinding].entries()]
+        .filter(([index, value]) => !value['@language'] || value['@language'] === Language.l10nLanguage) : []
 
+        if (applicableValues.length) {
           for (const [index, value] of applicableValues) {
             const fieldInstance = this.fieldInstances.get(value.$) ?? registry.setupElement(
-              field, bindings, formData, index, () => this.render(), this.form.comunica, parent
+              field, bindings, value, formData, index, () => this.render(), this.form.comunica, parent
             )
             if (!this.fieldInstances.has(value.$)) this.fieldInstances.set(value.$, fieldInstance)
 
-            let childValues
-            
-            if (field['form:widget']?._ === 'group' || isContainer) {
-              childValues = formData[mainBinding][index]
-            }
-            else {
-              childValues = formData[mainBinding]
-            }
-
+            const childValues = field['form:widget']?._ === 'group' || isContainer ? formData[mainBinding][index] : formData[mainBinding]
             const childTemplates = children.size ? this.nest(children, registry, childValues, wrapperFieldInstance) : []
             innerTemplates.push(fieldInstance.item(childTemplates))
           }
-
-          if (!applicableValues.length) {
-            console.log(field)
-          }
-
         }
 
         /**

@@ -3,7 +3,7 @@ import { faTimes, faPlus } from 'https://unpkg.com/@fortawesome/free-solid-svg-i
 import { kebabize } from '../helpers/kebabize'
 import { attributesDiff } from '../helpers/attributesDiff'
 import { getUriMeta } from '../helpers/getUriMeta'
-import { t } from '../core/Language'
+import { t, Language } from '../core/Language'
 import { lastPart } from '../helpers/lastPart'
 import { fa } from '../helpers/fa'
 
@@ -12,10 +12,11 @@ export class ElementBase extends EventTarget {
   protected definition: object
   protected bindings: Array<string>
   protected value: any
-  protected values: any
+  protected parentValues: any
   public parent: any
   protected jsonldKey = 'value'
   protected comunica: any
+  protected mainBinding: string = null
   public render = () => null 
   protected suggestions: Array<any> = []
   protected attributes = {
@@ -36,14 +37,14 @@ export class ElementBase extends EventTarget {
 
   constructor (...args: any[]) {
     super()
-    const [ definition, bindings, value, index, render, comunica, parent ] = args
+    const [ definition, bindings, value, parentValues, index, render, comunica, parent ] = args
 
     this.definition = definition
     this.bindings = bindings
 
-    const mainBinding = definition['form:binding']?._
-    this.values = value ?? {}
-    this.value = value ? value[mainBinding][index] : null
+    this.mainBinding = definition['form:binding']?._
+    this.parentValues = parentValues
+    this.value = value
     this.render = render
     this.comunica = comunica
     this.parent = parent
@@ -51,8 +52,18 @@ export class ElementBase extends EventTarget {
 
   async on (event) {
     if (['keyup', 'change'].includes(event.type)) {
-      this.value[`@${this.jsonldKey}`] = event.target.value
+      if (!this.value) await this.addItem()
+      if (this.value) this.value[`@${this.jsonldKey}`] = event.target.value
     }
+  }
+
+  async addItem () {
+    const value = { [`@${this.jsonldKey}`]: null }
+    const fieldLanguages = this.parentValues ? await Language.extractUsedLanguages(this.parentValues) : []
+    if (fieldLanguages.length) value['@language'] = Language.l10nLanguage
+    if (!this.parentValues[this.mainBinding]) this.parentValues[this.mainBinding] = []
+    this.parentValues?.[this.mainBinding].push(value)
+    this.value = value
   }
 
   /**
@@ -84,15 +95,7 @@ export class ElementBase extends EventTarget {
 
   addButton () {
     return html`<button type="button" class="button add" onclick="${() => {
-      const valueArray = this.values[this.definition['form:binding']?._]?.$
-
-      console.log(this.values)
-
-      if (valueArray) {
-        valueArray.push({})
-        console.log(valueArray)
-      }
-
+      this.addItem()
       this.render();
     }}">
       ${fa(faPlus)}
@@ -101,7 +104,7 @@ export class ElementBase extends EventTarget {
 
   removeButton () {
     return html`<button type="button" class="button remove" onclick="${() => {
-      const valueArray = this.values[this.definition['form:binding']?._]?.$
+      const valueArray = this.parentValues[this.definition['form:binding']?._]?.$
 
       if (valueArray) {
         const index = valueArray.indexOf(this.value.$)

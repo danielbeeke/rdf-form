@@ -64,7 +64,7 @@ export class Reference extends ElementBase {
 
   item (childTemplates: Array<typeof html> = []) {
     const value = this.value?._
-    const uri = value.substr(0, 4) === 'http' ? value : false
+    const uri = value?.substr(0, 4) === 'http' ? value : false
 
     const editButton = () => html`<button type="button" class="button edit" onclick="${() => { 
       this.expanded = true

@@ -4,6 +4,7 @@ import { ExpandedJsonLdObject } from '../types/ExpandedJsonLdObject'
 import { lastPart } from '../helpers/lastPart'
 import { CoreComponent } from '../types/CoreComponent'
 import { JsonLdProxy } from './JsonLdProxy'
+import { Language } from './Language'
 
 export const only = (...type) => {
   return (item: ExpandedJsonLdObject) => item['@type'].some(rdfClass => type.includes(lastPart(rdfClass)))
@@ -63,7 +64,9 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   }
 
   async resolveSubForms () {
-    const resolvedFormDefinition = JsonLdProxy(JSON.parse(JSON.stringify(this.sourceDefinitionExpanded)), this.context, 'ui')
+    const resolvedFormDefinition = JsonLdProxy(JSON.parse(JSON.stringify(this.sourceDefinitionExpanded)), this.context, {
+      '_': (value) => Language.multilingualValue(value, 'ui')
+    })
     const fields = resolvedFormDefinition.filter(only('Field'))
 
     for (const field of fields) {
@@ -75,7 +78,9 @@ export class FormDefinition extends EventTarget implements CoreComponent {
         const subformResponse = await fetch(subformUrl[0]['@id'])
         const subformTurtle = await subformResponse.text()
         const subformDefinitionCompacted = ttl2jsonld(subformTurtle)
-        const subformDefinitionExpanded = JsonLdProxy(await JsonLdProcessor.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context'], 'ui');
+        const subformDefinitionExpanded = JsonLdProxy(await JsonLdProcessor.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context'], {
+          '_': (value) => Language.multilingualValue(value, 'ui')
+        });
         const subFormfields = subformDefinitionExpanded.filter(only('Field'))
 
         Object.assign(this.context, subformDefinitionCompacted['@context'])

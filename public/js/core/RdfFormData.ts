@@ -2,6 +2,7 @@ import { CoreComponent } from '../types/CoreComponent'
 import { ttl2jsonld } from '../vendor/ttl2jsonld'
 import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js'
 import { JsonLdProxy } from './JsonLdProxy'
+import { Language } from './Language'
 
 export class RdfFormData extends EventTarget implements CoreComponent {
 
@@ -50,6 +51,8 @@ export class RdfFormData extends EventTarget implements CoreComponent {
   }
 
   createProxy () {
-    this.proxy = JsonLdProxy(this.sourceData, this.context)
+    this.proxy = JsonLdProxy(this.sourceData, this.context, {
+      '_': (value) => Language.multilingualValue(value, 'l10n')
+    })
   }
 }

@@ -13,14 +13,14 @@ export class UrlImage extends ElementBase {
     super(...args)
 
     this.focalPoint = {
-      x1: this.values['*x1']?._,
-      y1: this.values['*y1']?._,
-      x2: this.values['*x2']?._,
-      y2: this.values['*y2']?._,
-      x3: this.values['*x3']?._,
-      y3: this.values['*y3']?._,
-      x4: this.values['*x4']?._,
-      y4: this.values['*y4']?._,
+      x1: this.parentValues['*x1']?._,
+      y1: this.parentValues['*y1']?._,
+      x2: this.parentValues['*x2']?._,
+      y2: this.parentValues['*y2']?._,
+      x3: this.parentValues['*x3']?._,
+      y3: this.parentValues['*y3']?._,
+      x4: this.parentValues['*x4']?._,
+      y4: this.parentValues['*y4']?._,
     }
   }
 
@@ -31,10 +31,12 @@ export class UrlImage extends ElementBase {
 
     if (dimensionsEnabled && url) {
       getImageDimensionsByUrl(url).then(({ width, height }) => {
-        this.values['*width'][0]['@value'] = width
-        this.values['*height'][0]['@value'] = height
+        this.parentValues['*width'][0]['@value'] = width
+        this.parentValues['*height'][0]['@value'] = height
       })
     }
+
+    this.render()
   }
 
   input () {
@@ -70,10 +72,10 @@ export class UrlImage extends ElementBase {
         this.reset()
       }
       else {
-        this.values['*x1'][0]['@value'] = this.focalPoint.x1
-        this.values['*y1'][0]['@value'] = this.focalPoint.y1
-        this.values['*x2'][0]['@value'] = this.focalPoint.x2
-        this.values['*y2'][0]['@value'] = this.focalPoint.y2
+        this.parentValues['*x1'][0]['@value'] = this.focalPoint.x1
+        this.parentValues['*y1'][0]['@value'] = this.focalPoint.y1
+        this.parentValues['*x2'][0]['@value'] = this.focalPoint.x2
+        this.parentValues['*y2'][0]['@value'] = this.focalPoint.y2
       }
     }
 
