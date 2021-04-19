@@ -24,7 +24,7 @@ export class Renderer extends EventTarget implements CoreComponent {
   }
 
   render () {
-    const templates = this.nest(this.form.formDefinition.chain, this.form.registry, this.form.formData.proxy)
+    const templates = this.nest(this.form.formDefinition.chain, this.form.registry, this.form.formData.proxy, this.form)
 
     const formSubmit = (event) => {
       event.preventDefault()
@@ -55,13 +55,15 @@ export class Renderer extends EventTarget implements CoreComponent {
     `)
   }
 
-  nest (formDefinition: Map<any, any>, registry: Registry, formData: any) {
+  nest (formDefinition: Map<any, any>, registry: Registry, formData: any, parent: any) {
     const templates = []
 
     for (const [bindings, [field, children]] of formDefinition.entries()) {
       const mainBinding = field['form:binding']?._
 
-      const wrapperFieldInstance = this.fieldInstances.get(field.$) ?? registry.setupElement(field, bindings, null, 0, () => this.render(), this.form.comunica)
+      const wrapperFieldInstance = this.fieldInstances.get(field.$) ?? registry.setupElement(
+        field, bindings, null, 0, () => this.render(), this.form.comunica, parent
+      )
       if (!this.fieldInstances.has(field.$)) this.fieldInstances.set(field.$, wrapperFieldInstance)
       const innerTemplates = []
       const isContainer = lastPart(field['@type'][0]) === 'Container'
@@ -73,8 +75,12 @@ export class Renderer extends EventTarget implements CoreComponent {
          * Existing values.
          */
         if (formData[mainBinding]) {
-          for (const [index, value] of formData[mainBinding].entries()) {
-            const fieldInstance = this.fieldInstances.get(value.$) ?? registry.setupElement(field, bindings, formData, index, () => this.render(), this.form.comunica)
+          const applicableValues = [...formData[mainBinding].entries()].filter(([index, value]) => !value['@language'] || value['@language'] === Language.l10nLanguage) 
+
+          for (const [index, value] of applicableValues) {
+            const fieldInstance = this.fieldInstances.get(value.$) ?? registry.setupElement(
+              field, bindings, formData, index, () => this.render(), this.form.comunica, parent
+            )
             if (!this.fieldInstances.has(value.$)) this.fieldInstances.set(value.$, fieldInstance)
 
             let childValues
@@ -86,16 +92,21 @@ export class Renderer extends EventTarget implements CoreComponent {
               childValues = formData[mainBinding]
             }
 
-            const childTemplates = children.size ? this.nest(children, registry, childValues) : []
+            const childTemplates = children.size ? this.nest(children, registry, childValues, wrapperFieldInstance) : []
             innerTemplates.push(fieldInstance.item(childTemplates))
-          }  
+          }
+
+          if (!applicableValues.length) {
+            console.log(field)
+          }
+
         }
 
         /**
          * New items
          */
         else {
-          const childTemplates = children.size ? this.nest(children, registry, []) : []
+          const childTemplates = children.size ? this.nest(children, registry, [], wrapperFieldInstance) : []
           innerTemplates.push(wrapperFieldInstance.item(childTemplates))
         }
       }
@@ -104,7 +115,7 @@ export class Renderer extends EventTarget implements CoreComponent {
        * Containers and other UI components
        */
       else if (isContainer || isUiComponent) {
-        const childTemplates = children.size ? this.nest(children, registry, formData) : []
+        const childTemplates = children.size ? this.nest(children, registry, formData, wrapperFieldInstance) : []
         innerTemplates.push(wrapperFieldInstance.item(childTemplates))
       }
 

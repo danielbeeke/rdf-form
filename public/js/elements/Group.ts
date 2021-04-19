@@ -3,6 +3,11 @@ import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
 
 export class Group extends ElementBase {
 
-  input () { return html`` }
-
+  item (childTemplates: Array<typeof html> = []) {
+    return html`
+    <div class="item">
+    ${childTemplates}
+      ${this.removeButton()}
+    </div>`
+  }
 }

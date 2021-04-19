@@ -24,6 +24,7 @@ export class RdfForm2 extends HTMLElement implements CoreComponent {
     this.registry = new Registry()
     this.renderer = new Renderer(this)
     this.language = Language
+    this.language.init(this)
     this.comunica = Comunica.newEngine()
     this.comunica.httpProxyHandler = this.getAttribute('proxy')
 

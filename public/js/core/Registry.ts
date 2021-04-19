@@ -18,6 +18,7 @@ export class Registry extends EventTarget implements CoreComponent {
       './Wrapper',
       './Reference',
       './Dropdown',
+      './Checkbox',
       './LanguagePicker',
       './Unknown',
     ]))
@@ -47,9 +48,9 @@ export class Registry extends EventTarget implements CoreComponent {
     this.dispatchEvent(new CustomEvent('ready'))
   }
 
-  setupElement (definition, bindings: Array<string>, value = null, index = 0, render = () => null, comunica: any): ElementInstance {
+  setupElement (definition, bindings: Array<string>, value = null, index = 0, render = () => null, comunica: any, parent): ElementInstance {
     const widget = this.fieldClasses.has(definition['form:widget']._) ? definition['form:widget']._ : 'unknown'
     const elementClass = this.fieldClasses.get(widget)
-    return new elementClass(definition, bindings, value, index, render, comunica)
+    return new elementClass(definition, bindings, value, index, render, comunica, parent)
   }
 }

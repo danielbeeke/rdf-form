@@ -1,9 +1,11 @@
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
+import { faTimes, faPlus } from 'https://unpkg.com/@fortawesome/free-solid-svg-icons?module'
 import { kebabize } from '../helpers/kebabize'
 import { attributesDiff } from '../helpers/attributesDiff'
 import { getUriMeta } from '../helpers/getUriMeta'
-import { t, Language } from '../core/Language'
+import { t } from '../core/Language'
 import { lastPart } from '../helpers/lastPart'
+import { fa } from '../helpers/fa'
 
 export class ElementBase extends EventTarget {
 
@@ -11,6 +13,7 @@ export class ElementBase extends EventTarget {
   protected bindings: Array<string>
   protected value: any
   protected values: any
+  public parent: any
   protected jsonldKey = 'value'
   protected comunica: any
   public render = () => null 
@@ -33,7 +36,7 @@ export class ElementBase extends EventTarget {
 
   constructor (...args: any[]) {
     super()
-    const [ definition, bindings, value, index, render, comunica ] = args
+    const [ definition, bindings, value, index, render, comunica, parent ] = args
 
     this.definition = definition
     this.bindings = bindings
@@ -43,6 +46,7 @@ export class ElementBase extends EventTarget {
     this.value = value ? value[mainBinding][index] : null
     this.render = render
     this.comunica = comunica
+    this.parent = parent
   }
 
   async on (event) {
@@ -66,6 +70,7 @@ export class ElementBase extends EventTarget {
           ${innerTemplates}
         </div>
       ` : ''}
+      ${this.definition['form:multiple']?._ ? html`<div>${this.addButton()}</div>` : html``}
     </div>`
   }
 
@@ -77,7 +82,41 @@ export class ElementBase extends EventTarget {
     </div>`
   }
 
+  addButton () {
+    return html`<button type="button" class="button add" onclick="${() => {
+      const valueArray = this.values[this.definition['form:binding']?._]?.$
+
+      console.log(this.values)
+
+      if (valueArray) {
+        valueArray.push({})
+        console.log(valueArray)
+      }
+
+      this.render();
+    }}">
+      ${fa(faPlus)}
+    </button>`
+  }
+
+  removeButton () {
+    return html`<button type="button" class="button remove" onclick="${() => {
+      const valueArray = this.values[this.definition['form:binding']?._]?.$
+
+      if (valueArray) {
+        const index = valueArray.indexOf(this.value.$)
+        valueArray.splice(index, 1)  
+      }
+
+      this.render();
+    }}">
+      ${fa(faTimes)}
+    </button>`
+  }
+
   input () {
+    const parentIsGroup = this.parent?.definition?.['form:widget']?._ === 'group'
+
     return html`
       <input 
         ref=${attributesDiff(this.attributes)} 
@@ -85,6 +124,8 @@ export class ElementBase extends EventTarget {
         onchange=${(event) => this.on(event)}
         onkeyup=${(event) => this.on(event)}
       />
+
+      ${parentIsGroup ? html`` : this.removeButton()}
     `
   }
 

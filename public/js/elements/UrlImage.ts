@@ -1,6 +1,7 @@
 import { ElementBase } from './ElementBase'
 import { getImageDimensionsByUrl } from '../helpers/getImageDimensionsByUrl'
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
+import { attributesDiff } from '../helpers/attributesDiff'
 
 export class UrlImage extends ElementBase {
 
@@ -38,7 +39,6 @@ export class UrlImage extends ElementBase {
 
   input () {
     let image
-    const input = super.input()
     const focalPointEnabled = this.definition['form:focalPoint']?.length > 0
     
     const onmousedown = (event: MouseEvent) => {      
@@ -78,7 +78,13 @@ export class UrlImage extends ElementBase {
     }
 
     return html`
-      ${input}
+      <input 
+        ref=${attributesDiff(this.attributes)} 
+        .value=${this.value?._ ?? ''} 
+        onchange=${(event) => this.on(event)}
+        onkeyup=${(event) => this.on(event)}
+      />
+
       ${this.value?._ ? 
         focalPointEnabled ? 
         html`

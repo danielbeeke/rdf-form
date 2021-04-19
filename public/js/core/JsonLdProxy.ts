@@ -1,7 +1,7 @@
 import { lastPart } from '../helpers/lastPart'
 import { Language } from './Language'
 
-export const JsonLdProxy = (data, context) => {
+export const JsonLdProxy = (data, context, type = 'l10n') => {
   if (typeof data !== 'object') return data
 
   const convertProp = (prop) => {
@@ -20,7 +20,7 @@ export const JsonLdProxy = (data, context) => {
       prop = convertProp(prop)
       if (prop === '$') return target
       if (prop === 'isProxy') return true
-      if (prop === '_') return Language.multilingualValue(target)
+      if (prop === '_') return Language.multilingualValue(target, type)
       if (prop[0] === '*') {
         const lastPartToFind = prop.toString().substr(1)
         for (const key of Object.keys(target)) {
@@ -33,17 +33,17 @@ export const JsonLdProxy = (data, context) => {
       const isOurProperty = !Reflect.has({}, prop) && !Reflect.has([], prop) && Reflect.has(target, prop)
 
       if (target[prop]?.[0]?.['@list'] && isOurProperty) {
-        return JsonLdProxy(target[prop][0]['@list'], context)
+        return JsonLdProxy(target[prop][0]['@list'], context, type)
       }
 
       if (isOurProperty) {
-        return JsonLdProxy(target[prop], context)
+        return JsonLdProxy(target[prop], context, type)
       }
 
       if (['filter'].includes(prop.toString())) {
         const requestedMethod = Reflect.get(target, prop, receiver)
         return (...input) => {
-          return requestedMethod.apply(target.map(item => JsonLdProxy(item, context)), input)
+          return requestedMethod.apply(target.map(item => JsonLdProxy(item, context, type)), input)
         }
       }
 

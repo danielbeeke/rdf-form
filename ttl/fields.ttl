@@ -5,7 +5,8 @@
 
 []
     a schema:Thing ;
-    schema:name "Soup recipe" ;
+    schema:name "Soup recipe"@en ;
+    schema:name "Soep recept"@nl ;
     recipe:ingredients ( [ recipe:ingredient      <http://dbpedia.org/resource/Tomato> ;
                          recipe:measurementUnit <https://www.wikidata.org/wiki/Q11582> ;
                          recipe:quantity        1 ; ] 

@@ -63,7 +63,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   }
 
   async resolveSubForms () {
-    const resolvedFormDefinition = JsonLdProxy(JSON.parse(JSON.stringify(this.sourceDefinitionExpanded)), this.context)
+    const resolvedFormDefinition = JsonLdProxy(JSON.parse(JSON.stringify(this.sourceDefinitionExpanded)), this.context, 'ui')
     const fields = resolvedFormDefinition.filter(only('Field'))
 
     for (const field of fields) {
@@ -75,7 +75,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
         const subformResponse = await fetch(subformUrl[0]['@id'])
         const subformTurtle = await subformResponse.text()
         const subformDefinitionCompacted = ttl2jsonld(subformTurtle)
-        const subformDefinitionExpanded = JsonLdProxy(await JsonLdProcessor.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context']);
+        const subformDefinitionExpanded = JsonLdProxy(await JsonLdProcessor.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context'], 'ui');
         const subFormfields = subformDefinitionExpanded.filter(only('Field'))
 
         Object.assign(this.context, subformDefinitionCompacted['@context'])
@@ -103,7 +103,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     const recursiveChainCreator = (fields) => {
       const chain = new Map()
 
-      fields.sort((a, b) => a['form:order']?._ ?? 0 - b['form:order']?._ ?? 0)
+      fields.sort((a, b) => (a['form:order']?._ ?? 0) - (b['form:order']?._ ?? 0))
 
       for (const field of fields) {
         const fieldBindings = this.getBindingsOfField(field)
