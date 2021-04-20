@@ -67,7 +67,7 @@ export class Renderer extends EventTarget implements CoreComponent {
       let wrapperFieldInstance = isUiComponent ? this.fieldInstances.get(field.$) : false
       
       if (!wrapperFieldInstance) wrapperFieldInstance = registry.setupElement(
-        field, bindings, null, formData, null, () => this.render(), this.form.comunica, parent
+        field, bindings, null, formData, () => this.render(), parent
       )
 
       if (!this.fieldInstances.has(field.$)) this.fieldInstances.set(field.$, wrapperFieldInstance)
@@ -85,7 +85,7 @@ export class Renderer extends EventTarget implements CoreComponent {
         if (applicableValues.length) {
           for (const [index, value] of applicableValues) {
             const fieldInstance = this.fieldInstances.get(value.$) ?? registry.setupElement(
-              field, bindings, value, formData, index, () => this.render(), this.form.comunica, parent
+              field, bindings, value, formData, () => this.render(), parent
             )
             if (!this.fieldInstances.has(value.$)) this.fieldInstances.set(value.$, fieldInstance)
 

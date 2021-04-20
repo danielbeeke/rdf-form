@@ -9,13 +9,13 @@ import { I18n } from './i18n'
  */
 
 export const getLanguageLabel = async (langCode) => {
-  const language = languages.find(language => language.subtag === langCode)
-  return language?.description ?? langCode
+  const language = languages.find(language => language[0] === langCode)
+  return language[1] ?? langCode
 }
 
 export const filterLanguages = async (search) => {
   if (!search) return []
-  return languages.filter(language => language.description.toLowerCase().includes(search.toLowerCase()))
+  return languages.filter(language => language[1].toLowerCase().includes(search.toLowerCase()))
 }
 
 export const langCodesToObject = async (langCodes: Array<string>) => {

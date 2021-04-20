@@ -5,7 +5,6 @@ import { Renderer } from './core/Renderer'
 import { Language, LanguageService } from './core/Language'
 import { CoreComponent } from './types/CoreComponent'
 import { expandProxiesInConsole } from './core/Debug'
-import { Comunica } from './vendor/comunica-browser.js'
 
 export class RdfForm extends HTMLElement implements CoreComponent {
   public formDefinition: FormDefinition
@@ -15,8 +14,8 @@ export class RdfForm extends HTMLElement implements CoreComponent {
   private language: LanguageService
   public ready: boolean = false
   public shadow: any
-  public comunica: any
-
+  public proxy: string = null
+  
   connectedCallback () {
     this.shadow = this.attachShadow({ mode: 'open' })
     this.formDefinition = new FormDefinition(this.getAttribute('form'))
@@ -25,8 +24,7 @@ export class RdfForm extends HTMLElement implements CoreComponent {
     this.renderer = new Renderer(this)
     this.language = Language
     this.language.init(this)
-    this.comunica = Comunica.newEngine()
-    this.comunica.httpProxyHandler = this.getAttribute('proxy')
+    this.proxy = this.getAttribute('proxy')
 
     if (this.getAttribute('debug') !== null) expandProxiesInConsole()
 

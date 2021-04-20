@@ -1,5 +1,5 @@
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
-import { faTimes, faPlus } from 'https://unpkg.com/@fortawesome/free-solid-svg-icons?module'
+import { faTimes, faPlus } from '../helpers/icons'
 import { kebabize } from '../helpers/kebabize'
 import { attributesDiff } from '../helpers/attributesDiff'
 import { getUriMeta } from '../helpers/getUriMeta'
@@ -37,7 +37,7 @@ export class ElementBase extends EventTarget {
 
   constructor (...args: any[]) {
     super()
-    const [ definition, bindings, value, parentValues, index, render, comunica, parent ] = args
+    const [ definition, bindings, value, parentValues, render, parent ] = args
 
     this.definition = definition
     this.bindings = bindings
@@ -46,7 +46,6 @@ export class ElementBase extends EventTarget {
     this.parentValues = parentValues
     this.value = value
     this.render = render
-    this.comunica = comunica
     this.parent = parent
   }
 

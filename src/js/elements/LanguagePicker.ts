@@ -27,8 +27,8 @@ export class LanguagePicker extends ElementBase {
           const languages = await filterLanguages(search)
           const options = languages.map(language => {
             return {
-              text: Language.l10nLanguages?.[language.subtag] ?? language.description,
-              value: language.subtag,
+              text: Language.l10nLanguages?.[language[0]] ?? language[1],
+              value: language[0],
             }
           })
 

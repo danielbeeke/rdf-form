@@ -1,19 +1,27 @@
 import { ElementBase } from './ElementBase'
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
 import { fa } from '../helpers/fa'
-import { faPencilAlt, faCheck, faReply } from 'https://unpkg.com/@fortawesome/free-solid-svg-icons?module'
+import { faPencilAlt, faCheck, faReply } from '../helpers/icons'
 import { searchSuggestionsSparqlQuery } from '../helpers/searchSuggestionsSparqlQuery'
 import { dbpediaSuggestions } from '../helpers/dbpediaSuggestions'
 import { sparqlQueryToList } from '../helpers/sparqlQueryToList'
 import { t, Language } from '../core/Language'
 import { attributesDiff } from '../helpers/attributesDiff'
+import { debounce } from '../helpers/debounce'
 
+
+      
 export class Reference extends ElementBase {
 
   protected jsonldKey = 'id'
   protected expanded = false
   protected searchTerm = null
   protected previousValue = null
+
+  constructor (...args) {
+    super(...args)
+    this.autocomplete = debounce(this.autocomplete.bind(this), 400)
+  }
 
   async on (event) {
     if (['keyup', 'change'].includes(event.type)) {
@@ -23,32 +31,36 @@ export class Reference extends ElementBase {
       }
       else if (this.definition['form:autoCompleteQuery']?._) {
         this.searchTerm = event.target.value
-
-        const querySetting = this.definition['form:autoCompleteQuery']?._
-        const sourceSetting = this.definition['form:autoCompleteSource']?._
-
-        const {
-          query,
-          source
-        } = querySetting || sourceSetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, this.searchTerm) : dbpediaSuggestions(this.searchTerm)
-
-        if (query && source) {
-          sparqlQueryToList(query, source, this.comunica).then(searchSuggestions => {
-            searchSuggestions.push({
-              label: t`Add <strong>${{searchTerm: this.searchTerm}}</strong> as text without reference.`,
-              value: this.searchTerm
-            })
-
-            this.suggestions = searchSuggestions
-            this.render()
-          }).catch(exception => {
-            console.error(exception)
-            this.searchTerm = null
-            this.suggestions = []
-            this.render()
-          })
-        }
+        this.autocomplete()
       }
+    }
+  }
+
+  autocomplete () {
+    if (!this.searchTerm) return
+    const querySetting = this.definition['form:autoCompleteQuery']?._
+    const sourceSetting = this.definition['form:autoCompleteSource']?._
+
+    const {
+      query,
+      source
+    } = querySetting || sourceSetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, this.searchTerm) : dbpediaSuggestions(this.searchTerm)
+
+    if (query && source) {
+      sparqlQueryToList(query, source).then(searchSuggestions => {
+        searchSuggestions.push({
+          label: t`Add <strong>${{searchTerm: this.searchTerm}}</strong> as text without reference.`,
+          value: this.searchTerm
+        })
+
+        this.suggestions = searchSuggestions
+        this.render()
+      }).catch(exception => {
+        console.error(exception)
+        this.searchTerm = null
+        this.suggestions = []
+        this.render()
+      })
     }
   }
 
