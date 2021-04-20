@@ -1,22 +1,14 @@
 {
   "compilerOptions": {
-    "sourceMap": true,
-    "noImplicitAny": false,
-    "module": "commonjs",
-    "target": "es6",
-    "lib": [
-      "es2015",
-      "es2017",
-      "es2019",
-      "dom"
-    ],
-    "removeComments": true,
-    "allowSyntheticDefaultImports": false,
-    "allowJs": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "node",
     "baseUrl": "./",
-    "paths": {}
-  },
-  "exclude": [
-    "**/*.spec.js"
-  ]
+    "allowSyntheticDefaultImports": true,
+    "importsNotUsedAsValues": "error",
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
 }

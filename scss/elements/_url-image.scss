@@ -19,7 +19,7 @@
   .focal-point {
     pointer-events: none;
     position: absolute;
-    border-image: url('/focal-point.svg') 13 / 35px / 0 space;
+    border-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxuczpzdmc9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMCIgaGVpZ2h0PSIzMCIgdmlld0JveD0iMCAwIDcuOSA3LjkiIHZlcnNpb249IjEuMSI+CjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsLTI4OS4wNjI0OCkiPgo8cGF0aCBkPSJNMi44IDI4OS4ySDEuMmMtMC42IDAtMSAwLjQtMSAxdjEuN203LjcgMHYtMS43YzAtMC41LTAuNS0xLTEtMUg1LjFtLTUgNXYxLjdjMCAwLjUgMC41IDEgMSAxaDEuNm0yLjMgMGgxLjZjMC42IDAgMS0wLjQgMS0xdi0xLjciIHN0eWxlPSJmaWxsOm5vbmU7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS13aWR0aDowLjM7c3Ryb2tlOndoaXRlIi8+PC9nPjwvc3ZnPg==") 13 / 35px / 0 space;
     mix-blend-mode: difference;
     filter: saturate(100%) contrast(200%);
 

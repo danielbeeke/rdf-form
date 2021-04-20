@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/png" href="/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>RDF Form</title>
     <script type="module" src="/js/RdfForm.js"></script>
@@ -10,18 +9,17 @@
 <body>
 
 <rdf-form
-    hide-language-control
+    debug1
     id="my-form"
-    data="/list.ttl"
-    form="/person.form.ttl"
-
+    data="/fields.ttl"
+    form="/fields.form.ttl"
 >
 </rdf-form>
 
 <script>
   const myForm = document.querySelector('#my-form')
-  myForm.addEventListener('save', (event) => {
-    // console.log(event.detail)
+  myForm.addEventListener('submit', (event) => {
+    console.log(event.detail)
   })
 </script>
 

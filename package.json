@@ -23,7 +23,6 @@
     "rdf-store-stream": "^1.0.1",
     "tinyduration": "^3.2.0"
   },
-  "types": "dist/types/index.d.ts",
   "devDependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/free-regular-svg-icons": "^5.15.1",

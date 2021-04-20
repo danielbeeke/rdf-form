@@ -1,6 +1,7 @@
 module.exports = {
   "mount": {
-    "public": "/",
+    "src": "/",
+    "html": "/",
     "scss": "/css",
     "ttl": "/"
   },
