@@ -5,6 +5,7 @@ export class Checkbox extends ElementBase {
 
   async on (event) {
     if (['click'].includes(event.type)) {
+      if (!this.value) await this.addItem()
       this.value[`@${this.jsonldKey}`] = event.target.checked
     }
   }

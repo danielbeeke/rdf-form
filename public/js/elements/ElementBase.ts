@@ -59,7 +59,7 @@ export class ElementBase extends EventTarget {
 
   async addItem () {
     const value = { [`@${this.jsonldKey}`]: null }
-    const fieldLanguages = this.parentValues ? await Language.extractUsedLanguages(this.parentValues) : []
+    const fieldLanguages = this.parentValues?.[this.mainBinding] ? await Language.extractUsedLanguages(this.parentValues) : []
     if (fieldLanguages.length) value['@language'] = Language.l10nLanguage
     if (!this.parentValues[this.mainBinding]) this.parentValues[this.mainBinding] = []
     this.parentValues?.[this.mainBinding].push(value)

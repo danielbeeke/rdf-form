@@ -17,6 +17,7 @@ export class Reference extends ElementBase {
 
   async on (event) {
     if (['keyup', 'change'].includes(event.type)) {
+      if (!this.value) await this.addItem()
       if (event.target.value.substr(0, 4) === 'http') {
         this.value[`@${this.jsonldKey}`] = event.target.value
       }

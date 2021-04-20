@@ -61,13 +61,18 @@ export class Renderer extends EventTarget implements CoreComponent {
     for (const [bindings, [field, children]] of formDefinition.entries()) {
       const mainBinding = field['form:binding']?._
 
-      const wrapperFieldInstance = registry.setupElement(
+      const isContainer = lastPart(field['@type'][0]) === 'Container'
+      const isUiComponent = lastPart(field['@type'][0]) === 'UiComponent'
+
+      let wrapperFieldInstance = isUiComponent ? this.fieldInstances.get(field.$) : false
+      
+      if (!wrapperFieldInstance) wrapperFieldInstance = registry.setupElement(
         field, bindings, null, formData, null, () => this.render(), this.form.comunica, parent
       )
 
+      if (!this.fieldInstances.has(field.$)) this.fieldInstances.set(field.$, wrapperFieldInstance)
+
       const innerTemplates = []
-      const isContainer = lastPart(field['@type'][0]) === 'Container'
-      const isUiComponent = lastPart(field['@type'][0]) === 'UiComponent'
 
       if (mainBinding) {
 

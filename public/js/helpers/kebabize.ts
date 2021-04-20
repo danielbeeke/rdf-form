@@ -1,7 +1,8 @@
 export const kebabize = str => {
-  return str.split('').map((letter, idx) => {
+  if (str.split('').every(letter => letter.toUpperCase() === letter)) return str.toLowerCase()
+  return str.split('').map((letter, index) => {
     return letter.toUpperCase() === letter
-     ? `${idx !== 0 ? '-' : ''}${letter.toLowerCase()}`
+     ? `${index !== 0 ? '-' : ''}${letter.toLowerCase()}`
      : letter;
   }).join('');
 }

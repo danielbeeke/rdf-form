@@ -19,6 +19,13 @@ export class Registry extends EventTarget implements CoreComponent {
       './Reference',
       './Dropdown',
       './Checkbox',
+      './Color',
+      './Mail',
+      './Url',
+      './Date',
+      './Textarea',
+      './Password',
+      './WYSIWYG',
       './LanguagePicker',
       './Unknown',
     ]))

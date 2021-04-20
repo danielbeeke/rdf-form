@@ -9,6 +9,7 @@ export class Number extends ElementBase {
 
   async on (event) {
     if (['keyup', 'change'].includes(event.type)) {
+      if (!this.value) await this.addItem()
       this.value[`@${this.jsonldKey}`] = parseInt(event.target.value)
     }
   }

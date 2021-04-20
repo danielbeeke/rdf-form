@@ -34,7 +34,7 @@ fieldsForm:languagePicker
 
 fieldsForm:abstract
     a                 form:Field ;
-    form:widget  "string" ;
+    form:widget  "wysiwyg" ;
     form:label        "Abstract" ;
     form:binding      schema:abstract ;
     form:order        0 ;
