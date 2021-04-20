@@ -1,4 +1,4 @@
-import { Language } from '../LanguageService'
+import { Language } from '../core/Language'
 
 /**
  *
@@ -31,11 +31,11 @@ import { Language } from '../LanguageService'
   }
 
   if (typeof source === 'string') {
-    source = source.replace(/LANGUAGE/g, Language.current)
+    source = source.replace(/LANGUAGE/g, Language.uiLanguage)
     source = source.replace(/SEARCH_TERM/g, querySearchTerm)
   }
 
-  query = query.replace(/LANGUAGE/g, Language.current)
+  query = query.replace(/LANGUAGE/g, Language.uiLanguage)
   query = query.replace(/SEARCH_TERM/g, querySearchTerm)
 
   return { query, source }

@@ -44,7 +44,7 @@ form:label
     rdfs:comment "The label to display above the field."@en ;
     rdfs:label   "Label text"@en .
 
-form:fieldWidget
+form:widget
     rdf:type   rdf:Property ;
     rdfs:comment
                "The field widget, the widget that will be displayed. It may be a dropdown, radios, a map to select a location or something else. You can also implement your own."@en ;

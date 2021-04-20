@@ -10,7 +10,7 @@
 
 personForm:image
     a                   form:Field ;
-    form:fieldWidget    "url-image" ;
+    form:widget    "url-image" ;
     form:label          "Image"@en ;
     form:label          "Afbeelding"@nl ;
     form:innerBinding   schema:url ;

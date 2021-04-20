@@ -10,7 +10,7 @@
 
 personForm:name
     a                 form:Field ;
-    form:fieldWidget  "string" ;
+    form:widget  "string" ;
     form:label        "Name"@en ;
     form:label        "Naam"@nl ;
     form:binding      schema:name ;
@@ -20,7 +20,7 @@ personForm:name
 
 personForm:givenName
     a                 form:Field ;
-    form:fieldWidget  "string" ;
+    form:widget  "string" ;
     form:label        "First name"@en ;
     form:label        "Voornaam"@nl ;
     form:binding      schema:givenName ;
@@ -30,7 +30,7 @@ personForm:givenName
 
 personForm:familyName
     a                 form:Field ;
-    form:fieldWidget  "string" ;
+    form:widget  "string" ;
     form:label        "Last name"@en ;
     form:label        "Achternaam"@nl ;
     form:binding      schema:familyName ;
@@ -40,7 +40,7 @@ personForm:familyName
 
 personForm:image
     a                   form:Field ;
-    form:fieldWidget    "url-image" ;
+    form:widget    "url-image" ;
     form:label          "Image"@en ;
     form:label          "Afbeelding"@nl ;
     form:innerBinding   schema:url ;

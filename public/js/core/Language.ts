@@ -1,5 +1,7 @@
 import { CoreComponent } from '../types/CoreComponent'
 import { languages } from '../languages'
+import { I18n } from './i18n'
+
 /**
  * Fetches languages according to BCP47
  *
@@ -30,8 +32,6 @@ export const langCodesToObject = async (langCodes: Array<string>) => {
  * Using it as template literal with t`Lorem Ipsum` returns a Hole for uHtml,
  * Using t.direct('Lorem Ipsum') returns a string.
  */
-
- import { I18n } from './i18n'
 
  let currentUiLanguage = 'en'
  let currentL10nLanguage: string

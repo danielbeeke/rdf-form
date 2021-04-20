@@ -1,4 +1,4 @@
-import { Language } from '../LanguageService'
+import { Language } from '../core/Language'
 
 /**
  * @param query
@@ -9,7 +9,7 @@ import { Language } from '../LanguageService'
   const config = { httpProxyHandler: comunica.httpProxyHandler }
 
   // TODO maybe use tokens that will less likely collide.
-  query = query.toString().replace(/LANGUAGE/g, Language.current)
+  query = query.toString().replace(/LANGUAGE/g, Language.uiLanguage)
   if (typeof source === 'object' && source instanceof String) source = source.toString()
 
   const result = await comunica.query(query, Object.assign({ sources: [source] }, config));

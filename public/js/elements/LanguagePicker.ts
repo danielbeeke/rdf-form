@@ -1,7 +1,7 @@
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
 import { ElementBase } from './ElementBase'
 import { Language, t } from '../core/Language'
-import { langCodesToObject, filterLanguages } from '../getLanguageLabel'
+import { langCodesToObject, filterLanguages } from '../core/Language'
 import { SlimSelect } from '../vendor/slimselect.js'
 
 export class LanguagePicker extends ElementBase {

@@ -1,4 +1,4 @@
-import { Language } from '../LanguageService'
+import { Language } from '../core/Language'
 
 /**
  * @param searchTerm
@@ -20,7 +20,7 @@ import { Language } from '../LanguageService'
       ?uri rdfs:label ?label .
       ?uri dbo:thumbnail ?image .
       ?label bif:contains '"${querySearchTerm}"' .
-      ${Language.current ? `filter langMatches(lang(?label), "${Language.current}")` : ''}
+      ${Language.uiLanguage ? `filter langMatches(lang(?label), "${Language.uiLanguage}")` : ''}
     }
 
     LIMIT 10`

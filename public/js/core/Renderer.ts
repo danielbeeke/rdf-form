@@ -5,14 +5,14 @@ import { ElementInstance } from '../types/ElementInstance'
 import { Registry } from './Registry'
 import { lastPart } from '../helpers/lastPart'
 import { t, Language } from './Language'
-import { RdfForm2 } from '../RdfForm2'
+import { RdfForm } from '../RdfForm'
 
 export class Renderer extends EventTarget implements CoreComponent {
   public ready: boolean = false
   private fieldInstances: Map<object, ElementInstance> = new Map()
-  protected form: RdfForm2
+  protected form: RdfForm
 
-  constructor (rdfForm: RdfForm2) {
+  constructor (rdfForm: RdfForm) {
     super()
     this.init()
     this.form = rdfForm
