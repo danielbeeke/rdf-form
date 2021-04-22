@@ -87,7 +87,7 @@ export class ElementBase extends EventTarget {
     const type = kebabize(this.constructor.name)
 
     return html`
-    <div ref=${attributesDiff(this.wrapperAttributes)} type="${type}">
+    <div ref=${attributesDiff(this.wrapperAttributes)} name=${kebabize(lastPart(this.definition['@id']))} type="${type}">
       ${this.label()}
       ${innerTemplates.length ? html`
         <div class="items">
@@ -142,6 +142,25 @@ export class ElementBase extends EventTarget {
     `
   }
 
+  disableLanguage () {
+    const values = this.parentValues[this.mainBinding]
+    if (values) {
+      values.splice(1)
+      delete values[0]['@language']  
+    }
+  }
+
+  enableLanguage() {
+    if (!this.parentValues[this.mainBinding]) this.parentValues[this.mainBinding] = this.parentValues[this.mainBinding] = []
+    const values = this.parentValues[this.mainBinding]
+    if (values.length) {
+      values[0]['@language'] = Language.l10nLanguage
+    }
+    else {
+      values.push({ '@language': Language.l10nLanguage })
+    }
+  }
+
   async label () {
     let languageLabel = ''
 
@@ -161,15 +180,12 @@ export class ElementBase extends EventTarget {
     }
 
     const disableLanguage = () => {
-      const values = this.parentValues[this.mainBinding]
-      values.splice(1)
-      delete values[0]['@language']
+      this.disableLanguage()
       this.render()
     }
 
     const enableLanguage = () => {
-      const values = this.parentValues[this.mainBinding]
-      values[0]['@language'] = Language.l10nLanguage
+      this.enableLanguage()
       this.render()
     }
 

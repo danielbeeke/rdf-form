@@ -1,0 +1,14 @@
+.form-element[type="container"] {
+  > .items {
+    padding: 0;
+    background: none;
+
+    > .item {
+      padding: 0;
+
+      .form-element {
+        flex: 1 1 30%;
+      }
+    }
+  }
+}

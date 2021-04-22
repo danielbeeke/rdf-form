@@ -4,5 +4,8 @@ export const attributesDiff = attributes => node => {
       const attributeValue = Array.isArray(attributes[key]) ? attributes[key].join(' ') : attributes[key]
       if (typeof attributeValue !== 'string' || attributeValue.trim()) node.setAttribute(key, attributeValue)
     }
+    else {
+      node.removeAttribute(key)
+    }
   }
 };

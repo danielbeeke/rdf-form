@@ -12,16 +12,22 @@
     form:binding schema:Thing ;
     a            form:Form .
 
+recipeForm:languageWrapper
+    a                 form:Container ;
+    form:widget       "container" .
+    
 recipeForm:language
     a                 form:UiComponent ;
     form:widget       "language-picker" ;
     form:label        "Content language"@en ;
+    form:container        "languageWrapper" ;
     form:label        "Inhoudstaal"@nl .
 
 recipeForm:uiLanguage
     a                 form:UiComponent ;
     form:widget       "ui-language-switcher" ;
     form:label        "Interface language"@en ;
+    form:container    "languageWrapper" ;
     form:label        "Interfacetaal"@nl .
 
 recipeForm:title

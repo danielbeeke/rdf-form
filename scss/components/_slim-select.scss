@@ -100,7 +100,7 @@
 
   .ss-multi-selected {
     display: flex;
-    min-height: 41px;
+    min-height: 33px;
     flex-direction: row;
     border: solid 1px var(--color-gray);
     background: white;
@@ -160,7 +160,7 @@
         align-items: center;
         font-size: 12px;
         padding: 3px 6px;
-        margin: 3px 5px 3px 0;
+        margin: 2px 5px 2px 0;
         color: var(--text);
         background-color: var(--color-gray);
         border-radius: var(--radius);
@@ -349,3 +349,17 @@
     }
   }
 }
+
+.ss-value-delete {
+  svg {
+    position: relative;
+    top: 2px;
+    margin-top: -4px;
+    width: 8px !important;
+
+    path {
+      fill: var(--color-text);
+    }
+  }    
+}
+

@@ -3,6 +3,8 @@ import { ElementBase } from './ElementBase'
 import { Language, t } from '../core/Language'
 import { langCodesToObject, filterLanguages } from '../core/Language'
 import { SlimSelect } from '../vendor/slimselect.js'
+import { faTimes } from '../helpers/icons'
+import { icon } from '../vendor/fontawesome-svg-core.js'
 
 export class LanguagePicker extends ElementBase {
 
@@ -23,6 +25,7 @@ export class LanguagePicker extends ElementBase {
 
       const slimSelect = new SlimSelect({
         select: select,
+        deselectLabel: icon(faTimes).html[0],
         ajax: async function (search, callback) {
           const languages = await filterLanguages(search)
           const options = languages.map(language => {
