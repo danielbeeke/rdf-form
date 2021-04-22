@@ -5,16 +5,15 @@
   cursor: pointer;
   border: none;
 
-  &.save,
-  &.add {
+  &.primary {
     background: var(--color-primary);
   }
 
-  &.edit {
+  &.secondary {
     background: var(--color-secondary);
   }
 
-  &.remove {
+  &.danger {
     background: var(--color-danger);
     color: white;
 
@@ -26,14 +25,6 @@
   svg {
     display: block;
     pointer-events: none;
-  }
-
-  .svg-inline--fa {
-    &.fa-w-8 { width: 8px; }
-    &.fa-w-10 { width: 10px; }
-    &.fa-w-11 { width: 11px; }
-    &.fa-w-14 { width: 14px; }
-    &.fa-w-16 { width: 16px; }
   }
 
   &.is-working {
@@ -69,5 +60,14 @@
   }
   100% {
     background-position: 50px 50px;
+  }
+}
+
+.icon-button  {
+  cursor: pointer;
+
+  svg {
+    position: relative;
+    top: 3px;
   }
 }

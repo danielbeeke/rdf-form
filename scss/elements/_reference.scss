@@ -40,29 +40,15 @@
     }
 
     .button {
-      padding: 5px;
+      &:not(:last-child):not(.remove) {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+    }
 
-      &.accept {
+    * + .button {
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
-      }
-
-      &.edit {
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-      }
-
-      &.back {
-        background-color: var(--color-gray-light);
-        border-top-left-radius: 0;
-        border-bottom-left-radius: 0;
-      }
-
-      &.accept + .back {
-        margin-left: 10px;
-        border-top-left-radius: var(--radius);
-        border-bottom-left-radius: var(--radius);
-      }
     }
   }
 
@@ -84,7 +70,7 @@
     align-items: center;
     height: 35px;
 
-    a {
+    a, span {
       margin-left: 10px;
     }
 

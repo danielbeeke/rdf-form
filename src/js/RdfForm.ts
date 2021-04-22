@@ -16,11 +16,38 @@ export class RdfForm extends HTMLElement implements CoreComponent {
   public shadow: any
   public proxy: string = null
   
+  constructor () {
+    super()
+    this.addEventListener('register-elements', (event: CustomEvent) => event.detail.fields.push(...[
+      './Group', 
+      './Container', 
+      './String',
+      './Number',
+      './Details',
+      './UrlImage',
+      './Wrapper',
+      './Reference',
+      './Dropdown',
+      './Checkbox',
+      './Color',
+      './Mail',
+      './Url',
+      './Date',
+      './Textarea',
+      './Password',
+      './WYSIWYG',
+      './LanguagePicker',
+      './UiLanguageSwitcher',
+      './Unknown',
+    ]))
+  }
+
   connectedCallback () {
+    if (this.shadow) return
     this.shadow = this.attachShadow({ mode: 'open' })
     this.formDefinition = new FormDefinition(this.getAttribute('form'))
     this.formData = new RdfFormData(this.getAttribute('data'))
-    this.registry = new Registry()
+    this.registry = new Registry(this)
     this.renderer = new Renderer(this)
     this.language = Language
     this.language.init(this)
@@ -41,6 +68,7 @@ export class RdfForm extends HTMLElement implements CoreComponent {
         if (components.every(component => component.ready) && !this.ready) {
           this.ready = true
           this.renderer.render()
+          this.dispatchEvent(new CustomEvent('ready'))
         }
       })
     }

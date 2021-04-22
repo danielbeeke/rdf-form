@@ -1,40 +1,23 @@
 import { CoreComponent } from '../types/CoreComponent'
 import { kebabize } from '../helpers/kebabize'
 import { ElementInstance } from '../types/ElementInstance'
+import { RdfForm } from '../RdfForm'
 
 export class Registry extends EventTarget implements CoreComponent {
 
   public ready: boolean = false
   private fieldClasses = new Map()
+  private form: RdfForm
 
-  constructor () {
+  constructor (rdfForm: RdfForm) {
     super()
-    this.addEventListener('listening', (event: CustomEvent) => event.detail.fields.push(...[
-      './Group', 
-      './String',
-      './Number',
-      './Details',
-      './UrlImage',
-      './Wrapper',
-      './Reference',
-      './Dropdown',
-      './Checkbox',
-      './Color',
-      './Mail',
-      './Url',
-      './Date',
-      './Textarea',
-      './Password',
-      './WYSIWYG',
-      './LanguagePicker',
-      './Unknown',
-    ]))
+    this.form = rdfForm
     this.init()
   }
 
   async init () {
-    const event = new CustomEvent('listening', { detail: { fields: [] } })
-    this.dispatchEvent(event)
+    const event = new CustomEvent('register-elements', { detail: { fields: [] } })
+    this.form.dispatchEvent(event)
     const { fields } = event.detail
 
     // Relative fields may be noted with './'. In fact they are in a different folder but this looks better I think.

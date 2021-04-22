@@ -48,26 +48,27 @@ export class LanguageService extends EventTarget implements CoreComponent {
 
   async init (rdfForm) {
     await this.setUiLanguage('en')
-
-    rdfForm.formData.addEventListener('ready', async () => {
+    const continueInit = async () => {
       const usedLanguages = await this.extractUsedLanguages(rdfForm.formData.proxy)
 
       const defaultLanguages = JSON.parse(rdfForm.getAttribute('languages')) ?? (
         usedLanguages.length ? await langCodesToObject(usedLanguages) : {}
       )
-
+  
       this.l10nLanguages = JSON.parse(rdfForm.getAttribute('l10n-languages')) ?? Object.assign({}, defaultLanguages)
-
+  
       if (rdfForm.getAttribute('selected-l10n-language') && rdfForm.getAttribute('selected-l10n-language') in this.l10nLanguages) {
         this.l10nLanguage = rdfForm.getAttribute('selected-l10n-language')
       }
-
+  
       this.uiLanguages = JSON.parse(rdfForm.getAttribute('ui-languages')) ?? {}
       await this.setUiLanguage(rdfForm.getAttribute('selected-language') ?? 'en')
-
+  
       this.ready = true
       this.dispatchEvent(new CustomEvent('ready'))  
-    }, { once: true})
+    }
+
+    rdfForm.formData.ready ? continueInit() : rdfForm.formData.addEventListener('ready', continueInit, { once: true})
   }
 
    get uiLanguage () {

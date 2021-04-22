@@ -1,47 +1,40 @@
+@prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix form:       <http://localhost:8070/form.ttl#> .
-@prefix fieldsForm: <http://localhost:8070/fields.form.ttl#> .
-@prefix schema:     <http://schema.org/> .
 @prefix recipe:     <http://rdf.danielbeeke.nl/recipe/recipe-dev.ttl#> .
-@prefix focalPoint:       <http://localhost:8070/focalPoint.ttl#> .
+@prefix owl:        <http://www.w3.org/2002/07/owl#> .
+@prefix dcterms:    <http://purl.org/dc/terms/> .
+@prefix vann:       <http://purl.org/vocab/vann/> .
+@prefix form:       <http://rdf.danielbeeke.nl/form/form-dev.ttl#> .
+@prefix recipeForm: <http://localhost:8070/example.form#recipeForm> .
+@prefix schema:     <http://schema.org/> .
 
-<http://localhost:8070/fields.form#fieldsForm>
+<http://localhost:8070/example.form#recipeForm>
     form:binding schema:Thing ;
     a            form:Form .
 
-fieldsForm:main
-    a                    form:Container ;
-    form:widget "wrapper" ;
-    form:order           -1 ;
-    form:open            true ;
-    form:label           "Main"@en ;
-    form:label           "Main"@nl .
+recipeForm:language
+    a                 form:UiComponent ;
+    form:widget       "language-picker" ;
+    form:label        "Content language"@en ;
+    form:label        "Inhoudstaal"@nl .
 
-fieldsForm:string
+recipeForm:uiLanguage
+    a                 form:UiComponent ;
+    form:widget       "ui-language-switcher" ;
+    form:label        "Interface language"@en ;
+    form:label        "Interfacetaal"@nl .
+
+recipeForm:title
     a                 form:Field ;
     form:widget  "string" ;
-    form:label        "String" ;
+    form:label        "Title"@en ;
+    form:label        "Titel"@nl ;
     form:binding      schema:name ;
-    form:container   "main" ;
-    form:order        0 ;
-    form:translatable true .
+    form:order        1 ;
+    form:translatable true ;
+    form:required     true .
 
-fieldsForm:languagePicker
-    a                 form:UiComponent ;
-    form:container   "main" ;
-    form:label        "Language picker"@en ;
-    form:widget  "language-picker" .
-
-fieldsForm:abstract
-    a                 form:Field ;
-    form:widget  "wysiwyg" ;
-    form:label        "Abstract" ;
-    form:binding      schema:abstract ;
-    form:order        0 ;
-    form:translatable "always" .
-
-
-fieldsForm:ingredients
+recipeForm:ingredients
     a                 form:Field ;
     form:widget "group" ;
     form:label       "Ingredients"@en ;
@@ -50,7 +43,7 @@ fieldsForm:ingredients
     form:multiple    true ;
     form:order       2 .
 
-fieldsForm:ingredient
+recipeForm:ingredient
     a                 form:Field ;
     form:widget       "reference" ;
     form:label             "Ingredient"@en ;
@@ -60,27 +53,21 @@ fieldsForm:ingredient
     form:placeholder       "Search for an ingredient."@en ;
     form:placeholder       "Zoek naar een ingredient."@nl ;
     form:autoCompleteQuery """
-
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX dbo:  <http://dbpedia.org/ontology/>
     PREFIX bif: <bif:>
-
     SELECT DISTINCT ?uri ?label ?image {
-
       ?o dbo:ingredient ?uri .
       ?uri rdfs:label ?label .
       ?uri dbo:thumbnail ?image .
       ?label bif:contains "'SEARCH_TERM'" .
-
       filter langMatches(lang(?label), "LANGUAGE")
     }
-
     LIMIT 10
-
     """ ;
     form:order             1 .
 
-fieldsForm:quantity
+recipeForm:quantity
     a                 form:Field ;
     form:widget "number" ;
     form:label       "Quantity"@en ;
@@ -89,7 +76,7 @@ fieldsForm:quantity
     form:group  "ingredients" ;
     form:order       2 .
 
-fieldsForm:measurementUnit
+recipeForm:measurementUnit
     a                 form:Field ;
     form:widget "dropdown" ;
     form:label       "Unit"@en ;
@@ -107,33 +94,34 @@ fieldsForm:measurementUnit
     form:group  "ingredients" ;
     form:order       3 .
 
-fieldsForm:reference
-    a             form:Field ;
-    form:subform  <http://localhost:8070/subform.ttl> ;
-    form:label    "References"@en ;
-    form:label    "Referenties"@nl ;
-    form:order    8 .
+
+recipeForm:instructions
+    a                 form:Field ;
+    form:widget  "textarea" ;
+    form:label        "Instructions"@en ;
+    form:label        "Instructies"@nl ;
+    form:binding      recipe:instructions ;
+    form:rows         6 ;
+    form:order        3 ;
+    form:multiple     true ;
+    form:translatable true ;
+    form:required     true .
 
 
-fieldsForm:image
-    a                   form:Field ;
-    form:widget         "url-image" ;
-    form:label          "Image"@en ;
-    form:container      "imageWrapper" ;
-    form:label          "Afbeelding"@nl ;
-    form:type           schema:ImageObject ;
-    form:binding        schema:url ;
-    form:focalPoint     focalPoint:x1, focalPoint:y1, focalPoint:x2, focalPoint:y2 ;
-    form:dimensions     schema:width, schema:height ;
-    form:order          3 ;
-    form:multiple       true ;
-    form:translatable   true .
+recipeForm:duration
+    a                 form:Field ;
+    form:widget "duration" ;
+    form:label       "Duration"@en ;
+    form:label       "Tijdsduur"@nl ;
+    form:binding     recipe:duration ;
+    form:range       "THM" ;
+    form:order       4 ;
+    form:required    true .
 
-fieldsForm:imageWrapper
-    a                   form:Container ;
-    form:widget         "wrapper" ;
-    form:binding        schema:image ;
-    form:order          10 ;
-    form:open           true ;
-    form:label          "Images"@en ;
-    form:label          "Afbeeldingen"@nl .
+
+recipeForm:author
+    form:widget "reference" ;
+    form:label       "Author"@en ;
+    form:label       "Auteur"@nl ;
+    form:binding     recipe:author ;
+    form:order       5 .

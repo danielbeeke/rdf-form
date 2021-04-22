@@ -8,7 +8,7 @@ export class Group extends ElementBase {
     return html`
     <div class="item">
     ${childTemplates}
-      ${this.removeButton()}
+    ${this.removeButton()}
     </div>`
   }
 

@@ -8,8 +8,6 @@ import { sparqlQueryToList } from '../helpers/sparqlQueryToList'
 import { t, Language } from '../core/Language'
 import { attributesDiff } from '../helpers/attributesDiff'
 import { debounce } from '../helpers/debounce'
-
-
       
 export class Reference extends ElementBase {
 
@@ -105,13 +103,13 @@ export class Reference extends ElementBase {
       ${fa(faReply)}
     </button>`
 
-    const isCollapsed = uri && !this.expanded && !this.searchTerm 
+    const isCollapsed = (uri || this.value?.['@value']) && !this.expanded && !this.searchTerm 
 
     return html`
     <div class="item" expanded=${!isCollapsed} has-suggestions=${this.searchTerm}>
       ${isCollapsed ? 
         html`${this.referenceLabel()} ${editButton()}` : 
-        html`${this.input()} ${!this.searchTerm ? acceptButton() : ''} ${restoreButton()}`
+        html`${this.input()} ${!this.searchTerm ? acceptButton() : ''} ${restoreButton()} ${this.removeButton()}`
       }
 
       ${this.searchTerm ? this.searchSuggestions() : ''}
@@ -132,8 +130,10 @@ export class Reference extends ElementBase {
       <li class="search-suggestion" onclick="${() => {
         if (suggestion.uri) {
           this.value['@id'] = suggestion.uri
+          delete this.value['@value']
         }
         else if (suggestion.value) {
+          delete this.value['@id']
           this.value['@value'] = suggestion.value
         }
 

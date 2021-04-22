@@ -7,10 +7,11 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <script type="module" src="/js/RdfForm.js"></script>
     <script type="module">
-      const fieldType = location.hash.substr(1)
-      const form = document.createElement('rdf-form2')
+      const fieldType = location.hash.substr(1) ? location.hash.substr(1) : 'unknown'
+      
+      const form = document.createElement('rdf-form')
       form.setAttribute('form', `/tests/elements/${fieldType}.form.ttl`)
-      form.setAttribute('debug', null)
+      // form.setAttribute('debug', null)
       form.setAttribute('data', `/tests/elements/${fieldType}.ttl`)
 
       form.addEventListener('submit', (event) => {

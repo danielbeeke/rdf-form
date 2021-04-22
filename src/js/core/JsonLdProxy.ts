@@ -1,6 +1,6 @@
 import { lastPart } from '../helpers/lastPart'
 
-export const JsonLdProxy = (data, context, extraCommands: { [key: string]: (value) => any} = {}) => {
+export const JsonLdProxy = (data, context, extraCommands: { [key: string]: (value) => any} = {}, defaultAlias: string = null) => {
   if (typeof data !== 'object') return data
 
   const convertProp = (prop) => {
@@ -17,7 +17,11 @@ export const JsonLdProxy = (data, context, extraCommands: { [key: string]: (valu
   return new Proxy(data, {
     get(target, prop, receiver) {
       prop = convertProp(prop)
-      if (prop === '$') return target
+      if (prop === '$' && !('$' in extraCommands)) return target
+      if (prop === '_' && !('_' in extraCommands)) {
+        const getFirst = (thing) => Array.isArray(thing) ? getFirst(thing[0]) : thing?.['@id'] ?? thing?.['@value'] ?? thing
+        return JsonLdProxy(getFirst(target), context, extraCommands, defaultAlias)
+      }
       if (prop === 'isProxy') return true
 
       for (const [command, callback] of Object.entries(extraCommands)) {
@@ -35,18 +39,26 @@ export const JsonLdProxy = (data, context, extraCommands: { [key: string]: (valu
       
       const isOurProperty = !Reflect.has({}, prop) && !Reflect.has([], prop) && Reflect.has(target, prop)
 
+      if (defaultAlias && !prop.toString().includes(':') && !Reflect.has({}, prop) && !Reflect.has([], prop)) {
+        const newProp = convertProp(defaultAlias + ':' + prop.toString())
+        const isOurProperty = !Reflect.has({}, newProp) && !Reflect.has([], newProp) && Reflect.has(target, newProp)
+        if (isOurProperty && Reflect.has(target, newProp)) {
+          return JsonLdProxy(target[newProp], context, extraCommands, defaultAlias)
+        }
+      }
+
       if (target[prop]?.[0]?.['@list'] && isOurProperty) {
-        return JsonLdProxy(target[prop][0]['@list'], context, extraCommands)
+        return JsonLdProxy(target[prop][0]['@list'], context, extraCommands, defaultAlias)
       }
 
       if (isOurProperty) {
-        return JsonLdProxy(target[prop], context, extraCommands)
+        return JsonLdProxy(target[prop], context, extraCommands, defaultAlias)
       }
 
       if (['filter'].includes(prop.toString())) {
         const requestedMethod = Reflect.get(target, prop, receiver)
         return (...input) => {
-          return requestedMethod.apply(target.map(item => JsonLdProxy(item, context, extraCommands)), input)
+          return requestedMethod.apply(target.map(item => JsonLdProxy(item, context, extraCommands, defaultAlias)), input)
         }
       }
 

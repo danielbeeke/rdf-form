@@ -1,5 +1,5 @@
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
-import { faTimes, faPlus } from '../helpers/icons'
+import { faTimes, faPlus, faLanguage } from '../helpers/icons'
 import { kebabize } from '../helpers/kebabize'
 import { attributesDiff } from '../helpers/attributesDiff'
 import { getUriMeta } from '../helpers/getUriMeta'
@@ -23,7 +23,8 @@ export class ElementBase extends EventTarget {
     disabled: false,
     readonly: false,
     type: 'input',
-    class: []
+    class: [],
+    placeholder: null
   }
 
   protected wrapperAttributes = {
@@ -47,6 +48,8 @@ export class ElementBase extends EventTarget {
     this.value = value
     this.render = render
     this.parent = parent
+
+    if (this.definition['form:placeholder']?._) this.attributes.placeholder = this.definition['form:placeholder']?._
   }
 
   async on (event) {
@@ -54,6 +57,17 @@ export class ElementBase extends EventTarget {
       if (!this.value) await this.addItem()
       if (this.value) this.value[`@${this.jsonldKey}`] = event.target.value
     }
+  }
+
+  get removable () {
+    const hasValue = this.value?._
+    const parentIsGroup = this.parent?.definition?.['form:widget']?._ === 'group'
+    return hasValue && !parentIsGroup
+  }
+
+  async languages () {
+    const fieldLanguages = this.parentValues?.[this.mainBinding] ? await Language.extractUsedLanguages(this.parentValues) : []
+    return fieldLanguages
   }
 
   async addItem () {
@@ -88,21 +102,22 @@ export class ElementBase extends EventTarget {
     return html`
     <div class="item">
       ${this.input()}
+      ${this.removeButton()}
       ${childTemplates}
     </div>`
   }
 
   addButton () {
-    return html`<button type="button" class="button add" onclick="${() => {
-      this.addItem()
-      this.render();
+    return html`<button type="button" class="button add primary" onclick="${async () => {
+      await this.addItem()
+      this.render()
     }}">
       ${fa(faPlus)}
     </button>`
   }
 
   removeButton () {
-    return html`<button type="button" class="button remove" onclick="${() => {
+    return this.removable ? html`<button type="button" class="button remove danger" onclick="${() => {
       const valueArray = this.parentValues[this.definition['form:binding']?._]?.$
 
       if (valueArray) {
@@ -113,12 +128,10 @@ export class ElementBase extends EventTarget {
       this.render();
     }}">
       ${fa(faTimes)}
-    </button>`
+    </button>` : html``
   }
 
   input () {
-    const parentIsGroup = this.parent?.definition?.['form:widget']?._ === 'group'
-
     return html`
       <input 
         ref=${attributesDiff(this.attributes)} 
@@ -126,22 +139,61 @@ export class ElementBase extends EventTarget {
         onchange=${(event) => this.on(event)}
         onkeyup=${(event) => this.on(event)}
       />
-
-      ${parentIsGroup ? html`` : this.removeButton()}
     `
   }
 
-  label () {
-    return html`<label ref=${attributesDiff(this.labelAttributes)}>${this.definition['form:label']._}</label>`
+  async label () {
+    let languageLabel = ''
+
+    if (this.definition['form:translatable']?._) {
+      const applicableValues = this.parentValues[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()]
+      .filter((value) => !value['@language'] || value['@language'] === Language.l10nLanguage) : []
+
+      const hasLanguage = this.parentValues[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()].some(value => value?.['@language']) : false
+      const language = applicableValues.map((value) => value['@language'])[0]
+
+      if (language) {
+        languageLabel = `(${Language.l10nLanguages[language]})`
+      }
+      else if (this.value === null && hasLanguage) {
+        languageLabel = `(${Language.l10nLanguages[Language.l10nLanguage]})`
+      }
+    }
+
+    const disableLanguage = () => {
+      const values = this.parentValues[this.mainBinding]
+      values.splice(1)
+      delete values[0]['@language']
+      this.render()
+    }
+
+    const enableLanguage = () => {
+      const values = this.parentValues[this.mainBinding]
+      values[0]['@language'] = Language.l10nLanguage
+      this.render()
+    }
+
+    return this.definition['form:label']?._ ? html`
+      <label ref=${attributesDiff(this.labelAttributes)}>
+        ${this.definition['form:label']._}
+        <small>&nbsp;<em>
+        ${languageLabel? html`${languageLabel}` : html``}
+        ${this.definition['form:translatable']?._ && languageLabel ? html`<span title=${t.direct('Disable translations for this field').toString()} class="icon-button disable-language" onclick=${disableLanguage}>${fa(faTimes)}</span>` : html``}
+        ${this.definition['form:translatable']?._ && !languageLabel ? html`<span title=${t.direct('Enable translations for this field').toString()} class="icon-button enable-language" onclick=${enableLanguage}>${fa(faLanguage)}</span>` : html``}
+        </em></small>
+      </label>
+    ` : html``
   }
 
   async referenceLabel () {
     const uri = this.value._
     let meta
     try {
-      meta = await getUriMeta(uri)
+      if (uri.substr(0,4) === 'http') meta = await getUriMeta(uri)
     }
-    catch(exception) {
+    catch(exception) {}
+
+    if (!meta) {
       const subject = lastPart(uri).replace(/_|-/g, ' ')
       meta = { label: subject }
     }
@@ -150,7 +202,9 @@ export class ElementBase extends EventTarget {
       <div class="reference-label">
         ${meta?.label === false ? html`<span class="reference-loading">${t`Could not load data`}</span>` : html`
           ${meta?.thumbnail ? html`<div class="image"><img src="${`//images.weserv.nl/?url=${meta?.thumbnail}&w=100&h=100`}"></div>` : ''}
-          ${meta?.label ? html`<a href="${uri}" target="_blank">${meta?.label}</a>` : html`<span class="reference-loading">${t`Loading...`}</span>`}
+          ${meta?.label ? (
+            uri.substr(0,4) === 'http' ? html`<a href="${uri}" target="_blank">${meta?.label}</a>` : html`<span class="reference-text">${meta?.label}</span>`
+          ) : html`<span class="reference-loading">${t`Loading...`}</span>`}
         `}
       </div>
     `

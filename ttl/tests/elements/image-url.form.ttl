@@ -10,7 +10,7 @@
 
 personForm:imageWrapper
     a                   form:Container ;
-    form:widget         "wrapper" ;
+    form:widget         "container" ;
     form:binding        schema:image ;
     form:open           true ;
     form:label          "Images"@en ;
@@ -23,7 +23,7 @@ personForm:image
     form:widget         "url-image" ;
     form:label          "Image"@en ;
     form:label          "Afbeelding"@nl ;
-    form:type      schema:ImageObject ;
+    form:type           schema:ImageObject ;
     form:binding        schema:url ;
     form:focalPoint     focalPoint:x1, focalPoint:y1, focalPoint:x2, focalPoint:y2 ;
     form:dimensions     schema:width, schema:height ;

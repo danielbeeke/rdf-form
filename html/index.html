@@ -2,18 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>RDF Form</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <script type="module" src="/js/RdfForm.js"></script>
+    <script type="module">
+      const fieldType = location.hash.substr(1) ? location.hash.substr(1) : 'unknown'
+
+      const form = document.createElement('rdf-form')
+      form.setAttribute('form', `/tests/example.form.ttl`)
+      form.setAttribute('debug', null)
+      form.setAttribute('ui-languages', JSON.stringify({"en": "English", "nl": "Nederlands"}))
+      form.setAttribute('data', `/tests/example.ttl`)
+
+      form.addEventListener('submit', (event) => {
+        console.log(event.detail)
+      })
+      
+      document.body.appendChild(form)
+    </script>
 </head>
 <body>
-
-    <ul>
-        <li><a href="/person-form.html">Person example</a></li>
-        <li><a href="/list-form.html">Person (list) example</a></li>
-        <li><a href="/fields-form.html">Fields example</a></li>
-        <li><a href="/image-form.html">Image example</a></li>
-    </ul>
 
 </body>
 </html>

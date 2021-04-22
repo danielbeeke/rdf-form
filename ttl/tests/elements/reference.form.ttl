@@ -17,6 +17,7 @@ fieldsForm:ingredient
     form:binding           recipe:ingredient ;
     form:placeholder       "Search for an ingredient."@en ;
     form:placeholder       "Zoek naar een ingredient."@nl ;
+    form:multiple          true ;
     form:autoCompleteQuery """
 
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

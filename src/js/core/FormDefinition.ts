@@ -1,5 +1,5 @@
 import { ttl2jsonld } from '../vendor/ttl2jsonld'
-import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js'
+import { jsonld } from '../vendor/jsonld.js'
 import { ExpandedJsonLdObject } from '../types/ExpandedJsonLdObject'
 import { lastPart } from '../helpers/lastPart'
 import { CoreComponent } from '../types/CoreComponent'
@@ -7,7 +7,7 @@ import { JsonLdProxy } from './JsonLdProxy'
 import { Language } from './Language'
 
 export const only = (...type) => {
-  return (item: ExpandedJsonLdObject) => item['@type'].some(rdfClass => type.includes(lastPart(rdfClass)))
+  return (item: ExpandedJsonLdObject) => item['@type']?.some(rdfClass => type.includes(lastPart(rdfClass)))
 }
 
 export class FormDefinition extends EventTarget implements CoreComponent {
@@ -36,12 +36,12 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     Object.assign(this.context, this.sourceDefinitionCompacted['@context'])
     if (!this.context.form) throw new Error('The prefix form was not found in the form definition.')
     if (!this.sourceDefinitionCompacted['@graph']) throw new Error('Missing fields inside form definition')
-    this.sourceDefinitionExpanded = await JsonLdProcessor.expand(this.sourceDefinitionCompacted);
+    this.sourceDefinitionExpanded = await jsonld.expand(this.sourceDefinitionCompacted);
     if (!this.info) throw new Error('The form definition did not define a form itself.')
     this.resolvedFormDefinition = await this.resolveSubForms()
     const ontologyCompacted = await fetch(this.context.form).then(async response => ttl2jsonld(await response.text()))
     Object.assign(this.context, ontologyCompacted['@context'])
-    this.ontology = JsonLdProxy(await JsonLdProcessor.expand(ontologyCompacted), this.context)
+    this.ontology = JsonLdProxy(await jsonld.expand(ontologyCompacted), this.context)
     this.chain = this.createChain()
     this.ready = true
     this.dispatchEvent(new CustomEvent('ready'))
@@ -67,6 +67,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     const resolvedFormDefinition = JsonLdProxy(JSON.parse(JSON.stringify(this.sourceDefinitionExpanded)), this.context, {
       '_': (value) => Language.multilingualValue(value, 'ui')
     })
+
     const fields = resolvedFormDefinition.filter(only('Field'))
 
     for (const field of fields) {
@@ -78,7 +79,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
         const subformResponse = await fetch(subformUrl[0]['@id'])
         const subformTurtle = await subformResponse.text()
         const subformDefinitionCompacted = ttl2jsonld(subformTurtle)
-        const subformDefinitionExpanded = JsonLdProxy(await JsonLdProcessor.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context'], {
+        const subformDefinitionExpanded = JsonLdProxy(await jsonld.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context'], {
           '_': (value) => Language.multilingualValue(value, 'ui')
         });
         const subFormfields = subformDefinitionExpanded.filter(only('Field'))

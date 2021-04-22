@@ -3,6 +3,11 @@
   padding-bottom: 10px;
   display: flex;
   align-items: flex-end;
+
+  small {
+    color: var(--color-gray-medium);
+    font-weight: normal;
+  }
 }
 
 .label-required-star {

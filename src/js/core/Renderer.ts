@@ -29,7 +29,10 @@ export class Renderer extends EventTarget implements CoreComponent {
     const formSubmit = (event) => {
       event.preventDefault()
       event.stopImmediatePropagation()
-      this.form.dispatchEvent(new CustomEvent('submit', { detail: this.form.formData.proxy.$ }))
+      this.form.dispatchEvent(new CustomEvent('submit', { detail: {
+        proxy: this.form.formData.proxy,
+        expanded: this.form.formData.proxy.$,
+      } }))
     }
 
     const languageClick = (langCode) => {
@@ -83,6 +86,7 @@ export class Renderer extends EventTarget implements CoreComponent {
         .filter(([index, value]) => !value['@language'] || value['@language'] === Language.l10nLanguage) : []
 
         if (applicableValues.length) {
+
           for (const [index, value] of applicableValues) {
             const fieldInstance = this.fieldInstances.get(value.$) ?? registry.setupElement(
               field, bindings, value, formData, () => this.render(), parent
@@ -91,6 +95,12 @@ export class Renderer extends EventTarget implements CoreComponent {
 
             const childValues = field['form:widget']?._ === 'group' || isContainer ? formData[mainBinding][index] : formData[mainBinding]
             const childTemplates = children.size ? this.nest(children, registry, childValues, wrapperFieldInstance) : []
+
+            if (field['form:label']?._ === 'Image') {
+              console.log(mainBinding)
+              fieldInstance.item(childTemplates).then(console.log)
+            }
+
             innerTemplates.push(fieldInstance.item(childTemplates))
           }
         }

@@ -163,7 +163,7 @@ form:placeholder
     rdfs:comment "The text to display when the text field is empty as a placeholder."@en ;
     rdfs:label   "Placeholder text"@en .
 
-form:fieldGroup
+form:group
     rdf:type     rdf:Property ;
     rdfs:comment "Place fields within this type to have a nested field group that may be repeated."@en ;
     rdfs:label   "Field group"@en .
