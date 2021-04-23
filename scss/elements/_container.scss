@@ -1,13 +1,18 @@
 .form-element[type="container"] {
+  margin-bottom: 0;
+
   > .items {
     padding: 0;
     background: none;
+    margin-bottom: 0;
 
     > .item {
       padding: 0;
+      margin-bottom: 0;
 
       .form-element {
         flex: 1 1 30%;
+        margin-bottom: 0;
       }
     }
   }

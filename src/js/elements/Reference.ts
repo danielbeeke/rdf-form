@@ -8,6 +8,8 @@ import { sparqlQueryToList } from '../helpers/sparqlQueryToList'
 import { t, Language } from '../core/Language'
 import { attributesDiff } from '../helpers/attributesDiff'
 import { debounce } from '../helpers/debounce'
+import { isFetchable } from '../helpers/isFetchable'
+import { getUriMeta } from '../helpers/getUriMeta'
       
 export class Reference extends ElementBase {
 
@@ -73,7 +75,7 @@ export class Reference extends ElementBase {
     `
   }
 
-  item (childTemplates: Array<typeof html> = []) {
+  async item (childTemplates: Array<typeof html> = []) {
     const value = this.value?._
     const uri = value?.substr(0, 4) === 'http' ? value : false
 
@@ -105,11 +107,19 @@ export class Reference extends ElementBase {
 
     const isCollapsed = (uri || this.value?.['@value']) && !this.expanded && !this.searchTerm 
 
+    let meta = uri && isFetchable(uri) ? await getUriMeta(uri, this.proxy) : false
+
+    if (this.value?.['@value']) {
+      meta = {
+        label: this.value?.['@value']
+      }
+    }
+
     return html`
     <div class="item" expanded=${!isCollapsed} has-suggestions=${this.searchTerm}>
       ${isCollapsed ? 
-        html`${this.referenceLabel()} ${editButton()}` : 
-        html`${this.input()} ${!this.searchTerm ? acceptButton() : ''} ${restoreButton()} ${this.removeButton()}`
+        html`${this.referenceLabel(uri ? uri : '', meta)} ${editButton()}` : 
+        html`<div class="inner">${this.input()} ${!this.searchTerm ? acceptButton() : ''} ${restoreButton()} ${this.removeButton()}</div>`
       }
 
       ${this.searchTerm ? this.searchSuggestions() : ''}

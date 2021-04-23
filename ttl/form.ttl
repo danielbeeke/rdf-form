@@ -44,6 +44,11 @@ form:label
     rdfs:comment "The label to display above the field."@en ;
     rdfs:label   "Label text"@en .
 
+form:cssClass
+    rdf:type     rdf:Property ;
+    rdfs:comment "Extra CSS class."@en ;
+    rdfs:label   "CSS Class"@en .
+
 form:widget
     rdf:type   rdf:Property ;
     rdfs:comment

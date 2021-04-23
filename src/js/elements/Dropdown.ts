@@ -2,6 +2,7 @@ import { ElementBase } from './ElementBase'
 import { sparqlQueryToList } from '../helpers/sparqlQueryToList'
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
 import { t } from '../core/Language'
+import { attributesDiff } from '../helpers/attributesDiff'
 
 export class Dropdown extends ElementBase {
   
@@ -28,7 +29,7 @@ export class Dropdown extends ElementBase {
   input () {
     return html`
     <select
-      multiple="${this.definition['form:multiple']?._ ? true : null}"
+      ref=${attributesDiff(this.attributes)} 
       onchange=${(event) => this.on(event)}
     >
         ${!this.value?._ && !this.definition['form:multiple']?._ ? html`<option disabled selected value>${t`- Select a value -`}</option>` : ''}

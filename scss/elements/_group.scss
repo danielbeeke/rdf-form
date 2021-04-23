@@ -2,7 +2,13 @@
   display: flex;
 
   > .items {
-
+    > .item:not(:first-child) {
+      > .form-element {
+        > .label {
+          display: none;
+        }
+      }
+    }
     > .item {
       flex-wrap: nowrap;
 
@@ -20,7 +26,8 @@
           height: auto;
           color: var(--text);
           font-style: italic;
-          padding-bottom: 0;
+          padding-top: 7px;
+          padding-bottom: 5px;
           font-size: 14px;
         }
 

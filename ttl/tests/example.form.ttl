@@ -11,24 +11,15 @@
 <http://localhost:8070/example.form#recipeForm>
     form:binding schema:Thing ;
     a            form:Form .
-
-recipeForm:languageWrapper
-    a                 form:Container ;
-    form:widget       "container" .
     
 recipeForm:language
     a                 form:UiComponent ;
     form:widget       "language-picker" ;
-    form:label        "Content language"@en ;
-    form:container        "languageWrapper" ;
-    form:label        "Inhoudstaal"@nl .
-
-recipeForm:uiLanguage
-    a                 form:UiComponent ;
-    form:widget       "ui-language-switcher" ;
-    form:label        "Interface language"@en ;
-    form:container    "languageWrapper" ;
-    form:label        "Interfacetaal"@nl .
+    form:order        1 .
+    
+# recipeForm:languageTabs
+#     a                 form:UiComponent ;
+#     form:widget       "language-tabs" .
 
 recipeForm:title
     a                 form:Field ;
@@ -55,6 +46,7 @@ recipeForm:ingredient
     form:label             "Ingredient"@en ;
     form:label             "Ingrediënt"@nl ;
     form:group        "ingredients" ;
+    form:required          true ;
     form:binding           recipe:ingredient ;
     form:placeholder       "Search for an ingredient."@en ;
     form:placeholder       "Zoek naar een ingredient."@nl ;
@@ -78,6 +70,7 @@ recipeForm:quantity
     form:widget "number" ;
     form:label       "Quantity"@en ;
     form:label       "Aantal"@nl ;
+    form:required          true ;
     form:binding     recipe:quantity ;
     form:group  "ingredients" ;
     form:order       2 .
@@ -87,6 +80,7 @@ recipeForm:measurementUnit
     form:widget "dropdown" ;
     form:label       "Unit"@en ;
     form:label       "Soort"@nl ;
+    form:required          true ;
     form:binding     recipe:measurementUnit ;
     form:option      [ form:label "- Select -"@en ;
                        form:label "- Selecteer -"@nl ;

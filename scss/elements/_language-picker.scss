@@ -1,0 +1,86 @@
+.form-element[type="language-picker"] {
+  background: none;
+  border: 0;
+
+  .items, .item {
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+  }
+
+  .language-switcher {
+    flex: 1 1 100px;
+    margin-top: 3px;
+    display: flex;
+
+    svg {
+      position: relative;
+      top: 2px;
+      margin-right: 10px;
+
+      path {
+        fill: var(--color-gray-medium);
+      }
+    }
+  }
+
+  .item {
+    border-bottom: 1px solid var(--color-gray);
+
+    .ss-main {
+      flex: 1 1 80%;
+    }
+
+    .ss-values {
+      padding: 0;
+      flex: none;
+      width: auto;
+    }
+  
+    .ss-add {
+      cursor: pointer;
+      flex: 0 1 30px;
+      position: relative;
+  
+      .ss-plus {
+        position: absolute;
+        left: 50%;
+      }
+    }
+  
+    .ss-content.ss-open {
+      margin-top: 20px;
+      border-radius: var(--radius);
+    }
+  
+    .ss-multi-selected {
+      border: 0;
+    }
+  
+    .ss-value {
+      position: relative;
+      margin-bottom: -1px;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      padding: 14px;
+      cursor: pointer;
+      font-size: 16px;
+      border: 1px solid var(--color-gray);
+      background: var(--color-gray-light);
+  
+      &.active {
+        background: white;
+        border-bottom-color: white;  
+      }
+  
+      .ss-value-delete svg {
+        width: 10px !important;
+        margin-left: 4px;
+        path {
+          fill: var(--color-gray-medium);
+        }
+      }
+    }
+  }
+}

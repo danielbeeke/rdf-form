@@ -4,9 +4,9 @@ import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js'
 import { lastPart } from './lastPart'
 import { Language } from '../core/Language'
 
-export const getUriMeta = async (uri: string) => {
+export const getUriMeta = async (uri: string, proxy: string = null) => {
   if (!metas.get(uri)) {
-    const response = await fetch(`${uri}`, { headers: { 'Accept': 'application/ld+json' }})
+    const response = await fetch(`${proxy}${uri}`, { headers: { 'Accept': 'application/ld+json' }})
     const text = await response.text()
     let json
     try { json = JSON.parse(text) }

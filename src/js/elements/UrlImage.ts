@@ -113,7 +113,6 @@ export class UrlImage extends ElementBase {
     this.focalPointDiv.style.height = (this.focalPoint.y2 - this.focalPoint.y1) + '%'
   }
 
-
   reCalc = () => {
     if (this.focalPoint.x3 === null || this.focalPoint.x4 === null) {
       this.reset()

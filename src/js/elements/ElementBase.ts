@@ -5,7 +5,9 @@ import { attributesDiff } from '../helpers/attributesDiff'
 import { getUriMeta } from '../helpers/getUriMeta'
 import { t, Language } from '../core/Language'
 import { lastPart } from '../helpers/lastPart'
+import { isFetchable } from '../helpers/isFetchable'
 import { fa } from '../helpers/fa'
+import { RdfForm } from '../RdfForm'
 
 export class ElementBase extends EventTarget {
 
@@ -13,9 +15,8 @@ export class ElementBase extends EventTarget {
   protected bindings: Array<string>
   protected value: any
   protected parentValues: any
-  public parent: any
+  public parent: ElementBase | RdfForm
   protected jsonldKey = 'value'
-  protected comunica: any
   protected mainBinding: string = null
   public render = () => null 
   protected suggestions: Array<any> = []
@@ -24,7 +25,9 @@ export class ElementBase extends EventTarget {
     readonly: false,
     type: 'input',
     class: [],
-    placeholder: null
+    placeholder: null,
+    required: null,
+    multiple: null,
   }
 
   protected wrapperAttributes = {
@@ -50,6 +53,18 @@ export class ElementBase extends EventTarget {
     this.parent = parent
 
     if (this.definition['form:placeholder']?._) this.attributes.placeholder = this.definition['form:placeholder']?._
+    if (this.definition['form:required']?._ === true) this.attributes.required = true
+    if (this.definition['form:multiple']?._ === true) this.attributes.multiple = true
+    if (this.definition['form:cssClass']?._) this.wrapperAttributes.class.push(this.definition['form:cssClass']._)
+  }
+
+  get proxy () {
+    let pointer = this
+    while (pointer.parent) {
+      /** @ts-ignore */
+      pointer = pointer.parent
+    }
+    return pointer instanceof RdfForm ? pointer.proxy : null
   }
 
   async on (event) {
@@ -61,8 +76,9 @@ export class ElementBase extends EventTarget {
 
   get removable () {
     const hasValue = this.value?._
-    const parentIsGroup = this.parent?.definition?.['form:widget']?._ === 'group'
-    return hasValue && !parentIsGroup
+    const parentIsGroup = this.parent instanceof ElementBase ? this.parent?.definition?.['form:widget']?._ === 'group' : false
+    const isGroup = this.definition?.['form:widget']?._ === 'group'
+    return hasValue && !parentIsGroup || isGroup
   }
 
   async languages () {
@@ -201,14 +217,7 @@ export class ElementBase extends EventTarget {
     ` : html``
   }
 
-  async referenceLabel () {
-    const uri = this.value._
-    let meta
-    try {
-      if (uri.substr(0,4) === 'http') meta = await getUriMeta(uri)
-    }
-    catch(exception) {}
-
+  async referenceLabel (uri, meta) {
     if (!meta) {
       const subject = lastPart(uri).replace(/_|-/g, ' ')
       meta = { label: subject }
@@ -219,7 +228,7 @@ export class ElementBase extends EventTarget {
         ${meta?.label === false ? html`<span class="reference-loading">${t`Could not load data`}</span>` : html`
           ${meta?.thumbnail ? html`<div class="image"><img src="${`//images.weserv.nl/?url=${meta?.thumbnail}&w=100&h=100`}"></div>` : ''}
           ${meta?.label ? (
-            uri.substr(0,4) === 'http' ? html`<a href="${uri}" target="_blank">${meta?.label}</a>` : html`<span class="reference-text">${meta?.label}</span>`
+            isFetchable(uri) ? html`<a href="${uri}" target="_blank">${meta?.label}</a>` : html`<span class="reference-text">${meta?.label}</span>`
           ) : html`<span class="reference-loading">${t`Loading...`}</span>`}
         `}
       </div>

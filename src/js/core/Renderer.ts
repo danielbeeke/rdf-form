@@ -35,30 +35,18 @@ export class Renderer extends EventTarget implements CoreComponent {
       } }))
     }
 
-    const languageClick = (langCode) => {
-      Language.l10nLanguage = langCode
-      this.render()
-    }
-
-    const languageTabs = Object.keys(Language.l10nLanguages).length > 1 ? html`<div class="language-tabs">
-    ${Object.entries(Language.l10nLanguages).map(([langCode, language]) => html`
-      <button lang="${langCode}" class="${'language-tab ' + (langCode === Language.l10nLanguage ? 'active' : '')}" type="button" onclick="${() => languageClick(langCode)}">${Language.l10nLanguages?.[langCode] ?? language}</button>
-    `)}
-    </div>` : ''
-
     render(this.form.shadow, html`
       <link rel="stylesheet" href="/css/rdf-form.css" />
 
       <form onsubmit=${formSubmit}>
 
-      ${languageTabs}
       ${templates}
       <button class="button save">${t`Submit`}</button>
       </form>
     `)
   }
 
-  nest (formDefinition: Map<any, any>, registry: Registry, formData: any, parent: any) {
+  nest (formDefinition: Map<any, any>, registry: Registry, formData: any, parent: any, depth = 0) {
     const templates = []
 
     for (const [bindings, [field, children]] of formDefinition.entries()) {
@@ -88,20 +76,17 @@ export class Renderer extends EventTarget implements CoreComponent {
         if (applicableValues.length) {
 
           for (const [index, value] of applicableValues) {
+            if (bindings.length > 1) {
+              console.log(value.$)              
+            }
             const fieldInstance = this.fieldInstances.get(value.$) ?? registry.setupElement(
               field, bindings, value, formData, () => this.render(), parent
             )
             if (!this.fieldInstances.has(value.$)) this.fieldInstances.set(value.$, fieldInstance)
 
             const childValues = field['form:widget']?._ === 'group' || isContainer ? formData[mainBinding][index] : formData[mainBinding]
-            const childTemplates = children.size ? this.nest(children, registry, childValues, wrapperFieldInstance) : []
-
-            if (field['form:label']?._ === 'Image') {
-              console.log(mainBinding)
-              fieldInstance.item(childTemplates).then(console.log)
-            }
-
-            innerTemplates.push(fieldInstance.item(childTemplates))
+            const childTemplates = children.size ? this.nest(children, registry, childValues, wrapperFieldInstance, depth + 1) : []
+            innerTemplates.push(fieldInstance.item([]))
           }
         }
 

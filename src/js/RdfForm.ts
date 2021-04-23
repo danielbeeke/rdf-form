@@ -37,7 +37,6 @@ export class RdfForm extends HTMLElement implements CoreComponent {
       './Password',
       './WYSIWYG',
       './LanguagePicker',
-      './UiLanguageSwitcher',
       './Unknown',
     ]))
   }
