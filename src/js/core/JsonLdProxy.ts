@@ -18,6 +18,7 @@ export const JsonLdProxy = (data, context, extraCommands: { [key: string]: (valu
     get(target, prop, receiver) {
       prop = convertProp(prop)
       if (prop === '$' && !('$' in extraCommands)) return target
+      if (prop === '_alias') return defaultAlias
       if (prop === '_' && !('_' in extraCommands)) {
         const getFirst = (thing) => Array.isArray(thing) ? getFirst(thing[0]) : thing?.['@id'] ?? thing?.['@value'] ?? thing
         return JsonLdProxy(getFirst(target), context, extraCommands, defaultAlias)

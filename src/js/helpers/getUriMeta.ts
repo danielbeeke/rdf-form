@@ -6,16 +6,24 @@ import { Language } from '../core/Language'
 
 export const getUriMeta = async (uri: string, proxy: string = null) => {
   if (!metas.get(uri)) {
-    const response = await fetch(`${proxy}${uri}`, { headers: { 'Accept': 'application/ld+json' }})
-    const text = await response.text()
-    let json
+    let text
+    try {
+      const response = await fetch(`${proxy ? proxy : ''}${uri}`, { headers: { 'Accept': 'application/ld+json' }})
+      text = await response.text()        
+    }
+    catch(e) {
+      console.log(uri)
+    }
+    let json = {}
     try { json = JSON.parse(text) }
     catch (e) {
       json = ttl2jsonld(text)
     }
 
-    json = await JsonLdProcessor.expand(json)
-    if (Array.isArray(json)) json = json[0]
+    if (json) {
+      json = await JsonLdProcessor.expand(json)
+      if (Array.isArray(json) && json[0]) json = json[0]  
+    }
 
     const meta = {
       label: null,

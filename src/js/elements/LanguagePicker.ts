@@ -57,7 +57,7 @@ export class LanguagePicker extends ElementBase {
       }
     })
 
-    slimSelect.setData(selection)
+    slimSelect.setData([{'placeholder': true, 'text': t.direct('Search for a language').toString() }, ...selection])
     slimSelect.set(selection.map(option => option.value))
     this.attachEvents(select)    
     this.initiated = true // Without this it would trigger a needless render.

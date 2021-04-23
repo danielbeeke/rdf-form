@@ -2,6 +2,7 @@ import { ElementBase } from './ElementBase'
 import { getImageDimensionsByUrl } from '../helpers/getImageDimensionsByUrl'
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
 import { attributesDiff } from '../helpers/attributesDiff'
+import { lastPart } from '../helpers/lastPart'
 
 export class UrlImage extends ElementBase {
 
@@ -12,15 +13,17 @@ export class UrlImage extends ElementBase {
   constructor (...args) {
     super(...args)
 
+    const focalPointPrefix = this.form.formDefinition.context.focalPoint
+
     this.focalPoint = {
-      x1: this.parentValues['*x1']?._,
-      y1: this.parentValues['*y1']?._,
-      x2: this.parentValues['*x2']?._,
-      y2: this.parentValues['*y2']?._,
-      x3: this.parentValues['*x3']?._,
-      y3: this.parentValues['*y3']?._,
-      x4: this.parentValues['*x4']?._,
-      y4: this.parentValues['*y4']?._,
+      x1: this.itemValues?.[`${focalPointPrefix}x1`]?._,
+      y1: this.itemValues?.[`${focalPointPrefix}y1`]?._,
+      x2: this.itemValues?.[`${focalPointPrefix}x2`]?._,
+      y2: this.itemValues?.[`${focalPointPrefix}y2`]?._,
+      x3: this.itemValues?.[`${focalPointPrefix}x3`]?._,
+      y3: this.itemValues?.[`${focalPointPrefix}y3`]?._,
+      x4: this.itemValues?.[`${focalPointPrefix}x4`]?._,
+      y4: this.itemValues?.[`${focalPointPrefix}y4`]?._,
     }
   }
 
@@ -31,8 +34,10 @@ export class UrlImage extends ElementBase {
 
     if (dimensionsEnabled && url) {
       getImageDimensionsByUrl(url).then(({ width, height }) => {
-        this.parentValues['*width'][0]['@value'] = width
-        this.parentValues['*height'][0]['@value'] = height
+        const dimensionsPrefix = this.form.formDefinition.context.schema
+
+        this.itemValues[`${dimensionsPrefix}width`] = [{ '@value': width }]
+        this.itemValues[`${dimensionsPrefix}height`] = [{ '@value': height }]
       })
     }
 
@@ -72,20 +77,23 @@ export class UrlImage extends ElementBase {
         this.reset()
       }
       else {
-        this.parentValues['*x1'][0]['@value'] = this.focalPoint.x1
-        this.parentValues['*y1'][0]['@value'] = this.focalPoint.y1
-        this.parentValues['*x2'][0]['@value'] = this.focalPoint.x2
-        this.parentValues['*y2'][0]['@value'] = this.focalPoint.y2
+        this.itemValues['*x1'] = [{ '@value': this.focalPoint.x1 }]
+        this.itemValues['*y1'] = [{ '@value': this.focalPoint.y1 }]
+        this.itemValues['*x2'] = [{ '@value': this.focalPoint.x2 }]
+        this.itemValues['*y2'] = [{ '@value': this.focalPoint.y2 }]
       }
     }
 
     return html`
-      <input 
-        ref=${attributesDiff(this.attributes)} 
-        .value=${this.value?._ ?? ''} 
-        onchange=${(event) => this.on(event)}
-        onkeyup=${(event) => this.on(event)}
-      />
+      <div class="top">
+        <input 
+          ref=${attributesDiff(this.attributes)} 
+          .value=${this.value?._ ?? ''} 
+          onchange=${(event) => this.on(event)}
+          onkeyup=${(event) => this.on(event)}
+        />
+        ${this.removeButton()}
+      </div>
 
       ${this.value?._ ? 
         focalPointEnabled ? 
@@ -104,6 +112,15 @@ export class UrlImage extends ElementBase {
         html`<img src=${this.value?._} />`
       : ''}
     `
+  }
+
+
+  item (childTemplates: Array<typeof html> = []) {
+    return html`
+    <div class="item">
+      ${this.input()}
+      ${childTemplates}
+    </div>`
   }
 
   setStyle = () => {

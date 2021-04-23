@@ -1,6 +1,6 @@
 import { CoreComponent } from '../types/CoreComponent'
-import { languages } from '../languages'
 import { I18n } from './i18n'
+import { languages } from '../languages'
 
 /**
  * Fetches languages according to BCP47
@@ -146,21 +146,19 @@ export class LanguageService extends EventTarget implements CoreComponent {
    * Extracts the used languages of JSON-ld.
    * @param jsonLd
    */
-  async extractUsedLanguages (jsonLd: object): Promise<Array<string>> {
+  extractUsedLanguages (jsonLd: object): Array<string> {
     const languageCodes = new Set<string>()
-    for (const [predicate, values] of Object.entries(jsonLd)) {
-      for (const value of values) {
-        if (value?.['@language']) {
-          languageCodes.add(value['@language'])
-        }
-        else if (value?.['@list']) {
-          const innerLangCodes  = await this.extractUsedLanguages(value?.['@list'][0]);
-          for (const innerLangCode of innerLangCodes) {
-            languageCodes.add(innerLangCode)
-          }
-        }
-      }
+
+    const process = (thing) => {
+      const iterateble = Array.isArray(thing) ? thing.entries() : Object.entries(thing)
+
+      for (const [key, value] of iterateble) {
+        if (key === '@language') languageCodes.add(value)
+        if (typeof value !== 'string') process(value)
+      }  
     }
+
+    process(jsonLd)
 
     return [...languageCodes.values()]
   }

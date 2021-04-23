@@ -1,6 +1,6 @@
 import { ElementBase } from './ElementBase'
 
-export class Date extends ElementBase {
+export class Mail extends ElementBase {
   constructor (...args) {
     super(...args)
     this.attributes.type = 'mail'

@@ -10,7 +10,13 @@ textarea {
 }
 
 input[readonly] {
-  background: var(--color-gray-light);
+  background: none;
+  border: none;
+  position: relative;
+  top: 1px;
+  outline: none;
+  padding: 0;
+  line-height: 30px;;
 }
 
 :host > * {

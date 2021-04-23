@@ -4,6 +4,7 @@ import { CoreComponent } from '../types/CoreComponent'
 import { ElementInstance } from '../types/ElementInstance'
 import { Registry } from './Registry'
 import { lastPart } from '../helpers/lastPart'
+import { flatMapProxy } from '../helpers/flatMapProxy'
 import { t, Language } from './Language'
 import { RdfForm } from '../RdfForm'
 
@@ -41,7 +42,9 @@ export class Renderer extends EventTarget implements CoreComponent {
       <form onsubmit=${formSubmit}>
 
       ${templates}
-      <button class="button save">${t`Submit`}</button>
+      <div class="actions">
+        <button class="button save">${t`Save`}</button>
+      </div>
       </form>
     `)
   }
@@ -56,38 +59,38 @@ export class Renderer extends EventTarget implements CoreComponent {
       const isUiComponent = lastPart(field['@type'][0]) === 'UiComponent'
 
       let wrapperFieldInstance = isUiComponent ? this.fieldInstances.get(field.$) : false
-      
+
       if (!wrapperFieldInstance) wrapperFieldInstance = registry.setupElement(
-        field, bindings, null, formData, () => this.render(), parent
+        field, bindings, null, null, formData, () => this.render(), parent
       )
 
       if (!this.fieldInstances.has(field.$)) this.fieldInstances.set(field.$, wrapperFieldInstance)
 
       const innerTemplates = []
 
-      if (mainBinding) {
+      if (mainBinding && !isContainer) {
 
         /**
          * Existing values.
          */
-        const applicableValues = formData[mainBinding] ? [...formData[mainBinding].entries()]
-        .filter(([index, value]) => !value['@language'] || value['@language'] === Language.l10nLanguage) : []
+        let applicableValues = formData[mainBinding] ? [...formData[mainBinding].values()]
+        .filter((value) => !value['@language'] || value['@language'] === Language.l10nLanguage) : []
+
+        if (Array.isArray(formData.$)) {
+          applicableValues = flatMapProxy(formData, mainBinding)
+        }
 
         if (applicableValues.length) {
-
-          for (const [index, value] of applicableValues) {
-            if (bindings.length > 1) {
-              console.log(value.$)              
-            }
+          for (const [index, value] of applicableValues.entries()) {
             const fieldInstance = this.fieldInstances.get(value.$) ?? registry.setupElement(
-              field, bindings, value, formData, () => this.render(), parent
+              field, bindings, value, formData[index], formData, () => this.render(), parent
             )
             if (!this.fieldInstances.has(value.$)) this.fieldInstances.set(value.$, fieldInstance)
 
             const childValues = field['form:widget']?._ === 'group' || isContainer ? formData[mainBinding][index] : formData[mainBinding]
             const childTemplates = children.size ? this.nest(children, registry, childValues, wrapperFieldInstance, depth + 1) : []
-            innerTemplates.push(fieldInstance.item([]))
-          }
+            innerTemplates.push(fieldInstance.item(childTemplates))
+          }  
         }
 
         /**
@@ -100,10 +103,18 @@ export class Renderer extends EventTarget implements CoreComponent {
       }
 
       /**
-       * Containers and other UI components
+       * UI components
        */
-      else if (isContainer || isUiComponent) {
+      else if (isUiComponent) {
         const childTemplates = children.size ? this.nest(children, registry, formData, wrapperFieldInstance) : []
+        innerTemplates.push(wrapperFieldInstance.item(childTemplates))
+      }
+
+      /**
+       * Containers
+       */
+      else if (isContainer) {
+        const childTemplates = children.size ? this.nest(children, registry, mainBinding ? formData[mainBinding] : formData, wrapperFieldInstance) : []
         innerTemplates.push(wrapperFieldInstance.item(childTemplates))
       }
 

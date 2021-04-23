@@ -36,6 +36,12 @@
       padding: 0;
       flex: none;
       width: auto;
+
+      > .ss-disabled {
+        cursor: pointer;
+        color: var(--text);
+        padding: 15px 0;
+      }  
     }
   
     .ss-add {

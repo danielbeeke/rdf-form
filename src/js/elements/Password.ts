@@ -5,7 +5,7 @@ export class Password extends ElementBase {
   protected password: string = ''
   protected passwordConfirm: string = ''
 
-  async item () {
+  async input () {
     return html`
     <input
       onchange="${event => this.on(event)}"
