@@ -1,0 +1,18 @@
+.form-element[type="details"] {
+  summary {
+    cursor: pointer;
+    
+    > .label {
+      display: inline-flex;
+      pointer-events: none;
+      height: 46px;
+    }
+  }
+
+  > .items {
+    background-color: var(--color-gray-blue);
+    --background-color: #e8eaf0;
+    --color-primary: #b0bcd9;
+    --color-secondary: #cdd3e2;
+  }
+}

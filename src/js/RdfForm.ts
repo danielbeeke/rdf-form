@@ -44,8 +44,8 @@ export class RdfForm extends HTMLElement implements CoreComponent {
   connectedCallback () {
     if (this.shadow) return
     this.shadow = this.attachShadow({ mode: 'open' })
-    this.formDefinition = new FormDefinition(this.getAttribute('form'))
-    this.formData = new RdfFormData(this.getAttribute('data'))
+    this.formDefinition = new FormDefinition(this)
+    this.formData = new RdfFormData(this)
     this.registry = new Registry(this)
     this.renderer = new Renderer(this)
     this.language = Language

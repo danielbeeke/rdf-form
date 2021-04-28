@@ -17,6 +17,7 @@ export class Reference extends ElementBase {
   protected expanded = false
   protected searchTerm = null
   protected previousValue = null
+  protected inputElement
 
   constructor (...args) {
     super(...args)
@@ -29,11 +30,19 @@ export class Reference extends ElementBase {
       if (event.target.value.substr(0, 4) === 'http') {
         this.value[`@${this.jsonldKey}`] = event.target.value
       }
-      else if (this.definition['form:autoCompleteQuery']?._) {
+      else {
         this.searchTerm = event.target.value
+      }
+
+      if (this.definition['form:autoCompleteQuery']?._) {
         this.autocomplete()
       }
     }
+  }
+
+  get removable () {
+    const parentIsGroup = this.parent instanceof ElementBase ? this.parent?.definition?.['form:widget']?._ === 'group' : false
+    return !parentIsGroup
   }
 
   autocomplete () {
@@ -67,7 +76,7 @@ export class Reference extends ElementBase {
   input () {
     return html`
       <input 
-        ref=${attributesDiff(this.attributes)} 
+        ref=${attributesDiff(this.attributes, element => this.inputElement = element)} 
         .value=${this.searchTerm ?? this.value?._ ?? ''} 
         onchange=${(event) => this.on(event)}
         onkeyup=${(event) => this.on(event)}
@@ -83,12 +92,20 @@ export class Reference extends ElementBase {
       this.expanded = true
       this.previousValue = this.value?._
       this.render() 
+      setTimeout(() => {
+        this.inputElement.select()        
+      }, 30);
     }}">
       ${fa(faPencilAlt)}
     </button>`
 
     const acceptButton = () => html`<button type="button" class="button accept primary" onclick="${() => {
       this.expanded = false
+      if (this.value?.['@value'] && this.value['@value'].substr(0, 4) !== 'http' && this.searchTerm) {
+        this.value['@value'] = this.searchTerm
+      }
+      this.searchTerm = null
+      this.suggestions = []
       this.render();
     }}">
       ${fa(faCheck)}
@@ -99,7 +116,7 @@ export class Reference extends ElementBase {
       this.expanded = false
       this.searchTerm = null
       this.suggestions = []
-      this.value[`@${this.jsonldKey}`] = this.previousValue
+      if (this.previousValue) this.value[`@${this.jsonldKey}`] = this.previousValue
       this.render()
     }}">
       ${fa(faReply)}
@@ -153,7 +170,7 @@ export class Reference extends ElementBase {
   
         this.render()
       }}">
-        ${suggestion.image ? html`<div class="image"><img src="${`//images.weserv.nl/?url=${suggestion.image}&w=100&h=100`}"></div>` : ''}
+        ${suggestion.image ? html`<div class="image"><img src="${`//images.weserv.nl/?url=${suggestion.image}&default=${suggestion.image}&w=100&h=100`}"></div>` : ''}
         <span class="title">${suggestion.label?.[Language.uiLanguage] ?? suggestion.label}</span>
       </li>`)}
     </ul>

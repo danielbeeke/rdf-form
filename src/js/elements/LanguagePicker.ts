@@ -53,7 +53,8 @@ export class LanguagePicker extends ElementBase {
     const selection = initialLanguages.map(([langCode, language]) => {
       return {
         text: Language.l10nLanguages[langCode] ?? language,
-        value: langCode
+        value: langCode,
+        mandatory: Language.requiredL10nLanguages.includes(langCode)
       }
     })
 
@@ -69,7 +70,7 @@ export class LanguagePicker extends ElementBase {
     const tabs = [...select.parentElement.querySelectorAll('.ss-value')]
 
     for (const [index, tab] of tabs.entries()) {
-      tab.querySelector('.ss-value-delete').title = t.direct('Delete all translations for this language').toString()
+      if (tab.querySelector('.ss-value-delete')) tab.querySelector('.ss-value-delete').title = t.direct('Delete all translations for this language').toString()
       if (langCodes[index] === Language.l10nLanguage) tab.classList.add('active')
       if (tab.hasEvent) continue
       tab.hasEvent = true

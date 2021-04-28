@@ -50,6 +50,11 @@ export const getUriMeta = async (uri: string, proxy: string = null) => {
         value?.[0]?.['@value'] ?? value?.[0]?.['@id']
 
         if (meta.thumbnail?.substr(0, 2) === '_:') meta.thumbnail = false
+
+        // [schema:image][0][schema:url] fallback
+        if (!meta.thumbnail && value?.[0]?.['https://schema.org/url']?.[0]?.['@value']) {
+          meta.thumbnail = value[0]['https://schema.org/url'][0]['@value']
+        }
       }
     }
 

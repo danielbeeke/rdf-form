@@ -2,16 +2,16 @@ import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
 import { faTimes, faPlus, faLanguage } from '../helpers/icons'
 import { kebabize } from '../helpers/kebabize'
 import { attributesDiff } from '../helpers/attributesDiff'
-import { flatMapProxy } from '../helpers/flatMapProxy'
 import { t, Language } from '../core/Language'
 import { lastPart } from '../helpers/lastPart'
 import { isFetchable } from '../helpers/isFetchable'
 import { fa } from '../helpers/fa'
 import { RdfForm } from '../RdfForm'
+import { debounce } from '../helpers/debounce';
 
 export class ElementBase extends EventTarget {
 
-  protected definition: object
+  public definition: object
   protected bindings: Array<string>
   protected value: any
   protected parentValues: any
@@ -21,6 +21,8 @@ export class ElementBase extends EventTarget {
   protected mainBinding: string = null
   public render = () => null 
   protected suggestions: Array<any> = []
+  protected index: number = null
+  protected debouncedRender: any
   protected attributes = {
     type: 'input',
     class: [],
@@ -29,6 +31,8 @@ export class ElementBase extends EventTarget {
     placeholder: null,
     required: null,
     multiple: null,
+    rows: null,
+    open: null,
   }
 
   protected wrapperAttributes = {
@@ -42,7 +46,7 @@ export class ElementBase extends EventTarget {
 
   constructor (...args: any[]) {
     super()
-    const [ definition, bindings, value, itemValues, parentValues, render, parent ] = args
+    const [ definition, bindings, value, itemValues, parentValues, render, parent, index ] = args
 
     this.definition = definition
     this.bindings = bindings
@@ -53,12 +57,21 @@ export class ElementBase extends EventTarget {
     this.value = value
     this.render = render
     this.parent = parent
+    this.index = index
+
+    this.debouncedRender = debounce(this.render.bind(this), 300)
+
+    if (this.definition['form:jsonLdKey']) {
+      this.jsonldKey = this.definition['form:jsonLdKey']._
+    }
 
     if (this.definition['form:placeholder']?._) this.attributes.placeholder = this.definition['form:placeholder']?._
     if (this.definition['form:required']?._ === true) this.attributes.required = true
     if (this.definition['form:multiple']?._ === true) this.attributes.multiple = true
     if (this.definition['form:readonly']?._ === true) this.attributes.readonly = true
     if (this.definition['form:disabled']?._ === true) this.attributes.disabled = true
+    if (this.definition['form:open']?._ !== undefined) this.wrapperAttributes.open = this.definition['form:open']._
+    if (this.definition['form:rows']?._ !== undefined) this.attributes.rows = parseInt(this.definition['form:rows']._)
     if (this.definition['form:cssClass']?._) this.wrapperAttributes.class.push(this.definition['form:cssClass']._)
   }
 
@@ -93,16 +106,63 @@ export class ElementBase extends EventTarget {
   }
 
   get languages () {
+    console.log(this.parentValues)
     return Language.extractUsedLanguages(this.parentValues)
   }
 
   addItem () {
-    const value = { [`@${this.jsonldKey}`]: null }
-    const fieldLanguages = this.parentValues?.[this.mainBinding] ? Language.extractUsedLanguages(this.parentValues) : []
-    if (fieldLanguages.length || this.definition['form:translatable']._ === 'always') value['@language'] = Language.l10nLanguage
-    if (!this.parentValues[this.mainBinding]) this.parentValues[this.mainBinding] = []
-    this.parentValues?.[this.mainBinding].push(value)
-    this.value = value
+    if (this.bindings.length > 1) {
+      if (!this.parentValues[this.mainBinding]) this.parentValues[this.mainBinding] = []
+      const emptyObject = {}
+      for (const binding of this.bindings) {
+        emptyObject[binding] = []
+      }
+      emptyObject[this.mainBinding].push({})
+      this.parentValues.push(emptyObject)
+      this.itemValues = emptyObject
+      this.value = emptyObject[this.mainBinding][0]
+    } 
+    else if (this.definition['form:widget']?._ === 'group') {
+      // TODO how to do creates?
+      const firstItem = this.parentValues[this.mainBinding][0].$
+      const clone = JSON.parse(JSON.stringify(firstItem))
+  
+      for (const [field, values] of Object.entries(clone)) {
+        if (values[0]['@id']) values[0]['@id'] = null
+        if (values[0]['@value']) values[0]['@value'] = ''
+        if (values[0]['@language']) values[0]['@value'] = Language.l10nLanguage
+      }
+  
+      this.parentValues?.[this.mainBinding].push(clone)
+      this.value = clone
+    }
+    else {
+      const value = { [`@${this.jsonldKey}`]: null }
+      const fieldLanguages = this.parentValues?.[this.mainBinding] ? Language.extractUsedLanguages(this.parentValues) : []
+      if (fieldLanguages.length || this.definition['form:translatable']?._ === 'always') value['@language'] = Language.l10nLanguage
+      if (!this.parentValues?.[this.mainBinding]) this.parentValues[this.mainBinding] = []
+      this.parentValues?.[this.mainBinding].push(value)
+      this.value = value 
+    }
+  }
+
+  removeItem () {
+    if (this.bindings.length > 1) {
+      const valueArray = this.parentValues.$
+
+      if (valueArray) {
+        const index = valueArray.indexOf(this.itemValues.$)
+        valueArray.splice(index, 1)  
+      }
+    } 
+    else {
+      const valueArray = this.parentValues[this.definition['form:binding']?._]?.$
+
+      if (valueArray) {
+        const index = valueArray.indexOf(this.value.$)
+        valueArray.splice(index, 1)  
+      }
+    }
   }
 
   /**
@@ -147,13 +207,7 @@ export class ElementBase extends EventTarget {
 
   removeButton () {
     return this.removable ? html`<button type="button" class="button remove danger" onclick="${() => {
-      const valueArray = this.parentValues[this.definition['form:binding']?._]?.$
-
-      if (valueArray) {
-        const index = valueArray.indexOf(this.value.$)
-        valueArray.splice(index, 1)  
-      }
-
+      this.removeItem()
       this.render();
     }}">
       ${fa(faTimes)}
@@ -194,16 +248,15 @@ export class ElementBase extends EventTarget {
     let languageLabel = ''
 
     if (this.definition['form:translatable']?._) {
-      const applicableValues = this.parentValues[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()]
+      const applicableValues = this.parentValues?.[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()]
       .filter((value) => !value['@language'] || value['@language'] === Language.l10nLanguage) : []
 
-      const hasLanguage = this.languages.length > 0
       const language = applicableValues.map((value) => value['@language'])[0]
 
       if (language) {
         languageLabel = `(${Language.l10nLanguages[language]})`
       }
-      else if (this.value === null) {
+      else if (applicableValues.length === 0 && this.definition['form:translatable']?._ === 'always') {
         languageLabel = `(${Language.l10nLanguages[Language.l10nLanguage]})`
       }
     }
@@ -239,7 +292,7 @@ export class ElementBase extends EventTarget {
     return html`
       <div class="reference-label">
         ${meta?.label === false ? html`<span class="reference-loading">${t`Could not load data`}</span>` : html`
-          ${meta?.thumbnail ? html`<div class="image"><img src="${`//images.weserv.nl/?url=${meta?.thumbnail}&w=100&h=100`}"></div>` : ''}
+          ${meta?.thumbnail ? html`<div class="image"><img src="${`//images.weserv.nl/?url=${meta?.thumbnail}&default=${meta?.thumbnail}&w=100&h=100`}"></div>` : ''}
           ${meta?.label ? (
             isFetchable(uri) ? html`<a href="${uri}" target="_blank">${meta?.label}</a>` : html`<span class="reference-text">${meta?.label}</span>`
           ) : html`<span class="reference-loading">${t`Loading...`}</span>`}

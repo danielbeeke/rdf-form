@@ -16,6 +16,7 @@ export const JsonLdProxy = (data, context, extraCommands: { [key: string]: (valu
 
   return new Proxy(data, {
     get(target, prop, receiver) {
+      if (prop === '_proxyType') return 'JsonLdProxy'
       prop = convertProp(prop)
       if (prop === '$' && !('$' in extraCommands)) return target
       if (prop === '_alias') return defaultAlias
@@ -52,7 +53,7 @@ export const JsonLdProxy = (data, context, extraCommands: { [key: string]: (valu
         return JsonLdProxy(target[prop][0]['@list'], context, extraCommands, defaultAlias)
       }
 
-      if (isOurProperty) {
+      if (isOurProperty && target[prop]) {
         return JsonLdProxy(target[prop], context, extraCommands, defaultAlias)
       }
 

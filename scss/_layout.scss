@@ -1,19 +1,26 @@
 :host form {
-  // display: grid;
-  // grid-template-columns: 3fr 480px;
-  // grid-template-rows: auto auto;
-  // grid-template-areas:
-  //   "top top"
-  //   "main sidebar";
-  // gap: 20px;
+  .form-element[name="main"] {
+    width: calc(100% - 440px);
+    float: left;
+    margin-right: 40px;
+  }
 
-  .region.sidebar {
-    border-radius: var(--radius);
-    grid-area: sidebar;
-    --background-color: #f6f4f4;
+  .form-element[name="sidebar"] {
+    width: 400px;
+    float: right;
+  }
 
-    details.container:first-child {
-      margin-top: 46px;
-    }
+  .actions {
+    flex-direction: row-reverse;
+    float: left;
+    clear: both;
+    margin-bottom: 40px;
+    width: 100%;
+    border-top: 1px solid var(--color-gray);
+    padding: 20px 0;
+    position: sticky;
+    bottom: 0;
+    background: white;
+    margin-top: 20px;
   }
 }

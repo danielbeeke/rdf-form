@@ -77,10 +77,12 @@ export class UrlImage extends ElementBase {
         this.reset()
       }
       else {
-        this.itemValues['*x1'] = [{ '@value': this.focalPoint.x1 }]
-        this.itemValues['*y1'] = [{ '@value': this.focalPoint.y1 }]
-        this.itemValues['*x2'] = [{ '@value': this.focalPoint.x2 }]
-        this.itemValues['*y2'] = [{ '@value': this.focalPoint.y2 }]
+        const focalPointPrefix = this.form.formDefinition.context.focalPoint
+
+        this.itemValues[`${focalPointPrefix}x1`] = [{ '@value': this.focalPoint.x1 }]
+        this.itemValues[`${focalPointPrefix}y1`] = [{ '@value': this.focalPoint.y1 }]
+        this.itemValues[`${focalPointPrefix}x2`] = [{ '@value': this.focalPoint.x2 }]
+        this.itemValues[`${focalPointPrefix}y2`] = [{ '@value': this.focalPoint.y2 }]
       }
     }
 

@@ -5,6 +5,7 @@ import { lastPart } from '../helpers/lastPart'
 import { CoreComponent } from '../types/CoreComponent'
 import { JsonLdProxy } from './JsonLdProxy'
 import { Language } from './Language'
+import { RdfForm } from '../RdfForm'
 
 export const only = (...type) => {
   return (item: ExpandedJsonLdObject) => item['@type']?.some(rdfClass => type.includes(lastPart(rdfClass)))
@@ -15,30 +16,35 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   private formUrl: string
   private sourceDefinitionCompacted: object = {}
   private sourceDefinitionExpanded: Array<any>
-  private resolvedFormDefinition: Array<any>
-  private context = { form: null }
+  public context = { form: null }
   public ready: boolean = false
   public chain = new Map()
   public chainReferences = new Map()
   private ontology: Array<object> = []
+  protected roles: Array<string>
+  protected form: RdfForm
 
-  constructor (formUrl: string) {
+  constructor (form: RdfForm) {
     super()
-    this.formUrl = formUrl
-    if (!formUrl) throw new Error('No data attribute "form" was found on the custom element.')
+    this.form = form
+    this.formUrl = this.form.getAttribute('form')
+    if (!this.formUrl) throw new Error('No data attribute "form" was found on the custom element.')
     this.init()
   }
 
   async init () {
+    this.roles = this.form.getAttribute('roles') ? this.form.getAttribute('roles').split(',') : []
     const definitionResponse = await fetch(this.formUrl)
     const definitionTurtle = await definitionResponse.text()
     this.sourceDefinitionCompacted = ttl2jsonld(definitionTurtle)
     Object.assign(this.context, this.sourceDefinitionCompacted['@context'])
     if (!this.context.form) throw new Error('The prefix form was not found in the form definition.')
     if (!this.sourceDefinitionCompacted['@graph']) throw new Error('Missing fields inside form definition')
-    this.sourceDefinitionExpanded = await jsonld.expand(this.sourceDefinitionCompacted);
+    this.sourceDefinitionExpanded = JsonLdProxy(await jsonld.expand(this.sourceDefinitionCompacted), this.context, {
+      '_': (value) => Language.multilingualValue(value, 'ui')
+    })
+    await this.resolveSubForms(this.sourceDefinitionExpanded)
     if (!this.info) throw new Error('The form definition did not define a form itself.')
-    this.resolvedFormDefinition = await this.resolveSubForms()
     const ontologyCompacted = await fetch(this.context.form).then(async response => ttl2jsonld(await response.text()))
     Object.assign(this.context, ontologyCompacted['@context'])
     this.ontology = JsonLdProxy(await jsonld.expand(ontologyCompacted), this.context)
@@ -56,53 +62,59 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   }
 
   get fields (): Array<any> {
-    return this.resolvedFormDefinition.filter(only('Field'))
+    return this.sourceDefinitionExpanded.filter(only('Field'))
   }
 
   get elements (): Array<any> {
-    return this.resolvedFormDefinition.filter(only('Field', 'Container', 'UiComponent'))
+    return this.sourceDefinitionExpanded.filter(only('Field', 'Container', 'UiComponent'))
   }
 
-  async resolveSubForms () {
-    const resolvedFormDefinition = JsonLdProxy(JSON.parse(JSON.stringify(this.sourceDefinitionExpanded)), this.context, {
-      '_': (value) => Language.multilingualValue(value, 'ui')
-    })
-
-    const fields = resolvedFormDefinition.filter(only('Field'))
+  async resolveSubForms (formDefinition) {
+    const fields = formDefinition.filter(only('Field'))
 
     for (const field of fields) {
-      const subformUrl = <Array<{'@id': string}>> field['form:subform']
+      const subformUrl = field['form:subform']
 
       if (subformUrl?.length > 1) throw new Error('Multiple sub forms were found for one field.')
       
       if (subformUrl) {
-        const subformResponse = await fetch(subformUrl[0]['@id'])
+        const subformResponse = await fetch(subformUrl._)
         const subformTurtle = await subformResponse.text()
         const subformDefinitionCompacted = ttl2jsonld(subformTurtle)
         const subformDefinitionExpanded = JsonLdProxy(await jsonld.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context'], {
           '_': (value) => Language.multilingualValue(value, 'ui')
         });
-        const subFormfields = subformDefinitionExpanded.filter(only('Field'))
+
+        await this.resolveSubForms(subformDefinitionExpanded)
 
         Object.assign(this.context, subformDefinitionCompacted['@context'])
 
         // Some properties may be inherit from the parent, such as container and order.
-        for (const subFormfield of subFormfields) {
+        for (const subFormfield of subformDefinitionExpanded) {
             if (field['form:container']) {
               subFormfield['form:container'] = field['form:container'].$
           }
   
-          if (field['form:order']) {
-            subFormfield['form:order'] = [{ '@value': field['form:order']._ + parseFloat('0.' + subFormfield['form:order']._)}]
+          if (field['form:order']?._) {
+            subFormfield['form:order'] = [{ '@value': (field['form:order']?._ ?? 0) + parseFloat('0.' + subFormfield['form:order']?._)}]
           }
         }
   
-        const fieldIndex = resolvedFormDefinition.map(field => field.$).indexOf(field.$)
-        resolvedFormDefinition.$.splice(fieldIndex, 1, ...subFormfields.map(field => field.$))
+        const fieldIndex = formDefinition.map(field => field.$).indexOf(field.$)
+        formDefinition.$.splice(fieldIndex, 1, ...subformDefinitionExpanded.map(field => field.$))
       }
     }
 
-    return resolvedFormDefinition
+    return formDefinition
+  }
+
+  applyFieldAccessRoles (fields: Array<any>) {
+    return fields.filter(field => {
+      if (field['form:access']) {
+        return this.roles.some(userRole => field['form:access'].map(role => role['@id']).includes(userRole))
+      }
+      return true
+    })
   }
 
   createChain () {
@@ -116,7 +128,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
         let children = []
         if (field['form:widget']?._ === 'group' || lastPart(field['@type'][0]) === 'Container') {
           const nestingType = field['form:widget']?._ === 'group' ? 'group' : 'container'
-          children = this.elements.filter(innerField => innerField?.[`form:${nestingType}`]?._ === lastPart(field['@id']))
+          children = this.applyFieldAccessRoles(this.elements.filter(innerField => innerField?.[`form:${nestingType}`]?._ === lastPart(field['@id'])))
         }
 
         chain.set(fieldBindings.length ? fieldBindings : field.$, [field, recursiveChainCreator(children)])
@@ -125,7 +137,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
       return chain
     }
 
-    const firstLevelFields = this.elements.filter(field => !field['form:group'] && !field['form:container'])
+    const firstLevelFields = this.applyFieldAccessRoles(this.elements.filter(field => !field['form:group'] && !field['form:container']))
     return recursiveChainCreator(firstLevelFields)
   }
 

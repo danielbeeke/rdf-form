@@ -97,6 +97,11 @@ form:binding
     rdfs:comment
                "The predicate(s) this field maps to. Some widgets have multiple bindings, like a geo location or an address field. Just supply them all."@en ;
     rdfs:label "Binding(s)"@en .
+    
+form:readonly	
+    rdf:type     rdf:Property ;	
+    rdfs:comment "This field is read only."@en ;	
+    rdfs:label   "Read-only"@en .
 
 form:additionalBindings
     rdf:type   rdf:Property ;
@@ -231,3 +236,8 @@ form:focalPoint
     rdfs:comment "Save a focal point."@en ;
     form:isBindingProperty true ;
     rdfs:label   "Focal point"@en .
+
+form:access
+    rdf:type     rdf:Property ;
+    rdfs:comment "Access roles."@en ;
+    rdfs:label   "Access roles"@en .

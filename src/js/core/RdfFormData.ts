@@ -4,6 +4,8 @@ import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js'
 import { JsonLdProxy } from './JsonLdProxy'
 import { Language } from './Language'
 import { isFetchable } from '../helpers/isFetchable'
+import { FormDefinition } from './FormDefinition'
+import { RdfForm } from '../RdfForm'
 
 export class RdfFormData extends EventTarget implements CoreComponent {
 
@@ -12,19 +14,24 @@ export class RdfFormData extends EventTarget implements CoreComponent {
   private sourceData: any
   public get: () => any
   public proxy = { $: null }
+  protected formDefinition: FormDefinition
   private sourceDataCompacted: object
+  protected form: RdfForm
 
-  constructor (dataAsTextOrUrl: string = null) {
+  constructor (form: RdfForm) {
     super()
-    this.dataAsTextOrUrl = dataAsTextOrUrl
-    this.init()
+    this.form = form
+    this.formDefinition = this.form.formDefinition
+    this.dataAsTextOrUrl = this.form.getAttribute('data')
+
+    this.formDefinition.addEventListener('ready', () => this.init())
   }
 
   async init () {
     let dataText
     if (!this.dataAsTextOrUrl) this.sourceData = []
 
-    if (isFetchable(this.dataAsTextOrUrl)) {
+    if (this.dataAsTextOrUrl && isFetchable(this.dataAsTextOrUrl)) {
       const dataResponse = await fetch(this.dataAsTextOrUrl)
       dataText = await dataResponse.text()
     }
@@ -43,17 +50,25 @@ export class RdfFormData extends EventTarget implements CoreComponent {
 
     if (Array.isArray(this.sourceData)) this.sourceData = this.sourceData.pop()
 
+    // The new empty object.
+    if (!this.sourceData) {
+      this.sourceData = {
+        '@type': this.formDefinition.info['form:binding'].map(rdfClass => rdfClass['@id'])
+      }
+    }
+
     this.createProxy()
     this.ready = true
     this.dispatchEvent(new CustomEvent('ready'))
   }
 
   get context () {
-    return this.sourceDataCompacted['@context']
+    return Object.assign({}, this.formDefinition.context, this.sourceDataCompacted?.['@context'])
   }
 
   createProxy () {
-    this.proxy = JsonLdProxy(this.sourceData, this.context, {
+    const context = this.context
+    this.proxy = JsonLdProxy(this.sourceData, context, {
       '_': (value) => Language.multilingualValue(value, 'l10n')
     })
   }

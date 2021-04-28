@@ -9,8 +9,9 @@ import { languages } from '../languages'
  */
 
 export const getLanguageLabel = async (langCode) => {
-  const language = languages.find(language => language[0] === langCode)
-  return language[1] ?? langCode
+  const realLangCode = langCode.split('-')[0]
+  const language = languages.find(language => language[0] === realLangCode)
+  return language?.[1] ?? langCode
 }
 
 export const filterLanguages = async (search) => {
@@ -37,6 +38,7 @@ export const langCodesToObject = async (langCodes: Array<string>) => {
  let currentL10nLanguage: string
  let uiLanguages: object = { 'en': 'English' }
  let l10nLanguages: object = { 'en': 'English' }
+ let requiredL10nLanguages = []
  
 export class LanguageService extends EventTarget implements CoreComponent {
   
@@ -54,8 +56,12 @@ export class LanguageService extends EventTarget implements CoreComponent {
       const defaultLanguages = JSON.parse(rdfForm.getAttribute('languages')) ?? (
         usedLanguages.length ? await langCodesToObject(usedLanguages) : {}
       )
-  
-      this.l10nLanguages = JSON.parse(rdfForm.getAttribute('l10n-languages')) ?? Object.assign({}, defaultLanguages)
+      const parsedLanguages = JSON.parse(rdfForm.getAttribute('l10n-languages'))
+      this.l10nLanguages = Object.assign({}, parsedLanguages, defaultLanguages)
+
+      if (rdfForm.getAttribute('required-l10n-languages')) {
+        requiredL10nLanguages = rdfForm.getAttribute('required-l10n-languages').split(',')
+      }
   
       if (rdfForm.getAttribute('selected-l10n-language') && rdfForm.getAttribute('selected-l10n-language') in this.l10nLanguages) {
         this.l10nLanguage = rdfForm.getAttribute('selected-l10n-language')
@@ -69,6 +75,10 @@ export class LanguageService extends EventTarget implements CoreComponent {
     }
 
     rdfForm.formData.ready ? continueInit() : rdfForm.formData.addEventListener('ready', continueInit, { once: true})
+  }
+
+  get requiredL10nLanguages () {
+    return requiredL10nLanguages
   }
 
    get uiLanguage () {
@@ -150,6 +160,7 @@ export class LanguageService extends EventTarget implements CoreComponent {
     const languageCodes = new Set<string>()
 
     const process = (thing) => {
+      if (!thing) return
       const iterateble = Array.isArray(thing) ? thing.entries() : Object.entries(thing)
 
       for (const [key, value] of iterateble) {

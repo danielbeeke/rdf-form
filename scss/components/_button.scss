@@ -4,6 +4,14 @@
   background: var(--color-gray);
   cursor: pointer;
   border: none;
+  position: relative;
+  overflow: hidden;
+
+  &.big {
+    padding: 20px 40px;
+    font-size: 18px;
+    font-weight: bold;
+  }
 
   &.primary {
     background: var(--color-primary);
@@ -50,6 +58,26 @@
       background-size: 37px;
       animation: move 2s linear infinite;
       overflow: hidden;
+    }
+  }
+
+  &:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease-in-out;
+  }
+
+  &:hover {
+    &:after {
+      opacity: .2;
     }
   }
 }

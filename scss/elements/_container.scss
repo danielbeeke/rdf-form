@@ -15,3 +15,11 @@
     }
   }
 }
+
+.form-element.column > .items > .item {
+  flex-direction: column;
+
+  > .form-element {
+    width: 100%;
+  }
+}
