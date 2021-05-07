@@ -25,8 +25,8 @@ export class Renderer extends EventTarget implements CoreComponent {
     this.dispatchEvent(new CustomEvent('ready'))
   }
 
-  render () {
-    const templates = this.nest(this.form.formDefinition.chain, this.form.registry, this.form.formData.proxy, this.form)
+  async render () {
+    const templates = await this.nest(this.form.formDefinition.chain, this.form.registry, this.form.formData.proxy, this.form)
 
     const formSubmit = (event) => {
       event.preventDefault()
@@ -50,7 +50,7 @@ export class Renderer extends EventTarget implements CoreComponent {
     `)
   }
 
-  nest (formDefinition: Map<any, any>, registry: Registry, formData: any, parent: any) {
+  async nest (formDefinition: Map<any, any>, registry: Registry, formData: any, parent: any) {
     const templates = []
 
     for (const [bindings, [field, children]] of formDefinition.entries()) {
@@ -61,9 +61,11 @@ export class Renderer extends EventTarget implements CoreComponent {
 
       let wrapperFieldInstance = isUiComponent || isContainer ? this.fieldInstances.get(field.$) : false
 
-      if (!wrapperFieldInstance) wrapperFieldInstance = registry.setupElement(
-        field, bindings, null, null, formData, () => this.render(), parent
+      if (!wrapperFieldInstance) wrapperFieldInstance = await registry.setupElement(
+        field, bindings, null, null, formData, () => this.render(), parent, null, children
       )
+
+      if (!wrapperFieldInstance) continue;
 
       if (!this.fieldInstances.has(field.$)) this.fieldInstances.set(field.$, wrapperFieldInstance)
 
@@ -84,13 +86,13 @@ export class Renderer extends EventTarget implements CoreComponent {
 
         if (applicableValues.length) {
           for (const [index, value] of applicableValues.entries()) {
-            const fieldInstance = this.fieldInstances.get(value.$) ?? registry.setupElement(
-              field, bindings, value, formData?.[index], formData, () => this.render(), parent, index
+            const fieldInstance = this.fieldInstances.get(value.$) ?? await registry.setupElement(
+              field, bindings, value, formData?.[index], formData, () => this.render(), parent, index, children
             )
             if (!this.fieldInstances.has(value.$)) this.fieldInstances.set(value.$, fieldInstance)
 
             const childValues = field['form:widget']?._ === 'group' ? formData[mainBinding][index] : formData[mainBinding]
-            const childTemplates = children.size ? this.nest(children, registry, childValues, wrapperFieldInstance) : []
+            const childTemplates = children.size ? await this.nest(children, registry, childValues, wrapperFieldInstance) : []
             innerTemplates.push(fieldInstance.item(childTemplates))
           }  
         }
@@ -99,7 +101,7 @@ export class Renderer extends EventTarget implements CoreComponent {
          * New items
          */
         else {
-          const childTemplates = children.size ? this.nest(children, registry, [], wrapperFieldInstance) : []
+          const childTemplates = children.size ? await this.nest(children, registry, [], wrapperFieldInstance) : []
           innerTemplates.push(wrapperFieldInstance.item(childTemplates))
         }
       }
@@ -108,7 +110,7 @@ export class Renderer extends EventTarget implements CoreComponent {
        * UI components
        */
       else if (isUiComponent) {
-        const childTemplates = children.size ? this.nest(children, registry, formData, wrapperFieldInstance) : []
+        const childTemplates = children.size ? await this.nest(children, registry, formData, wrapperFieldInstance) : []
         innerTemplates.push(wrapperFieldInstance.item(childTemplates))
       }
 
@@ -116,8 +118,7 @@ export class Renderer extends EventTarget implements CoreComponent {
        * Containers
        */
       else if (isContainer) {
-        const childTemplates = children.size ? this.nest(children, registry, mainBinding ? containerProxy(formData, mainBinding) : formData, wrapperFieldInstance) : []
-        // const childTemplates = children.size ? this.nest(children, registry, mainBinding ? formData[mainBinding] : formData, wrapperFieldInstance) : []
+        const childTemplates = children.size ? await this.nest(children, registry, mainBinding ? containerProxy(formData, mainBinding) : formData, wrapperFieldInstance) : []
         innerTemplates.push(wrapperFieldInstance.item(childTemplates))
       }
 

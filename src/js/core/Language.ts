@@ -9,9 +9,15 @@ import { languages } from '../languages'
  */
 
 export const getLanguageLabel = async (langCode) => {
-  const realLangCode = langCode.split('-')[0]
+  const [realLangCode, script] = langCode.split('-')
+
+  const scriptMapping = {
+    'latn': t.direct('Latin').toString(),
+    'cyrl': t.direct('Cyrillic').toString()
+  }
+
   const language = languages.find(language => language[0] === realLangCode)
-  return language?.[1] ?? langCode
+  return language?.[1] ? `${language[1]}${script ? ` (${scriptMapping?.[script.toLowerCase()] ?? script})` : ''}` : langCode
 }
 
 export const filterLanguages = async (search) => {

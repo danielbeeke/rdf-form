@@ -4,6 +4,7 @@ import { Registry } from './core/Registry'
 import { Renderer } from './core/Renderer'
 import { Language, LanguageService } from './core/Language'
 import { CoreComponent } from './types/CoreComponent'
+import { kebabize } from './helpers/kebabize'
 import { expandProxiesInConsole } from './core/Debug'
 
 export class RdfForm extends HTMLElement implements CoreComponent {
@@ -18,27 +19,39 @@ export class RdfForm extends HTMLElement implements CoreComponent {
   
   constructor () {
     super()
-    this.addEventListener('register-elements', (event: CustomEvent) => event.detail.fields.push(...[
-      './Group', 
-      './Container', 
-      './String',
-      './Number',
-      './Details',
-      './UrlImage',
-      './Wrapper',
-      './Reference',
-      './Dropdown',
-      './Checkbox',
-      './Color',
-      './Mail',
-      './Url',
-      './Date',
-      './Textarea',
-      './Password',
-      './WYSIWYG',
-      './LanguagePicker',
-      './Unknown',
-    ]))
+
+    const fields = [
+      'Group', 
+      'Container', 
+      'String',
+      'Number',
+      'Details',
+      'UrlImage',
+      'Wrapper',
+      'Reference',
+      'Dropdown',
+      'Checkbox',
+      'Color',
+      'Mail',
+      'Url',
+      'Date',
+      'Textarea',
+      'Password',
+      'WYSIWYG',
+      'LanguagePicker',
+      'Unknown',
+    ]
+
+    const fieldsObject = {}
+
+    for (const field of fields) {
+      const name = kebabize(field.replace(/[^a-zA-Z]+/g, ''))
+      fieldsObject[name] = '../elements/' + field
+    }
+
+    this.addEventListener('register-elements', (event: CustomEvent) => {
+      event.detail.fields = {...event.detail.fields, ...fieldsObject}
+    })
   }
 
   connectedCallback () {

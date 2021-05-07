@@ -10,7 +10,9 @@ import { attributesDiff } from '../helpers/attributesDiff'
 import { debounce } from '../helpers/debounce'
 import { isFetchable } from '../helpers/isFetchable'
 import { getUriMeta } from '../helpers/getUriMeta'
-      
+import { kebabize } from '../helpers/kebabize'
+import { lastPart } from '../helpers/lastPart'
+
 export class Reference extends ElementBase {
 
   protected jsonldKey = 'id'
@@ -42,6 +44,7 @@ export class Reference extends ElementBase {
 
   get removable () {
     const parentIsGroup = this.parent instanceof ElementBase ? this.parent?.definition?.['form:widget']?._ === 'group' : false
+    if (this.index < 1 && this.definition['form:required']?._ === true) return false 
     return !parentIsGroup
   }
 
@@ -175,6 +178,26 @@ export class Reference extends ElementBase {
       </li>`)}
     </ul>
       ` : ''
+  }
+
+
+  wrapper (innerTemplates: Array<typeof html> = []) {
+    const type = kebabize(this.constructor.name)
+    const shouldShowEmpty = this.definition['form:translatable']?._ === 'always' && !Language.l10nLanguage
+
+    return html`
+    ${!shouldShowEmpty ? html`
+    <div ref=${attributesDiff(this.wrapperAttributes)} name=${kebabize(lastPart(this.definition['@id']))} type="${type}">
+    ${this.label()}
+    ${innerTemplates.length ? html`
+      <div class="items">
+        ${innerTemplates}
+        ${this.definition['form:multiple']?._ ? html`<div class="item">${this.addButton()}</div>` : html``}
+      </div>
+    ` : ''}
+      
+    </div>
+    ` : html``}`
   }
 
 }

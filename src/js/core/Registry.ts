@@ -7,6 +7,7 @@ export class Registry extends EventTarget implements CoreComponent {
 
   public ready: boolean = false
   private fieldClasses = new Map()
+  private registeredFieldClasses = {}
   private form: RdfForm
 
   constructor (rdfForm: RdfForm) {
@@ -20,27 +21,27 @@ export class Registry extends EventTarget implements CoreComponent {
     this.form.dispatchEvent(event)
     const { fields } = event.detail
 
-    // Relative fields may be noted with './'. In fact they are in a different folder but this looks better I think.
-    for (let [index, field] of fields.entries()) {
-      if (field.substr(0, 2) === './') {
-        fields[index] = field.replace('./', '../elements/')
-      }
-    }
-
-    const promises = fields.map(fieldPath => import(`${fieldPath}.js`).then(fieldClass => {
-      const name = Object.keys(fieldClass)[0]
-      this.fieldClasses.set(kebabize(name), fieldClass[name])
-    }))
-
-    await Promise.all(promises)
+    this.registeredFieldClasses = fields
 
     this.ready = true
     this.dispatchEvent(new CustomEvent('ready'))
   }
 
-  setupElement (definition, bindings: Array<string>, value = null, itemValues = {}, parentValues = null, render = () => null, parent, index = null): ElementInstance {
-    const widget = definition['form:widget']?._ && this.fieldClasses.has(definition['form:widget']?._) ? definition['form:widget']._ : 'unknown'
-    const elementClass = this.fieldClasses.get(widget)
-    return new elementClass(definition, bindings, value, itemValues, parentValues, render, parent, index)
+  async setupElement (definition, bindings: Array<string>, value = null, itemValues = {}, parentValues = null, render = () => null, parent, index = null, children = []): Promise<ElementInstance> {
+    const widget = definition['form:widget']?._ && this.registeredFieldClasses[definition['form:widget']?._] ? definition['form:widget']._ : 'unknown'
+    let elementClass = this.fieldClasses.get(widget)
+    
+    if (!elementClass) {
+      const widgetPath = this.registeredFieldClasses[definition['form:widget']?._]
+      await import(`${widgetPath}.js`).then(fieldClass => {
+        const name = Object.keys(fieldClass)[0]
+        this.fieldClasses.set(widget, fieldClass[name])
+        elementClass = this.fieldClasses.get(widget)
+      })
+    }
+
+    if (elementClass) {
+      return new elementClass(definition, bindings, value, itemValues, parentValues, render, parent, index, children)
+    }
   }
 }

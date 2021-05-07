@@ -2,7 +2,6 @@ import { ElementBase } from './ElementBase'
 import { getImageDimensionsByUrl } from '../helpers/getImageDimensionsByUrl'
 import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
 import { attributesDiff } from '../helpers/attributesDiff'
-import { lastPart } from '../helpers/lastPart'
 
 export class UrlImage extends ElementBase {
 
@@ -29,7 +28,7 @@ export class UrlImage extends ElementBase {
 
   async on(event: Event) {
     super.on(event);
-    const dimensionsEnabled = this.definition['form:dimensions'].length > 0
+    const dimensionsEnabled = this.definition['form:dimensions']?.length > 0
     const url = this.value?._
 
     if (dimensionsEnabled && url) {

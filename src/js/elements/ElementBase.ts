@@ -23,6 +23,7 @@ export class ElementBase extends EventTarget {
   protected suggestions: Array<any> = []
   protected index: number = null
   protected debouncedRender: any
+  protected children = []
   protected attributes = {
     type: 'input',
     class: [],
@@ -46,7 +47,7 @@ export class ElementBase extends EventTarget {
 
   constructor (...args: any[]) {
     super()
-    const [ definition, bindings, value, itemValues, parentValues, render, parent, index ] = args
+    const [ definition, bindings, value, itemValues, parentValues, render, parent, index, children ] = args
 
     this.definition = definition
     this.bindings = bindings
@@ -58,6 +59,7 @@ export class ElementBase extends EventTarget {
     this.render = render
     this.parent = parent
     this.index = index
+    this.children = children
 
     this.debouncedRender = debounce(this.render.bind(this), 300)
 
@@ -106,8 +108,7 @@ export class ElementBase extends EventTarget {
   }
 
   get languages () {
-    console.log(this.parentValues)
-    return Language.extractUsedLanguages(this.parentValues)
+    return Language.extractUsedLanguages(this.parentValues?.[this.mainBinding])
   }
 
   addItem () {
@@ -139,7 +140,7 @@ export class ElementBase extends EventTarget {
     else {
       const value = { [`@${this.jsonldKey}`]: null }
       const fieldLanguages = this.parentValues?.[this.mainBinding] ? Language.extractUsedLanguages(this.parentValues) : []
-      if (fieldLanguages.length || this.definition['form:translatable']?._ === 'always') value['@language'] = Language.l10nLanguage
+      if (this.languages.length || this.definition['form:translatable']?._ === 'always') value['@language'] = Language.l10nLanguage
       if (!this.parentValues?.[this.mainBinding]) this.parentValues[this.mainBinding] = []
       this.parentValues?.[this.mainBinding].push(value)
       this.value = value 
