@@ -50,12 +50,10 @@ export class RdfFormData extends EventTarget implements CoreComponent {
 
     if (Array.isArray(this.sourceData)) this.sourceData = this.sourceData.pop()
 
+
     // The new empty object.
-    if (!this.sourceData) {
-      this.sourceData = {
-        '@type': this.formDefinition.info['form:binding'].map(rdfClass => rdfClass['@id'])
-      }
-    }
+    if (!this.sourceData) this.sourceData = {}
+    if (!this.sourceData?.['@type']) this.sourceData['@type'] = this.formDefinition.info['form:binding'].map(rdfClass => rdfClass['@id'])
 
     this.createProxy()
     this.ready = true
