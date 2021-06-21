@@ -1,6 +1,6 @@
 import { ElementBase } from './ElementBase'
 import { sparqlQueryToList } from '../helpers/sparqlQueryToList'
-import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
+import { html } from 'uhtml/async'
 import { Language, t } from '../core/Language'
 import { attributesDiff } from '../helpers/attributesDiff'
 

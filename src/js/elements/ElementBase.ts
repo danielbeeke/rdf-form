@@ -1,4 +1,4 @@
-import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
+import { html } from 'uhtml/async'
 import { faTimes, faPlus, faLanguage } from '../helpers/icons'
 import { kebabize } from '../helpers/kebabize'
 import { attributesDiff } from '../helpers/attributesDiff'

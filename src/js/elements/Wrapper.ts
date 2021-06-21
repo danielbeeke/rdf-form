@@ -1,5 +1,5 @@
 import { ElementBase } from './ElementBase'
-import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
+import { html } from 'uhtml/async'
 
 export class Wrapper extends ElementBase {
 

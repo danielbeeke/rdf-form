@@ -1,4 +1,4 @@
-import { render, html } from 'https://unpkg.com/uhtml/esm/async.js?module';
+import { render, html } from 'uhtml/async';
 
 export interface ElementInstance {
   label: () => typeof html,

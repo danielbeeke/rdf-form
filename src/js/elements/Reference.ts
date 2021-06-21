@@ -1,5 +1,5 @@
 import { ElementBase } from './ElementBase'
-import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
+import { html } from 'uhtml/async'
 import { fa } from '../helpers/fa'
 import { faPencilAlt, faCheck, faReply } from '../helpers/icons'
 import { searchSuggestionsSparqlQuery } from '../helpers/searchSuggestionsSparqlQuery'

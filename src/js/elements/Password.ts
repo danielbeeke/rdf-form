@@ -1,8 +1,8 @@
 import { ElementBase } from './ElementBase'
-import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
-import { zxcvbn, ZxcvbnOptions } from 'https://unpkg.com/@zxcvbn-ts/core?module';
-import zxcvbnCommonPackage from 'https://unpkg.com/@zxcvbn-ts/language-common?module'
-import zxcvbnPackage from 'https://unpkg.com/@zxcvbn-ts/language-en?module'
+import { html } from 'uhtml/async'
+import { zxcvbn, ZxcvbnOptions } from '@zxcvbn-ts/core';
+import zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
+import zxcvbnPackage from '@zxcvbn-ts/language-en'
 import { t } from '../core/Language'
 
 export class Password extends ElementBase {

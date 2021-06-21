@@ -1,6 +1,6 @@
 import { ElementBase } from './ElementBase'
 import { getImageDimensionsByUrl } from '../helpers/getImageDimensionsByUrl'
-import { html } from 'https://unpkg.com/uhtml/esm/async.js?module'
+import { html } from 'uhtml/async'
 import { attributesDiff } from '../helpers/attributesDiff'
 
 export class UrlImage extends ElementBase {

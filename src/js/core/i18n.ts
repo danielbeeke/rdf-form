@@ -2,7 +2,7 @@
  * This file fetches the translations.
  */
 
-import { Hole } from 'https://unpkg.com/uhtml/esm/async.js?module'
+import { Hole } from 'uhtml/async'
 
 class TranslatedText extends Hole {
 
