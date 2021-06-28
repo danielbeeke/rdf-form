@@ -59,7 +59,7 @@ export class Registry extends EventTarget implements CoreComponent {
         '../elements/Unknown': () => import('../elements/Unknown.js'), 
       }
 
-      await (widgetPath in fields ? fields[widgetPath]() : import(`${widgetPath}.js`)).then(fieldClass => {
+      await (widgetPath in fields ? fields[widgetPath]() : import(`${widgetPath}.js`).catch(console.error)).then(fieldClass => {
         const name = Object.keys(fieldClass)[0]
         this.fieldClasses.set(widget, fieldClass[name])
         elementClass = this.fieldClasses.get(widget)
