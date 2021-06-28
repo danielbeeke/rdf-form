@@ -1,17 +1,18 @@
 import { Language } from '../core/Language'
 import { engine } from '../core/Comunica'
-
+import { ProxyHandlerStatic } from '../vendor/ProxyHandlerStatic-browser'
 /**
  * @param query
  * @param source
  * @param comunica
  */
- export async function sparqlQueryToList (query, source) {
+ export async function sparqlQueryToList (query, source, proxy = null) {
   // TODO maybe use tokens that will less likely collide.
   query = query.toString().replace(/LANGUAGE/g, Language.uiLanguage)
   if (typeof source === 'object' && source instanceof String) source = source.toString()
-
-  const result = await engine.query(query, Object.assign({ sources: [source] }));
+  const options = { sources: [source], httpProxyHandler: null }
+  if (proxy) options.httpProxyHandler = new ProxyHandlerStatic(proxy)
+  const result = await engine.query(query, options);
 
   /** @ts-ignore */
   const bindings = await result.bindings()

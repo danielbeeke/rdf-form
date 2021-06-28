@@ -3,6 +3,7 @@ import { sparqlQueryToList } from '../helpers/sparqlQueryToList'
 import { html } from 'uhtml/async'
 import { Language, t } from '../core/Language'
 import { attributesDiff } from '../helpers/attributesDiff'
+import { RdfForm } from '../RdfForm'
 
 export class Dropdown extends ElementBase {
   
@@ -47,7 +48,8 @@ export class Dropdown extends ElementBase {
 
   async input () {
     if (!this.options.length && this.definition['form:optionsQuery']?._ && this.definition['form:optionsSource']?._) {
-      this.options = await sparqlQueryToList(this.definition['form:optionsQuery']._, this.definition['form:optionsSource']._)
+      const proxy = this.form.getAttribute('proxy') ?? ''
+      this.options = await sparqlQueryToList(this.definition['form:optionsQuery']._, this.definition['form:optionsSource']._, proxy)
     }
 
     const selectedValues = this.parentValues?.[this.mainBinding]?.map(option => option['@' + this.jsonldKey]) ?? []

@@ -59,7 +59,8 @@ export class Reference extends ElementBase {
     } = querySetting || sourceSetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, this.searchTerm) : dbpediaSuggestions(this.searchTerm)
 
     if (query && source) {
-      sparqlQueryToList(query, source).then(searchSuggestions => {
+      const proxy = this.form.getAttribute('proxy') ?? ''
+      sparqlQueryToList(query, source, proxy).then(searchSuggestions => {
         searchSuggestions.push({
           label: t`Add <strong>${{searchTerm: this.searchTerm}}</strong> as text without reference.`,
           value: this.searchTerm
