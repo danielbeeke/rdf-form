@@ -46,6 +46,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     })
     await this.resolveSubForms(this.sourceDefinitionExpanded)
     if (!this.info) throw new Error('The form definition did not define a form itself.')
+
     const ontologyCompacted = await fetch(proxy + this.context.form).then(async response => ttl2jsonld(await response.text()))
     Object.assign(this.context, ontologyCompacted['@context'])
     this.ontology = JsonLdProxy(await jsonld.expand(ontologyCompacted), this.context)
@@ -63,11 +64,17 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   }
 
   get fields (): Array<any> {
+    const fieldsToRemove = this.info['form:remove']?.map(item => item._) ?? []
+
     return this.sourceDefinitionExpanded.filter(only('Field'))
+    .filter(field => !fieldsToRemove.includes(field['@id']))
   }
 
   get elements (): Array<any> {
+    const fieldsToRemove = this.info['form:remove']?.map(item => item._) ?? []
+
     return this.sourceDefinitionExpanded.filter(only('Field', 'Container', 'UiComponent'))
+    .filter(field => !fieldsToRemove.includes(field['@id']))
   }
 
   async resolveSubForms (formDefinition) {
@@ -93,7 +100,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
 
         // Some properties may be inherit from the parent, such as container and order.
         for (const subFormfield of subformDefinitionExpanded) {
-            if (field['form:container']) {
+          if (field['form:container']) {
               subFormfield['form:container'] = field['form:container'].$
           }
   
