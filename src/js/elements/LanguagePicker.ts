@@ -13,10 +13,12 @@ export class LanguagePicker extends ElementBase {
 
   protected isDragging = false
   protected dragX = null
+  protected newestItem = null
 
   item () {
     const onChange = async (event) => {
       if (!this.initiated) return
+
       const selectedLanguages = event.currentTarget.slim.selected()
       Language.l10nLanguages = await langCodesToObject(selectedLanguages)
       this.render()
@@ -31,7 +33,7 @@ export class LanguagePicker extends ElementBase {
 
   l10nLanguagePicker (select) {
     if (select.slim) {
-      // this.attachEvents(select)
+      this.attachEvents(select)
       return
     }
 
@@ -40,6 +42,10 @@ export class LanguagePicker extends ElementBase {
     const slimSelect = new SlimSelect({
       select: select,
       deselectLabel: deleteIcon,
+      beforeOnChange: (values) => {
+        const newItem = values.map(value => value.value).find(item => !Object.keys(Language.l10nLanguages).includes(item))
+        Language.l10nLanguage = newItem
+      },
       ajax: async function (search, callback) {
         const languages = await filterLanguages(search)
         const options = languages.map(language => {
@@ -52,7 +58,7 @@ export class LanguagePicker extends ElementBase {
         callback(options)
       }
     })
-    
+
     const selection = initialLanguages.map(([langCode, language]) => {
       return {
         text: Language.l10nLanguages[langCode] ?? language,
@@ -69,9 +75,7 @@ export class LanguagePicker extends ElementBase {
 
   attachEvents (select) {
     const langCodes = [...Object.entries(Language.l10nLanguages)].map(([langCode]) => langCode)
-
     const tabs = [...select.parentElement.querySelectorAll('.ss-value')]
-
     const tabsWrapper = select.parentElement.querySelector('.ss-multi-selected')
 
     tabsWrapper.addEventListener('mousedown', (event) => {
@@ -80,6 +84,7 @@ export class LanguagePicker extends ElementBase {
     })
 
     const setScrollClasses = () => {
+      if (!tabsWrapper.scrollWidth) return
       tabsWrapper.classList.remove('hide-left-shadow')
       tabsWrapper.classList.remove('hide-right-shadow')
 
@@ -99,7 +104,7 @@ export class LanguagePicker extends ElementBase {
     setScrollClasses()
     setTimeout(() => {
       setScrollClasses()
-    }, 200);
+    }, 100);
 
     tabsWrapper.addEventListener('mousemove', (event) => {
       if (this.isDragging) {
