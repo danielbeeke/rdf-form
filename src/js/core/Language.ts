@@ -68,9 +68,9 @@ export class LanguageService extends EventTarget implements CoreComponent {
       if (rdfForm.getAttribute('required-l10n-languages')) {
         requiredL10nLanguages = rdfForm.getAttribute('required-l10n-languages').split(',')
       }
-  
-      if (rdfForm.getAttribute('selected-l10n-language') && rdfForm.getAttribute('selected-l10n-language') in this.l10nLanguages) {
-        this.l10nLanguage = rdfForm.getAttribute('selected-l10n-language')
+
+      if (rdfForm.getAttribute('selected-l10n-language') && rdfForm.getAttribute('selected-l10n-language').toLowerCase() in this.l10nLanguages) {
+        this.l10nLanguage = rdfForm.getAttribute('selected-l10n-language').toLowerCase()
       }
   
       this.uiLanguages = JSON.parse(rdfForm.getAttribute('ui-languages')) ?? {}

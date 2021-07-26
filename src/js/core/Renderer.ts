@@ -38,14 +38,14 @@ export class Renderer extends EventTarget implements CoreComponent {
     }
 
     render(this.form.shadow, html`
+      <style>:host { display: none; }</style>
       <link rel="stylesheet" href="/css/rdf-form.css" />
 
       <form onsubmit=${formSubmit}>
-
-      ${templates}
-      <div class="actions">
-        <button class="button save primary big">${t`Save`}</button>
-      </div>
+        ${templates}
+        <div class="actions">
+          <button class="button save primary big">${t`Save`}</button>
+        </div>
       </form>
     `)
   }

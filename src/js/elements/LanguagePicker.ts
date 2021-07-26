@@ -11,6 +11,9 @@ export class LanguagePicker extends ElementBase {
 
   protected initiated = false
 
+  protected isDragging = false
+  protected dragX = null
+
   item () {
     const onChange = async (event) => {
       if (!this.initiated) return
@@ -28,7 +31,7 @@ export class LanguagePicker extends ElementBase {
 
   l10nLanguagePicker (select) {
     if (select.slim) {
-      this.attachEvents(select)
+      // this.attachEvents(select)
       return
     }
 
@@ -60,7 +63,7 @@ export class LanguagePicker extends ElementBase {
 
     slimSelect.setData([{'placeholder': true, 'text': t.direct('Search for a language').toString() }, ...selection])
     slimSelect.set(selection.map(option => option.value))
-    this.attachEvents(select)    
+    this.attachEvents(select)
     this.initiated = true // Without this it would trigger a needless render.
   }
 
@@ -68,6 +71,66 @@ export class LanguagePicker extends ElementBase {
     const langCodes = [...Object.entries(Language.l10nLanguages)].map(([langCode]) => langCode)
 
     const tabs = [...select.parentElement.querySelectorAll('.ss-value')]
+
+    const tabsWrapper = select.parentElement.querySelector('.ss-multi-selected')
+
+    tabsWrapper.addEventListener('mousedown', (event) => {
+      this.isDragging = true
+      this.dragX = null
+    })
+
+    const setScrollClasses = () => {
+      tabsWrapper.classList.remove('hide-left-shadow')
+      tabsWrapper.classList.remove('hide-right-shadow')
+
+      if (tabsWrapper.scrollLeft === 0) {
+        tabsWrapper.classList.add('hide-left-shadow')
+      }
+
+      if (tabsWrapper.scrollWidth - 1 <= tabsWrapper.clientWidth + tabsWrapper.scrollLeft) {
+        tabsWrapper.classList.add('hide-right-shadow')
+      }
+    }
+
+    tabsWrapper.addEventListener('scroll', (event) => {
+      setScrollClasses()
+    })
+
+    setScrollClasses()
+    setTimeout(() => {
+      setScrollClasses()
+    }, 200);
+
+    tabsWrapper.addEventListener('mousemove', (event) => {
+      if (this.isDragging) {
+        if (this.dragX !== null) {
+          const delta = this.dragX - event.clientX
+
+          tabsWrapper.scrollTo({
+            top: 0,
+            left: tabsWrapper.scrollLeft + delta
+          })
+        }
+
+        this.dragX = event.clientX
+
+        event.preventDefault()
+        event.stopImmediatePropagation()
+      }
+    })
+
+    tabsWrapper.addEventListener('click', (event) => {
+      if (this.isDragging && this.dragX !== null) {
+        event.preventDefault()
+        event.stopImmediatePropagation()
+      }
+
+      this.isDragging = false
+      this.dragX = null
+    }, {
+      capture: true
+    })
+
 
     for (const [index, tab] of tabs.entries()) {
       if (tab.querySelector('.ss-value-delete')) tab.querySelector('.ss-value-delete').title = t.direct('Delete all translations for this language').toString()

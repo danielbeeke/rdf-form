@@ -23,7 +23,7 @@ export class Reference extends ElementBase {
 
   constructor (...args) {
     super(...args)
-    this.autocomplete = debounce(this.autocomplete.bind(this), 400)
+    // this.autocomplete = debounce(this.autocomplete.bind(this), 400)
   }
 
   async on (event) {
@@ -81,7 +81,7 @@ export class Reference extends ElementBase {
     return html`
       <input 
         ref=${attributesDiff(this.attributes, element => this.inputElement = element)} 
-        .value=${this.searchTerm ?? this.value?._ ?? ''} 
+        value=${this.searchTerm ?? this.value?._ ?? ''} 
         onchange=${(event) => this.on(event)}
         onkeyup=${(event) => this.on(event)}
       />
