@@ -1,5 +1,6 @@
 import { ElementBase } from './ElementBase'
 import { getImageDimensionsByUrl } from '../helpers/getImageDimensionsByUrl'
+import { getImageColor } from '../helpers/getImageColor'
 import { html } from 'uhtml/async'
 import { attributesDiff } from '../helpers/attributesDiff'
 
@@ -29,14 +30,20 @@ export class UrlImage extends ElementBase {
   async on(event: Event) {
     super.on(event);
     const dimensionsEnabled = this.definition['form:dimensions']?.length > 0
+    const saveColor = this.definition['form:saveColor']?.length > 0
     const url = this.value?._
+    const schemaPrefix = this.form.formDefinition.context.schema
 
     if (dimensionsEnabled && url) {
       getImageDimensionsByUrl(url).then(({ width, height }) => {
-        const dimensionsPrefix = this.form.formDefinition.context.schema
+        this.itemValues[`${schemaPrefix}width`] = [{ '@value': width }]
+        this.itemValues[`${schemaPrefix}height`] = [{ '@value': height }]
+      })
+    }
 
-        this.itemValues[`${dimensionsPrefix}width`] = [{ '@value': width }]
-        this.itemValues[`${dimensionsPrefix}height`] = [{ '@value': height }]
+    if (saveColor) {
+      getImageColor(url).then(({ color }) => {
+        this.itemValues[`${schemaPrefix}color`] = [{ '@value': color }]
       })
     }
 

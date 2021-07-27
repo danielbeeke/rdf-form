@@ -25,6 +25,7 @@ personForm:image
     form:label          "Afbeelding"@nl ;
     form:type           schema:ImageObject ;
     form:binding        schema:url ;
+    form:saveColor      true ;
     form:focalPoint     focalPoint:x1, focalPoint:y1, focalPoint:x2, focalPoint:y2 ;
     form:dimensions     schema:width, schema:height ;
     form:order          3 ;

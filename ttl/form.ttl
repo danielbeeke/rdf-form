@@ -49,6 +49,11 @@ form:cssClass
     rdfs:comment "Extra CSS class."@en ;
     rdfs:label   "CSS Class"@en .
 
+form:saveColor
+    rdf:type     rdf:Property ;
+    rdfs:comment "Save the dominant color to the image object."@en ;
+    rdfs:label   "Save color"@en .
+
 form:widget
     rdf:type   rdf:Property ;
     rdfs:comment
