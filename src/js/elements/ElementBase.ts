@@ -169,13 +169,28 @@ export class ElementBase extends EventTarget {
   /**
    * Start of templates
    */
+   wrapperDisplay (innerTemplates: Array<typeof html> = []) {
+    return this.wrapper(innerTemplates, true)
+  }
+  
+  itemDisplay (childTemplates: Array<typeof html> = []) {
+    return html`
+    <div class="item">
+      ${this.valueDisplay()}
+      ${childTemplates}
+    </div>`
+  }
 
-  wrapper (innerTemplates: Array<typeof html> = []) {
+  valueDisplay () {
+    return html`${this.value?._}`
+  }
+
+  async wrapper (innerTemplates: Array<typeof html> = [], isDisplayOnly = false) {
     const type = kebabize(this.constructor.name)
     const shouldShowEmpty = this.definition['form:translatable']?._ === 'always' && !Language.l10nLanguage
 
     return html`
-    ${!shouldShowEmpty ? html`
+    ${!shouldShowEmpty && (!isDisplayOnly || innerTemplates.length > 0) ? html`
     <div ref=${attributesDiff(this.wrapperAttributes)} name=${kebabize(lastPart(this.definition['@id']))} type="${type}">
     ${this.label()}
     ${innerTemplates.length ? html`
@@ -183,7 +198,7 @@ export class ElementBase extends EventTarget {
         ${innerTemplates}
       </div>
     ` : ''}
-      ${this.definition['form:multiple']?._ ? html`<div>${this.addButton()}</div>` : html``}
+      ${this.definition['form:multiple']?._ && !isDisplayOnly ? html`<div>${this.addButton()}</div>` : html``}
     </div>
     ` : html``}`
   }
@@ -248,6 +263,8 @@ export class ElementBase extends EventTarget {
   async label () {
     let languageLabel = ''
 
+    const isDisplayOnly = this.form.getAttribute('display')
+
     if (this.definition['form:translatable']?._) {
       const applicableValues = this.parentValues?.[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()]
       .filter((value) => !value['@language'] || value['@language'] === Language.l10nLanguage) : []
@@ -274,9 +291,9 @@ export class ElementBase extends EventTarget {
 
     return this.definition['form:label']?._ ? html`
       <label ref=${attributesDiff(this.labelAttributes)}>
-        ${this.definition['form:label']._}
+        ${this.definition['form:label']._}${isDisplayOnly ? ':' : ''}
         <small>&nbsp;<em>
-        ${languageLabel? html`${languageLabel}` : html``}
+        ${languageLabel && !isDisplayOnly ? html`${languageLabel}` : html``}
         ${this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && languageLabel ? html`<span title=${t.direct('Disable translations for this field').toString()} class="icon-button disable-language" onclick=${disableLanguage}>${fa(faTimes)}</span>` : html``}
         ${this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && !languageLabel ? html`<span title=${t.direct('Enable translations for this field').toString()} class="icon-button enable-language" onclick=${enableLanguage}>${fa(faLanguage)}</span>` : html``}
         </em></small>

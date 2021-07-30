@@ -88,7 +88,7 @@ export class Reference extends ElementBase {
     `
   }
 
-  async item (childTemplates: Array<typeof html> = []) {
+  async item (childTemplates: Array<typeof html> = [], isDisplayOnly = false) {
     const value = this.value?._
     const uri = value?.substr(0, 4) === 'http' ? value : false
 
@@ -139,7 +139,7 @@ export class Reference extends ElementBase {
     return html`
     <div class="item" expanded=${!isCollapsed} has-suggestions=${this.searchTerm}>
       ${isCollapsed ? 
-        html`${this.referenceLabel(uri ? uri : '', meta)} ${editButton()}` : 
+        html`${this.referenceLabel(uri ? uri : '', meta)} ${isDisplayOnly ? null : editButton()}` : 
         html`<div class="inner">${this.input()} ${!this.searchTerm ? acceptButton() : ''} ${restoreButton()} ${this.removeButton()}</div>`
       }
 
@@ -182,7 +182,7 @@ export class Reference extends ElementBase {
   }
 
 
-  wrapper (innerTemplates: Array<typeof html> = []) {
+  wrapper (innerTemplates: Array<typeof html> = [], isDisplayOnly = false) {
     const type = kebabize(this.constructor.name)
     const shouldShowEmpty = this.definition['form:translatable']?._ === 'always' && !Language.l10nLanguage
 
@@ -193,12 +193,20 @@ export class Reference extends ElementBase {
     ${innerTemplates.length ? html`
       <div class="items">
         ${innerTemplates}
-        ${this.definition['form:multiple']?._ ? html`<div class="item">${this.addButton()}</div>` : html``}
+        ${this.definition['form:multiple']?._ && !isDisplayOnly ? html`<div class="item">${this.addButton()}</div>` : html``}
       </div>
     ` : ''}
       
     </div>
     ` : html``}`
+  }
+
+  itemDisplay (childTemplates: Array<typeof html> = []) {
+    return this.item(childTemplates, true)
+  }
+
+  valueDisplay () {
+    return html`${this.value?._}`
   }
 
 }

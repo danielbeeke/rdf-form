@@ -36,22 +36,30 @@ export class Renderer extends EventTarget implements CoreComponent {
         expanded: this.form.formData.proxy.$,
       } }))
     }
+    const isDisplayOnly = this.form.getAttribute('display')
 
     render(this.form.shadow, html`
       <style>:host { display: none; }</style>
       <link rel="stylesheet" href="/css/rdf-form.css" />
+      ${isDisplayOnly ? html`<link rel="stylesheet" href="/css/display-only.css" />` : null}
 
+
+      ${!isDisplayOnly ? html`
       <form onsubmit=${formSubmit}>
         ${templates}
         <div class="actions">
           <button class="button save primary big">${t`Save`}</button>
         </div>
       </form>
+
+      ` : templates}
     `)
   }
 
   async nest (formDefinition: Map<any, any>, registry: Registry, formData: any, parent: any) {
     const templates = []
+
+    const isDisplayOnly = this.form.getAttribute('display')
 
     for (const [bindings, [field, children]] of formDefinition.entries()) {
       const mainBinding = field['form:binding']?._
@@ -93,16 +101,16 @@ export class Renderer extends EventTarget implements CoreComponent {
 
             const childValues = field['form:widget']?._ === 'group' ? formData[mainBinding][index] : formData[mainBinding]
             const childTemplates = children.size ? await this.nest(children, registry, childValues, wrapperFieldInstance) : []
-            innerTemplates.push(fieldInstance.item(childTemplates))
+            innerTemplates.push(isDisplayOnly ? fieldInstance.itemDisplay(childTemplates) : fieldInstance.item(childTemplates))
           }  
         }
 
         /**
          * New items
          */
-        else {
+        else if (!isDisplayOnly) {
           const childTemplates = children.size ? await this.nest(children, registry, [], wrapperFieldInstance) : []
-          innerTemplates.push(wrapperFieldInstance.item(childTemplates))
+          innerTemplates.push(isDisplayOnly ? wrapperFieldInstance.itemDisplay(childTemplates) : wrapperFieldInstance.item(childTemplates))
         }
       }
 
@@ -111,7 +119,7 @@ export class Renderer extends EventTarget implements CoreComponent {
        */
       else if (isUiComponent) {
         const childTemplates = children.size ? await this.nest(children, registry, formData, wrapperFieldInstance) : []
-        innerTemplates.push(wrapperFieldInstance.item(childTemplates))
+        innerTemplates.push(isDisplayOnly ? wrapperFieldInstance.itemDisplay(childTemplates) : wrapperFieldInstance.item(childTemplates))
       }
 
       /**
@@ -119,10 +127,10 @@ export class Renderer extends EventTarget implements CoreComponent {
        */
       else if (isContainer) {
         const childTemplates = children.size ? await this.nest(children, registry, mainBinding ? containerProxy(formData, mainBinding) : formData, wrapperFieldInstance) : []
-        innerTemplates.push(wrapperFieldInstance.item(childTemplates))
+        innerTemplates.push(isDisplayOnly ? wrapperFieldInstance.itemDisplay(childTemplates) : wrapperFieldInstance.item(childTemplates))
       }
 
-      templates.push(wrapperFieldInstance.wrapper(innerTemplates))
+      templates.push(isDisplayOnly ? wrapperFieldInstance.wrapperDisplay(innerTemplates) : wrapperFieldInstance.wrapper(innerTemplates))
     }
 
     return templates

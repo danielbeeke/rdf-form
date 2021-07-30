@@ -108,15 +108,15 @@ recipeForm:instructions
     form:required     true .
 
 
-recipeForm:duration
-    a                 form:Field ;
-    form:widget "duration" ;
-    form:label       "Duration"@en ;
-    form:label       "Tijdsduur"@nl ;
-    form:binding     recipe:duration ;
-    form:range       "THM" ;
-    form:order       4 ;
-    form:required    true .
+# recipeForm:duration
+#     a                 form:Field ;
+#     form:widget "duration" ;
+#     form:label       "Duration"@en ;
+#     form:label       "Tijdsduur"@nl ;
+#     form:binding     recipe:duration ;
+#     form:range       "THM" ;
+#     form:order       4 ;
+#     form:required    true .
 
 
 recipeForm:author

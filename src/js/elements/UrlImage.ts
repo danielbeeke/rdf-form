@@ -3,6 +3,7 @@ import { getImageDimensionsByUrl } from '../helpers/getImageDimensionsByUrl'
 import { getImageColor } from '../helpers/getImageColor'
 import { html } from 'uhtml/async'
 import { attributesDiff } from '../helpers/attributesDiff'
+import { lastPart } from '../helpers/lastPart'
 
 export class UrlImage extends ElementBase {
 
@@ -155,5 +156,9 @@ export class UrlImage extends ElementBase {
 
   reset () {
     this.focalPoint = { x1: null, y1: null, x2: null, y2: null, x3: null, y3: null, x4: null, y4: null }
+  }
+
+  valueDisplay () {
+    return html`<a target="_blank" href=${this.value?._}><img src=${this.value?._} /></a>`
   }
 }

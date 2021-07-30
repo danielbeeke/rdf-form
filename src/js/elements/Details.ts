@@ -1,5 +1,5 @@
 import { ElementBase } from './ElementBase'
-import { html } from 'uhtml/async'
+import { html, render } from 'uhtml/async'
 import { kebabize } from '../helpers/kebabize'
 import { attributesDiff } from '../helpers/attributesDiff'
 
@@ -26,7 +26,15 @@ export class Details extends ElementBase {
 
   input () { return html`` }
 
-  wrapper (innerTemplates: Array<typeof html> = []) {
+  async wrapper (innerTemplates: Array<typeof html> = [], isDisplayOnly = false) {
+
+    if (isDisplayOnly) {
+      const resolvedInnerTemplates = await Promise.all(innerTemplates)
+      const tester = document.createElement('div')
+      await render(tester, html`${resolvedInnerTemplates}`)
+      if (tester.innerText.trim() === '') return html``
+    }
+
     const toggle = () => {
       this.wrapperAttributes.open = !this.wrapperAttributes.open
     }

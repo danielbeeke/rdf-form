@@ -15,6 +15,10 @@ export class LanguagePicker extends ElementBase {
   protected dragX = null
   protected newestItem = null
 
+  itemDisplay () {
+    return this.item()
+  }
+
   item () {
     const onChange = async (event) => {
       if (!this.initiated) return
