@@ -23,7 +23,7 @@ export class Reference extends ElementBase {
 
   constructor (...args) {
     super(...args)
-    // this.autocomplete = debounce(this.autocomplete.bind(this), 400)
+    this.autocomplete = debounce(this.autocomplete.bind(this), 400)
   }
 
   async on (event) {
@@ -187,7 +187,7 @@ export class Reference extends ElementBase {
     const shouldShowEmpty = this.definition['form:translatable']?._ === 'always' && !Language.l10nLanguage
 
     return html`
-    ${!shouldShowEmpty ? html`
+    ${!shouldShowEmpty && (!isDisplayOnly || isDisplayOnly && innerTemplates.length > 0)  ? html`
     <div ref=${attributesDiff(this.wrapperAttributes)} name=${kebabize(lastPart(this.definition['@id']))} type="${type}">
     ${this.label()}
     ${innerTemplates.length ? html`

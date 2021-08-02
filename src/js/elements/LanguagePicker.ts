@@ -16,7 +16,7 @@ export class LanguagePicker extends ElementBase {
   protected newestItem = null
 
   itemDisplay () {
-    return this.item()
+    return Object.keys(Language.l10nLanguages).length > 1 ? this.item() : html``
   }
 
   item () {
@@ -81,6 +81,8 @@ export class LanguagePicker extends ElementBase {
     const langCodes = [...Object.entries(Language.l10nLanguages)].map(([langCode]) => langCode)
     const tabs = [...select.parentElement.querySelectorAll('.ss-value')]
     const tabsWrapper = select.parentElement.querySelector('.ss-multi-selected')
+    if (tabsWrapper.initiated) return
+    tabsWrapper.initiated = true
 
     tabsWrapper.addEventListener('mousedown', (event) => {
       this.isDragging = true
@@ -112,9 +114,8 @@ export class LanguagePicker extends ElementBase {
 
     tabsWrapper.addEventListener('mousemove', (event) => {
       if (this.isDragging) {
+        const delta = this.dragX - event.clientX
         if (this.dragX !== null) {
-          const delta = this.dragX - event.clientX
-
           tabsWrapper.scrollTo({
             top: 0,
             left: tabsWrapper.scrollLeft + delta

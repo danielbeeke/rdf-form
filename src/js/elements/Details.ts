@@ -32,7 +32,9 @@ export class Details extends ElementBase {
       const resolvedInnerTemplates = await Promise.all(innerTemplates)
       const tester = document.createElement('div')
       await render(tester, html`${resolvedInnerTemplates}`)
-      if (tester.innerText.trim() === '') return html``
+      const text = tester.innerText.replace(/\n|\r/g, '').trim()
+
+      if (text === '') return html``
     }
 
     const toggle = () => {

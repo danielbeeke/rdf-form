@@ -1,5 +1,6 @@
 import { ElementBase } from './ElementBase'
 import { init } from "../vendor/pell";
+import { html } from 'uhtml/async'
 
 export class WYSIWYG extends ElementBase {
 
@@ -28,4 +29,7 @@ export class WYSIWYG extends ElementBase {
     return this.editor
   }
 
+  valueDisplay () {
+    return html`<div ref=${element => element.innerHTML = this.value?._}></div>`
+  }
 }

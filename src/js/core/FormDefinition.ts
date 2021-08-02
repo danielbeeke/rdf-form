@@ -2,6 +2,7 @@ import { ttl2jsonld } from '../vendor/ttl2jsonld'
 import { jsonld } from '../vendor/jsonld.js'
 import { ExpandedJsonLdObject } from '../types/ExpandedJsonLdObject'
 import { lastPart } from '../helpers/lastPart'
+import { expand } from '../helpers/expand'
 import { CoreComponent } from '../types/CoreComponent'
 import { JsonLdProxy } from './JsonLdProxy'
 import { Language } from './Language'
@@ -63,18 +64,19 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     return this.sourceDefinitionExpanded.find(only('Form'))
   }
 
-  get fields (): Array<any> {
-    const fieldsToRemove = this.info['form:remove']?.map(item => item._) ?? []
+  get fieldsToRemove () {
+    const formRemovals = JSON.parse(this.form.getAttribute('fields-to-remove') ?? '[]')
+    return [...(this.info['form:remove']?.map(item => item._) ?? []), ...formRemovals].map(collapsed => expand(collapsed, this.context)) ?? []
+  }
 
+  get fields (): Array<any> {
     return this.sourceDefinitionExpanded.filter(only('Field'))
-    .filter(field => !fieldsToRemove.includes(field['@id']))
+    .filter(field => !this.fieldsToRemove.includes(field['@id']))
   }
 
   get elements (): Array<any> {
-    const fieldsToRemove = this.info['form:remove']?.map(item => item._) ?? []
-
     return this.sourceDefinitionExpanded.filter(only('Field', 'Container', 'UiComponent'))
-    .filter(field => !fieldsToRemove.includes(field['@id']))
+    .filter(field => !this.fieldsToRemove.includes(field['@id']))
   }
 
   async resolveSubForms (formDefinition) {
