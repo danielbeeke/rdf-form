@@ -89,7 +89,7 @@ export class Renderer extends EventTarget implements CoreComponent {
 
         if (formData && Array.isArray(formData.$)) {
           applicableValues = flatMapProxy(formData, mainBinding)
-          .filter((value) => !value['@language'] || value['@language'] === Language.l10nLanguage)
+          .filter((value) => value && !value['@language'] || value && value['@language'] === Language.l10nLanguage)
         }
 
         if (applicableValues.length) {
