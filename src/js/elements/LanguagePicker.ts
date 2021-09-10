@@ -81,9 +81,10 @@ export class LanguagePicker extends ElementBase {
     const langCodes = [...Object.entries(Language.l10nLanguages)].map(([langCode]) => langCode)
     const tabs = [...select.parentElement.querySelectorAll('.ss-value')]
     const tabsWrapper = select.parentElement.querySelector('.ss-multi-selected')
+    this.setActive(tabs, langCodes)
     if (tabsWrapper.initiated) return
     tabsWrapper.initiated = true
-
+    
     tabsWrapper.addEventListener('mousedown', (event) => {
       this.isDragging = true
       this.dragX = null
@@ -116,6 +117,7 @@ export class LanguagePicker extends ElementBase {
       if (this.isDragging) {
         const delta = this.dragX - event.clientX
         if (this.dragX !== null) {
+
           tabsWrapper.scrollTo({
             top: 0,
             left: tabsWrapper.scrollLeft + delta
@@ -140,8 +142,9 @@ export class LanguagePicker extends ElementBase {
     }, {
       capture: true
     })
+  }
 
-
+  setActive (tabs, langCodes) {
     for (const [index, tab] of tabs.entries()) {
       if (tab.querySelector('.ss-value-delete')) tab.querySelector('.ss-value-delete').title = t.direct('Delete all translations for this language').toString()
       if (langCodes[index] === Language.l10nLanguage) tab.classList.add('active')
@@ -157,7 +160,6 @@ export class LanguagePicker extends ElementBase {
         this.render()    
       })
     }
-
   }
 
   uiLanguageSwitcher () {
