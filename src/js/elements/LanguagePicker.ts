@@ -74,7 +74,23 @@ export class LanguagePicker extends ElementBase {
     slimSelect.setData([{'placeholder': true, 'text': t.direct('Search for a language').toString() }, ...selection])
     slimSelect.set(selection.map(option => option.value))
     this.attachEvents(select)
+    this.setScrollClasses(select)
     this.initiated = true // Without this it would trigger a needless render.
+  }
+
+  setScrollClasses(select) {
+    const tabsWrapper = select.parentElement.querySelector('.ss-multi-selected')
+    if (!tabsWrapper.scrollWidth) return
+    tabsWrapper.classList.remove('hide-left-shadow')
+    tabsWrapper.classList.remove('hide-right-shadow')
+
+    if (tabsWrapper.scrollLeft === 0) {
+      tabsWrapper.classList.add('hide-left-shadow')
+    }
+
+    if (tabsWrapper.scrollWidth - 1 <= tabsWrapper.clientWidth + tabsWrapper.scrollLeft) {
+      tabsWrapper.classList.add('hide-right-shadow')
+    }
   }
 
   attachEvents (select) {
@@ -90,27 +106,13 @@ export class LanguagePicker extends ElementBase {
       this.dragX = null
     })
 
-    const setScrollClasses = () => {
-      if (!tabsWrapper.scrollWidth) return
-      tabsWrapper.classList.remove('hide-left-shadow')
-      tabsWrapper.classList.remove('hide-right-shadow')
-
-      if (tabsWrapper.scrollLeft === 0) {
-        tabsWrapper.classList.add('hide-left-shadow')
-      }
-
-      if (tabsWrapper.scrollWidth - 1 <= tabsWrapper.clientWidth + tabsWrapper.scrollLeft) {
-        tabsWrapper.classList.add('hide-right-shadow')
-      }
-    }
-
     tabsWrapper.addEventListener('scroll', (event) => {
-      setScrollClasses()
+      this.setScrollClasses(select)
     })
 
-    setScrollClasses()
+    this.setScrollClasses(select)
     setTimeout(() => {
-      setScrollClasses()
+      this.setScrollClasses(select)
     }, 100);
 
     tabsWrapper.addEventListener('mousemove', (event) => {
