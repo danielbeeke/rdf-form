@@ -63,6 +63,9 @@ export class RdfForm extends HTMLElement implements CoreComponent {
     this.renderer = new Renderer(this)
     this.language = Language
     this.language.init(this)
+    this.language.addEventListener('l10n-change', (event: CustomEvent) => this.dispatchEvent(new CustomEvent('l10n-change', {
+      detail: event.detail
+    })))
     this.proxy = this.getAttribute('proxy')
 
     if (this.getAttribute('debug') !== null) expandProxiesInConsole()

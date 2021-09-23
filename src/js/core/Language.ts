@@ -99,6 +99,9 @@ export class LanguageService extends EventTarget implements CoreComponent {
  
    set l10nLanguage (langCode) {
      currentL10nLanguage = langCode
+     this.dispatchEvent(new CustomEvent('l10n-change', {
+       detail: langCode
+     }))
    }
  
    get l10nLanguage () {
