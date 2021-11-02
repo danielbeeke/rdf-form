@@ -41,7 +41,12 @@ import { ProxyHandlerStatic } from '../vendor/ProxyHandlerStatic-browser'
     }
     else {
       const existingItem = items.get(uri)
-      Object.assign(existingItem.label, label)
+      if (typeof existingItem.label === 'string' && typeof label === 'string') {
+        existingItem.label = label
+      }
+      else {
+        Object.assign(existingItem.label, label)
+      }
       items.set(uri, existingItem)
     }
   }
