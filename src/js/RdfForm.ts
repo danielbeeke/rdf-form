@@ -39,13 +39,14 @@ export class RdfForm extends HTMLElement implements CoreComponent {
       'Password',
       'WYSIWYG',
       'LanguagePicker',
+      'B2',
       'Unknown',
     ]
 
     const fieldsObject = {}
 
     for (const field of fields) {
-      const name = kebabize(field.replace(/[^a-zA-Z]+/g, ''))
+      const name = kebabize(field.replace(/[^a-zA-Z0-9]+/g, ''))
       fieldsObject[name] = '../elements/' + field
     }
 

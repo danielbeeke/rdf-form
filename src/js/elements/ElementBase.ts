@@ -34,6 +34,7 @@ export class ElementBase extends EventTarget {
     multiple: null,
     rows: null,
     open: null,
+    accept: null,
   }
 
   protected wrapperAttributes = {
@@ -186,7 +187,7 @@ export class ElementBase extends EventTarget {
   }
 
   async wrapper (innerTemplates: Array<typeof html> = [], isDisplayOnly = false) {
-    const type = kebabize(this.constructor.name)
+    const type = await kebabize(this.constructor.name)
     const shouldShowEmpty = this.definition['form:translatable']?._ === 'always' && !Language.l10nLanguage
 
     return html`
@@ -263,7 +264,7 @@ export class ElementBase extends EventTarget {
   async label () {
     let languageLabel = ''
 
-    const isDisplayOnly = this.form.getAttribute('display')
+    const isDisplayOnly = await this.form.getAttribute('display')
 
     if (this.definition['form:translatable']?._) {
       const applicableValues = this.parentValues?.[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()]
@@ -303,7 +304,7 @@ export class ElementBase extends EventTarget {
 
   async referenceLabel (uri, meta) {
     if (!meta) {
-      const subject = lastPart(uri).replace(/_|-/g, ' ')
+      const subject = await lastPart(uri).replace(/_|-/g, ' ')
       meta = { label: subject }
     }
 

@@ -19,7 +19,7 @@ export class Registry extends EventTarget implements CoreComponent {
   async init () {
     const event = new CustomEvent('register-elements', { detail: { fields: [] } })
     this.form.dispatchEvent(event)
-    const { fields } = event.detail
+    const { fields } = await event.detail
 
     this.registeredFieldClasses = fields
 
@@ -60,6 +60,7 @@ export class Registry extends EventTarget implements CoreComponent {
       }
 
       await (widgetPath in fields ? fields[widgetPath]() : import(`${widgetPath}.js`).catch(console.error)).then(fieldClass => {
+        if (fieldClass === undefined) throw new Error(`No widget available for: ${definition['form:widget']?._}`)
         const name = Object.keys(fieldClass)[0]
         this.fieldClasses.set(widget, fieldClass[name])
         elementClass = this.fieldClasses.get(widget)

@@ -12,6 +12,8 @@
       const form = document.createElement('rdf-form')
       form.setAttribute('form', `/tests/elements/${fieldType}.form.ttl`)
       // form.setAttribute('debug', null)
+      // form.setAttribute('display', null)
+
       form.setAttribute('data', `/tests/elements/${fieldType}.ttl`)
 
       form.addEventListener('submit', (event) => {
