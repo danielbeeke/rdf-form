@@ -1,0 +1,16 @@
+@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix form:       <http://localhost:8070/form.ttl#> .
+@prefix soundcloudForm: <http://localhost:8070/soundcloud.form.ttl#> .
+@prefix schema:     <http://schema.org/> .
+@prefix focalPoint:       <http://localhost:8070/focalPoint.ttl#> .
+
+<http://localhost:8070/soundcloud.form#soundcloudForm>
+    form:binding schema:AudioObject ;
+    a            form:Form .
+
+soundcloudForm:image
+    a                   form:Field ;
+    form:widget         "noun" ;
+    form:label          "Icon"@en ;
+    form:label          "Icoon"@nl ;
+    form:binding        schema:url .

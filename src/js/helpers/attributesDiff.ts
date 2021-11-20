@@ -13,4 +13,6 @@ export const attributesDiff = (attributes, callback = null) => node => {
       callback = null
     }
   }
+
+  return node
 };

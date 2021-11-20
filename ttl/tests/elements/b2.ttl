@@ -4,4 +4,6 @@
 
 []
     a schema:Thing ;
-    schema:url "https://media.kuuluu.org/1920px-Two_red_dice_01.svg.png" .
+    schema:url 
+        "https://media.kuuluu.org/a-file-that-was-removed.png" ,
+        "https://media.kuuluu.org/1920px-Two_red_dice_01.svg.png" .

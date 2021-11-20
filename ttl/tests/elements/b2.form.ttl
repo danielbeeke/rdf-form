@@ -13,6 +13,7 @@ fieldsForm:b2
     form:label             "Upload"@en ;
     form:binding           schema:url ;
     form:extentions        "text/plain" ,
+                           ".ttl",
                            ".pdf" ;
     form:multiple          true ;
     form:order             1 .
