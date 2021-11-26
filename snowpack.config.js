@@ -15,7 +15,7 @@ module.exports = {
   ],
   optimize: {
     bundle: true,
-    minify: true,
+    minify: false,
     target: 'es2017',
     treeshake: true,
     entrypoints: ['js/RdfForm.js']
