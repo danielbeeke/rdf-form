@@ -80,6 +80,7 @@ recipeForm:measurementUnit
     form:widget "dropdown" ;
     form:label       "Unit"@en ;
     form:label       "Soort"@nl ;
+    form:jsonLdKey   "id" ;
     form:required          true ;
     form:binding     recipe:measurementUnit ;
     form:option      [ form:label "- Select -"@en ;

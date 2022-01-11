@@ -2,8 +2,13 @@
   "scripts": {
     "test": "cypress open",
     "start": "snowpack dev",
-    "build": "snowpack build"
+    "build": "esbuild src/js/RdfForm.ts --bundle --outfile=build/index.js"
   },
+  "main": "./build/index.js",
+  "module": "./build/index.js",
+  "version": "0.0.1",
+  "type": "module",
+  "name": "rdf-form",
   "dependencies": {
     "@comunica/actor-http-proxy": "^1.18.1",
     "@comunica/actor-init-sparql": "^1.18.1",

@@ -5,7 +5,7 @@ import { lastPart } from './lastPart'
 import { Language } from '../core/Language'
 
 export const getUriMeta = async (uri: string, proxy: string = null) => {
-  if (!metas.get(uri)) {
+  if (!metas.get(uri + Language.uiLanguage)) {
     let text
     try {
       const response = await fetch(`${proxy ? proxy : ''}${uri}`, { headers: { 'Accept': 'application/ld+json' }})
@@ -33,36 +33,41 @@ export const getUriMeta = async (uri: string, proxy: string = null) => {
     const labelLastParts = ['name', 'username', 'label']
     const imageLastParts = ['thumbnail', 'depiction', 'image', 'img']
 
-    for (const [predicate, value] of Object.entries(json)) {
-      if (!meta.label && labelLastParts.includes(lastPart(predicate))) {
-        const valueInPreferredLanguage = (value as Array<any>).find(item => item['@language'] === Language.uiLanguage)
-        const valueInUndeterminedLanguage = (value as Array<any>).find(item => item['@language'] === 'und')
-        meta.label = valueInPreferredLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@value'] ?? value?.[0]?.['@value']
-      }
-
-      if (meta.label?.substr(0, 2) === '_:') meta.label = false
-
-      if (!meta.thumbnail && imageLastParts.includes(lastPart(predicate))) {
-        const valueInPreferredLanguage = (value as Array<any>).find(item => item['@language'] === Language.uiLanguage)
-        const valueInUndeterminedLanguage = (value as Array<any>).find(item => item['@language'] === 'und')
-        meta.thumbnail = valueInPreferredLanguage?.['@value'] ?? valueInPreferredLanguage?.['@id'] ?? 
-        valueInUndeterminedLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@id'] ?? 
-        value?.[0]?.['@value'] ?? value?.[0]?.['@id']
-
-        if (meta.thumbnail?.substr(0, 2) === '_:') meta.thumbnail = false
-
-        // [schema:image][0][schema:url] fallback
-        if (!meta.thumbnail && value?.[0]?.['https://schema.org/url']?.[0]?.['@value']) {
-          meta.thumbnail = value[0]['https://schema.org/url'][0]['@value']
+    for (const labelLastPart of labelLastParts) {
+      for (const [predicate, value] of Object.entries(json)) {
+        if (!meta.label && labelLastPart === lastPart(predicate)) {
+          const valueInPreferredLanguage = (value as Array<any>).find(item => item['@language'] === Language.uiLanguage)
+          const valueInUndeterminedLanguage = (value as Array<any>).find(item => item['@language'] === 'und')
+          meta.label = valueInPreferredLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@value'] ?? value?.[0]?.['@value']
         }
-      }
+  
+        if (meta.label?.substr(0, 2) === '_:') meta.label = null
+      }  
+    }
+
+    for (const imageLastPart of imageLastParts) {
+      for (const [predicate, value] of Object.entries(json)) {
+        if (!meta.thumbnail && imageLastPart === lastPart(predicate)) {
+          const valueInPreferredLanguage = (value as Array<any>).find(item => item['@language'] === Language.uiLanguage)
+          const valueInUndeterminedLanguage = (value as Array<any>).find(item => item['@language'] === 'und')
+          meta.thumbnail = valueInPreferredLanguage?.['@value'] ?? valueInPreferredLanguage?.['@id'] ?? 
+          valueInUndeterminedLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@id'] ?? 
+          value?.[0]?.['@value'] ?? value?.[0]?.['@id']
+  
+          if (meta.thumbnail?.substr(0, 2) === '_:') meta.thumbnail = false
+  
+          if (!meta.thumbnail && value?.[0]?.['https://schema.org/url']?.[0]?.['@value']) {
+            meta.thumbnail = value[0]['https://schema.org/url'][0]['@value']
+          }
+        }
+      }  
     }
 
     if (!meta.label) meta.label = false
     if (!meta.thumbnail) meta.thumbnail = false
 
-    metas.set(uri, meta)
+    metas.set(uri + Language.uiLanguage, meta)
   }
 
-  return metas.get(uri)
+  return metas.get(uri + Language.uiLanguage)
 }

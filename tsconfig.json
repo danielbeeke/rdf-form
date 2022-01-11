@@ -2,7 +2,7 @@
   "compilerOptions": {
     "sourceMap": true,
     "noImplicitAny": false,
-    "module": "commonjs",
+    "module": "ESNext",
     "target": "es6",
     "lib": [
       "es2015",
@@ -10,10 +10,21 @@
       "es2019",
       "dom"
     ],
+    "moduleResolution": "Node",
     "removeComments": true,
-    "allowSyntheticDefaultImports": false,
+    "emitDeclarationOnly": true,
+    "allowSyntheticDefaultImports": true,
     "allowJs": true,
-    "baseUrl": "./",
-    "paths": {}
-  }
+    "baseUrl": ".",
+    "paths": {},
+    "declarationMap": true,
+    "declaration": true
+  },
+  "exclude": [
+    "build", 
+    "cypress", 
+    "snowpack.config.js", 
+    "src/js/Translations",
+    "src/js/languages.js"
+  ]
 }

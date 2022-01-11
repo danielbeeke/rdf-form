@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   mount: {
     src: "/",
     html: "/",
@@ -14,10 +14,10 @@ module.exports = {
     ]
   ],
   optimize: {
-    bundle: true,
+    bundle: false,
     minify: false,
-    target: 'es2017',
-    treeshake: true,
+    target: 'es2020',
+    treeshake: false,
     entrypoints: ['js/RdfForm.js']
   },
 }
