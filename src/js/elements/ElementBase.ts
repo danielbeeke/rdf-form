@@ -75,6 +75,7 @@ export class ElementBase extends EventTarget {
     if (this.definition['form:open']?._ !== undefined) this.wrapperAttributes.open = this.definition['form:open']._
     if (this.definition['form:rows']?._ !== undefined) this.attributes.rows = parseInt(this.definition['form:rows']._)
     if (this.definition['form:cssClass']?._) this.wrapperAttributes.class.push(this.definition['form:cssClass']._)
+    if (!this.definition['form:label']?._) this.wrapperAttributes.class.push('no-label')
   }
 
   get proxy () {
@@ -198,12 +199,17 @@ export class ElementBase extends EventTarget {
     ${this.label()}
     ${innerTemplates.length ? html`
       <div class="items">
+        ${this.description()}
         ${innerTemplates}
       </div>
     ` : ''}
       ${this.definition['form:multiple']?._ && !isDisplayOnly ? html`<div>${this.addButton()}</div>` : html``}
     </div>
     ` : html``}`
+  }
+
+  description () {
+    return this.definition['form:description']?._ ? html`<p class="description">${this.definition['form:description']?._}</p>` : null
   }
 
   item (childTemplates: Array<typeof html> = []) {

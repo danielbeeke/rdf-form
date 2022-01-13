@@ -1,4 +1,8 @@
 .checkbox-label {
   flex: 1 1 100%;
   cursor: pointer;
+
+  > input {
+    margin-left: 0;
+  }
 }
