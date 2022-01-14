@@ -10,7 +10,7 @@ form:
     dcterms:title                 "Form ontology"@en ;
     dcterms:description           "An ontology for adding form definitions to Ontologies."@en ;
     vann:preferredNamespacePrefix "form" ;
-    vann:preferredNamespaceURI    <http://mep/form#> .
+    vann:preferredNamespaceURI    <http://form#> .
 
 form:Form
     a          rdfs:Class ;
