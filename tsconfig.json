@@ -2,7 +2,7 @@
   "compilerOptions": {
     "sourceMap": true,
     "noImplicitAny": false,
-    "module": "ESNext",
+    "module": "ES2020",
     "target": "es6",
     "lib": [
       "es2015",

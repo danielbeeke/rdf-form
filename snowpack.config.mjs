@@ -14,10 +14,10 @@ export default {
     ]
   ],
   optimize: {
-    bundle: false,
+    bundle: true,
     minify: false,
     target: 'es2020',
-    treeshake: false,
+    treeshake: true,
     entrypoints: ['js/RdfForm.js']
   },
 }

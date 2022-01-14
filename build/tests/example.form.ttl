@@ -1,0 +1,128 @@
+@prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix recipe:     <http://rdf.danielbeeke.nl/recipe/recipe-dev.ttl#> .
+@prefix owl:        <http://www.w3.org/2002/07/owl#> .
+@prefix dcterms:    <http://purl.org/dc/terms/> .
+@prefix vann:       <http://purl.org/vocab/vann/> .
+@prefix form:       <http://rdf.danielbeeke.nl/form/form-dev.ttl#> .
+@prefix recipeForm: <http://localhost:8070/example.form#recipeForm> .
+@prefix schema:     <http://schema.org/> .
+
+<http://localhost:8070/example.form#recipeForm>
+    form:binding schema:Thing ;
+    a            form:Form .
+    
+recipeForm:language
+    a                 form:UiComponent ;
+    form:widget       "language-picker" ;
+    form:order        1 .
+    
+# recipeForm:languageTabs
+#     a                 form:UiComponent ;
+#     form:widget       "language-tabs" .
+
+recipeForm:title
+    a                 form:Field ;
+    form:widget  "string" ;
+    form:label        "Title"@en ;
+    form:label        "Titel"@nl ;
+    form:binding      schema:name ;
+    form:order        1 ;
+    form:translatable true ;
+    form:required     true .
+
+recipeForm:ingredients
+    a                 form:Field ;
+    form:widget "group" ;
+    form:label       "Ingredients"@en ;
+    form:label       "Ingrediënten"@nl ;
+    form:binding     recipe:ingredients ;
+    form:multiple    true ;
+    form:order       2 .
+
+recipeForm:ingredient
+    a                 form:Field ;
+    form:widget       "reference" ;
+    form:label             "Ingredient"@en ;
+    form:label             "Ingrediënt"@nl ;
+    form:group        "ingredients" ;
+    form:required          true ;
+    form:binding           recipe:ingredient ;
+    form:placeholder       "Search for an ingredient."@en ;
+    form:placeholder       "Zoek naar een ingredient."@nl ;
+    form:autoCompleteQuery """
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX dbo:  <http://dbpedia.org/ontology/>
+    PREFIX bif: <bif:>
+    SELECT DISTINCT ?uri ?label ?image {
+      ?o dbo:ingredient ?uri .
+      ?uri rdfs:label ?label .
+      ?uri dbo:thumbnail ?image .
+      ?label bif:contains "'SEARCH_TERM'" .
+      filter langMatches(lang(?label), "LANGUAGE")
+    }
+    LIMIT 10
+    """ ;
+    form:order             1 .
+
+recipeForm:quantity
+    a                 form:Field ;
+    form:widget "number" ;
+    form:label       "Quantity"@en ;
+    form:label       "Aantal"@nl ;
+    form:required          true ;
+    form:binding     recipe:quantity ;
+    form:group  "ingredients" ;
+    form:order       2 .
+
+recipeForm:measurementUnit
+    a                 form:Field ;
+    form:widget "dropdown" ;
+    form:label       "Unit"@en ;
+    form:label       "Soort"@nl ;
+    form:jsonLdKey   "id" ;
+    form:required          true ;
+    form:binding     recipe:measurementUnit ;
+    form:option      [ form:label "- Select -"@en ;
+                       form:label "- Selecteer -"@nl ;
+                       form:value "" ; ] ;
+    form:option      [ form:label "Litre"@en ;
+                       form:label "Liter"@nl ;
+                       form:value <https://www.wikidata.org/wiki/Q11582> ; ] ;
+    form:option      [ form:label "Millilitre"@en ;
+                       form:label "Milliliter"@nl ;
+                       form:value <https://www.wikidata.org/wiki/Q2332346> ; ] ;
+    form:group  "ingredients" ;
+    form:order       3 .
+
+
+recipeForm:instructions
+    a                 form:Field ;
+    form:widget  "textarea" ;
+    form:label        "Instructions"@en ;
+    form:label        "Instructies"@nl ;
+    form:binding      recipe:instructions ;
+    form:rows         6 ;
+    form:order        3 ;
+    form:multiple     true ;
+    form:translatable true ;
+    form:required     true .
+
+
+# recipeForm:duration
+#     a                 form:Field ;
+#     form:widget "duration" ;
+#     form:label       "Duration"@en ;
+#     form:label       "Tijdsduur"@nl ;
+#     form:binding     recipe:duration ;
+#     form:range       "THM" ;
+#     form:order       4 ;
+#     form:required    true .
+
+
+recipeForm:author
+    form:widget "reference" ;
+    form:label       "Author"@en ;
+    form:label       "Auteur"@nl ;
+    form:binding     recipe:author ;
+    form:order       5 .

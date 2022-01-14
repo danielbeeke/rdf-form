@@ -2,14 +2,18 @@
   "scripts": {
     "test": "cypress open",
     "start": "snowpack dev",
-    "build": "esbuild src/js/RdfForm.ts --bundle --outfile=build/index.js"
+    "build": "snowpack build"
   },
-  "main": "./build/index.js",
-  "module": "./build/index.js",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "type": "module",
+  "main": "./build/js/RdfForm.js",
+  "module": "./build/js/RdfForm.js",
+  "exports": "./build/js/RdfForm.js",
   "name": "rdf-form",
-  "dependencies": {
+  "engines": {
+    "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+  },
+  "devDependencies": {
     "@comunica/actor-http-proxy": "^1.18.1",
     "@comunica/actor-init-sparql": "^1.18.1",
     "@comunica/mediatortype-time": "^1.18.1",
@@ -26,9 +30,7 @@
     "rdf-dereference": "^1.6.0",
     "rdf-parse": "^1.6.1",
     "rdf-store-stream": "^1.0.1",
-    "tinyduration": "^3.2.0"
-  },
-  "devDependencies": {
+    "tinyduration": "^3.2.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.32",
     "@fortawesome/free-regular-svg-icons": "^5.15.1",
     "@fortawesome/free-solid-svg-icons": "^5.15.1",
@@ -36,6 +38,7 @@
     "@zxcvbn-ts/language-common": "^1.0.0-beta.0",
     "@zxcvbn-ts/language-en": "^1.0.0-beta.0",
     "cypress": "^7.0.1",
+    "esbuild": "^0.14.11",
     "quantize": "^1.0.2",
     "rollup": "2.15.0",
     "snowpack": "3",
