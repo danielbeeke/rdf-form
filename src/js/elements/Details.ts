@@ -15,7 +15,9 @@ export class Details extends ElementBase {
       }
     }).filter(item => item)
 
-    if (!this.wrapperAttributes.open && (
+    console.log(this.wrapperAttributes.open)
+
+    if (!('open' in this.wrapperAttributes) && (
       this.mainBinding && this.parentValues?.[this.mainBinding]?.length || 
       !this.mainBinding && childValues.length
     )) {

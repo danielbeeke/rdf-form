@@ -80,3 +80,8 @@
     background-position: 50px 50px;
   }
 }
+
+.form-element.no-label > .items {
+  padding: 0;
+  margin-inline: -5px;
+}

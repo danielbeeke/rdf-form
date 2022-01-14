@@ -75,6 +75,7 @@ export class ElementBase extends EventTarget {
     if (this.definition['form:open']?._ !== undefined) this.wrapperAttributes.open = this.definition['form:open']._
     if (this.definition['form:rows']?._ !== undefined) this.attributes.rows = parseInt(this.definition['form:rows']._)
     if (this.definition['form:cssClass']?._) this.wrapperAttributes.class.push(this.definition['form:cssClass']._)
+    if (!this.definition['form:label']?._) this.wrapperAttributes.class.push('no-label')
   }
 
   get proxy () {
@@ -124,14 +125,17 @@ export class ElementBase extends EventTarget {
       this.value = emptyObject[this.mainBinding][0]
     } 
     else if (this.definition['form:widget']?._ === 'group') {
-      // TODO how to do creates?
-      const firstItem = this.parentValues[this.mainBinding][0].$
+      if (!this.parentValues[this.mainBinding]) {
+        this.parentValues[this.mainBinding] = [{'@list': [{}]}]
+      }
+
+      const firstItem = this.parentValues[this.mainBinding]?.[0]?.$
       const clone = JSON.parse(JSON.stringify(firstItem))
   
       for (const [field, values] of Object.entries(clone)) {
-        if (values[0]['@id']) values[0]['@id'] = null
-        if (values[0]['@value']) values[0]['@value'] = ''
-        if (values[0]['@language']) values[0]['@value'] = Language.l10nLanguage
+        if (values?.[0]['@id']) values[0]['@id'] = null
+        if (values?.[0]['@value']) values[0]['@value'] = ''
+        if (values?.[0]['@language']) values[0]['@value'] = Language.l10nLanguage
       }
   
       this.parentValues?.[this.mainBinding].push(clone)
@@ -195,12 +199,17 @@ export class ElementBase extends EventTarget {
     ${this.label()}
     ${innerTemplates.length ? html`
       <div class="items">
+        ${this.description()}
         ${innerTemplates}
       </div>
     ` : ''}
       ${this.definition['form:multiple']?._ && !isDisplayOnly ? html`<div>${this.addButton()}</div>` : html``}
     </div>
     ` : html``}`
+  }
+
+  description () {
+    return this.definition['form:description']?._ ? html`<p class="description">${this.definition['form:description']?._}</p>` : null
   }
 
   item (childTemplates: Array<typeof html> = []) {
