@@ -162,6 +162,7 @@ input[readonly] {
 .form-element .description {
   font-size: 14px;
   margin-bottom: 10px;
+  margin-inline: 5px;
   line-height: 22px;
   font-style: italic;
   color: var(--color-gray-medium);
@@ -238,6 +239,11 @@ input[readonly] {
     background-position: 50px 50px;
   }
 }
+.form-element.no-label > .items {
+  padding: 0;
+  margin-inline: -5px;
+}
+
 :host {
   --radius: 4px;
   --background-color: #eef6f4;
@@ -663,6 +669,9 @@ select:not([multiple]) {
   flex: 1 1 100%;
   cursor: pointer;
 }
+.checkbox-label > input {
+  margin-left: 0;
+}
 
 .form-element[type=duration] .granularity {
   display: flex;
@@ -922,7 +931,8 @@ select:not([multiple]) {
   pointer-events: none;
   height: 46px;
 }
-.form-element[type=details] > .items {
+
+[name=sidebar] .form-element[type=details] > .items {
   background-color: var(--color-gray-blue);
   --background-color: #e8eaf0;
   --color-primary: #b0bcd9;
