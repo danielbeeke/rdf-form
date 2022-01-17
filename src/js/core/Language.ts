@@ -93,7 +93,7 @@ export class LanguageService extends EventTarget implements CoreComponent {
 
    async setUiLanguage (languageCode) {
     currentUiLanguage = languageCode
-     t = await I18n(languageCode, 'RdfForm', Object.keys(this.uiLanguages))
+     t = await I18n(languageCode, 'RdfForm', Object.keys(this.uiLanguages), 'en')
      this.dispatchEvent(new CustomEvent('language-change'))
    }
  

@@ -36,7 +36,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   async init () {
     const proxy = this.form.getAttribute('proxy') ?? ''
     this.roles = this.form.getAttribute('roles') ? this.form.getAttribute('roles').split(',') : []
-    const definitionResponse = await fetch(proxy + this.formUrl)
+    const definitionResponse = await fetch(proxy + this.formUrl.replace('http:', location.protocol))
     const definitionTurtle = await definitionResponse.text()
     this.sourceDefinitionCompacted = ttl2jsonld(definitionTurtle)
     Object.assign(this.context, this.sourceDefinitionCompacted['@context'])
@@ -48,7 +48,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     await this.resolveSubForms(this.sourceDefinitionExpanded)
     if (!this.info) throw new Error('The form definition did not define a form itself.')
 
-    const ontologyCompacted = await fetch(proxy + this.context.form).then(async response => ttl2jsonld(await response.text()))
+    const ontologyCompacted = await fetch(proxy + this.context.form.replace('http:', location.protocol)).then(async response => ttl2jsonld(await response.text()))
     Object.assign(this.context, ontologyCompacted['@context'])
     this.ontology = JsonLdProxy(await jsonld.expand(ontologyCompacted), this.context)
     this.chain = this.createChain()
@@ -89,7 +89,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
       if (subformUrl?.length > 1) throw new Error('Multiple sub forms were found for one field.')
       
       if (subformUrl) {
-        const subformResponse = await fetch(proxy + subformUrl._)
+        const subformResponse = await fetch(proxy + subformUrl._.replace('http:', location.protocol))
         const subformTurtle = await subformResponse.text()
         const subformDefinitionCompacted = ttl2jsonld(subformTurtle)
         const subformDefinitionExpanded = JsonLdProxy(await jsonld.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context'], {

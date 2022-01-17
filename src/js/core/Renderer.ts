@@ -8,6 +8,10 @@ import { flatMapProxy } from '../helpers/flatMapProxy'
 import { containerProxy } from '../helpers/containerProxy'
 import { t, Language } from './Language'
 import { RdfForm } from '../RdfForm'
+/** @ts-ignore */
+import RdfFormCss from '../../css/rdf-form.export.js'
+/** @ts-ignore */
+import OnlyDisplay from '../../css/display-only.export.js'
 
 export class Renderer extends EventTarget implements CoreComponent {
   public ready: boolean = false
@@ -40,8 +44,8 @@ export class Renderer extends EventTarget implements CoreComponent {
 
     render(this.form.shadow, html`
       <style>:host { display: none; }</style>
-      <link rel="stylesheet" href="/css/rdf-form.css" />
-      ${isDisplayOnly ? html`<link rel="stylesheet" href="/css/display-only.css" />` : null}
+      <style>${RdfFormCss}</style>
+      ${isDisplayOnly ? html`<style>${OnlyDisplay}</style>` : null}
 
 
       ${!isDisplayOnly ? html`

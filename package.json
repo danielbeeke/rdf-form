@@ -4,7 +4,7 @@
     "start": "snowpack dev",
     "build": "snowpack build"
   },
-  "version": "0.0.6",
+  "version": "0.0.10",
   "type": "module",
   "main": "./build/js/RdfForm.js",
   "module": "./build/js/RdfForm.js",

@@ -8,7 +8,7 @@ export const getUriMeta = async (uri: string, proxy: string = null) => {
   if (!metas.get(uri + Language.uiLanguage)) {
     let text
     try {
-      const response = await fetch(`${proxy ? proxy : ''}${uri}`, { headers: { 'Accept': 'application/ld+json' }})
+      const response = await fetch(`${proxy ? proxy : ''}${uri.replace('http:', location.protocol)}`, { headers: { 'Accept': 'application/ld+json' }})
       text = await response.text()        
     }
     catch(e) {

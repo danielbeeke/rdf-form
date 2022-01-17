@@ -46,10 +46,10 @@ function mixString (a, b, asCodeString = false) {
   return string;
 }
 
-export async function I18n (language, prefix = '', possibleLanguageCodes) {
+export async function I18n (language, prefix = '', possibleLanguageCodes, skipImportLanguage = 'en') {
   let translations = {};
   translations[language] = {};
-  if (possibleLanguageCodes.includes(language)) {
+  if (possibleLanguageCodes.includes(language) && language !== skipImportLanguage) {
     try {
       const filePath = `/js/Translations/${(prefix ? prefix + '.' : '') + language}.js`
       translations[language] = (await import(filePath)).Translations;

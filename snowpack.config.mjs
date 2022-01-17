@@ -9,9 +9,7 @@ export default {
     port: 8070
   },
   plugins: [
-    [
-      "@snowpack/plugin-sass",
-    ]
+    ["./scss-plugin.cjs", {}]
   ],
   optimize: {
     bundle: true,
