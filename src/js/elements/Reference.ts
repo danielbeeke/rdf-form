@@ -60,7 +60,7 @@ export class Reference extends ElementBase {
 
     if (query && source) {
       const proxy = this.form.getAttribute('proxy') ?? ''
-      sparqlQueryToList(query, source, proxy).then(searchSuggestions => {
+      sparqlQueryToList(query, source.replace('http:', location.protocol), proxy).then(searchSuggestions => {
         searchSuggestions.push({
           label: t`Add <strong>${{searchTerm: this.searchTerm}}</strong> as text without reference.`,
           value: this.searchTerm

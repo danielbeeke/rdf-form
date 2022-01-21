@@ -6,7 +6,8 @@ export default {
     ttl: "/"
   },
   devOptions: {
-    port: 8070
+    port: 8070,
+    secure: true
   },
   plugins: [
     ["./scss-plugin.cjs", {}]

@@ -9,6 +9,7 @@ export const getUriMeta = async (uri: string, proxy: string = null) => {
     let text
     try {
       const response = await fetch(`${proxy ? proxy : ''}${uri.replace('http:', location.protocol)}`, { headers: { 'Accept': 'application/ld+json' }})
+      console.log(response)
       text = await response.text()        
     }
     catch(e) {

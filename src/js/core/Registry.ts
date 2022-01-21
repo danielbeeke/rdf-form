@@ -51,6 +51,7 @@ export class Registry extends EventTarget implements CoreComponent {
         '../elements/Color': () => import('../elements/Color.js'), 
         '../elements/Mail': () => import('../elements/Mail.js'), 
         '../elements/Url': () => import('../elements/Url.js'), 
+        '../elements/UrlUppy': () => import('../elements/UrlUppy.js'), 
         '../elements/Date': () => import('../elements/Date.js'), 
         '../elements/Textarea': () => import('../elements/Textarea.js'), 
         '../elements/Password': () => import('../elements/Password.js'),
@@ -60,6 +61,7 @@ export class Registry extends EventTarget implements CoreComponent {
       }
 
       await (widgetPath in fields ? fields[widgetPath]() : import(`${widgetPath}.js`).catch(console.error)).then(fieldClass => {
+        if (!fieldClass) throw new Error(`Missing fieldClass: ${definition['form:widget']?._}`)
         const name = Object.keys(fieldClass)[0]
         this.fieldClasses.set(widget, fieldClass[name])
         elementClass = this.fieldClasses.get(widget)

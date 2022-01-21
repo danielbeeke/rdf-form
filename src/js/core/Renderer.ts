@@ -17,6 +17,7 @@ export class Renderer extends EventTarget implements CoreComponent {
   public ready: boolean = false
   private fieldInstances: Map<object, ElementInstance> = new Map()
   protected form: RdfForm
+  public extraStylesheets = new Set()
 
   constructor (rdfForm: RdfForm) {
     super()
@@ -45,6 +46,9 @@ export class Renderer extends EventTarget implements CoreComponent {
     render(this.form.shadow, html`
       <style>:host { display: none; }</style>
       <style>${RdfFormCss}</style>
+
+      ${[...this.extraStylesheets.values()].map(link => html`<link href=${link} rel='stylesheet' type='text/css'>`)}
+
       ${isDisplayOnly ? html`<style>${OnlyDisplay}</style>` : null}
 
 

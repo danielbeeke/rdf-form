@@ -4,11 +4,19 @@
     "start": "snowpack dev",
     "build": "snowpack build"
   },
-  "version": "0.0.10",
+  "version": "0.0.13",
   "type": "module",
   "main": "./build/js/RdfForm.js",
   "module": "./build/js/RdfForm.js",
-  "exports": "./build/js/RdfForm.js",
+  "exports": {
+    ".": [
+      {
+        "require": "./build/js/RdfForm.js",
+        "import": "./build/js/RdfForm.js"
+      },
+      "./build/js/RdfForm.js"
+    ]
+  },
   "name": "rdf-form",
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
@@ -17,32 +25,34 @@
     "@comunica/actor-http-proxy": "^1.18.1",
     "@comunica/actor-init-sparql": "^1.18.1",
     "@comunica/mediatortype-time": "^1.18.1",
+    "@fortawesome/fontawesome-svg-core": "^1.2.32",
+    "@fortawesome/free-regular-svg-icons": "^5.15.1",
+    "@fortawesome/free-solid-svg-icons": "^5.15.1",
     "@frogcat/ttl2jsonld": "^0.0.6",
     "@ldflex/comunica": "^3.4.2",
     "@rdfjs/data-model": "^1.2.0",
     "@rdfjs/serializer-jsonld": "^1.2.2",
     "@rdfjs/serializer-jsonld-ext": "^2.0.0",
     "@snowpack/plugin-sass": "^1.1.2",
-    "basichtml": "^2.3.2",
-    "jsonld": "^3.2.0",
-    "ldflex": "^2.11.1",
-    "n3": "^1.6.4",
-    "rdf-dereference": "^1.6.0",
-    "rdf-parse": "^1.6.1",
-    "rdf-store-stream": "^1.0.1",
-    "tinyduration": "^3.2.0",
-    "@fortawesome/fontawesome-svg-core": "^1.2.32",
-    "@fortawesome/free-regular-svg-icons": "^5.15.1",
-    "@fortawesome/free-solid-svg-icons": "^5.15.1",
     "@zxcvbn-ts/core": "^1.0.0-beta.0",
     "@zxcvbn-ts/language-common": "^1.0.0-beta.0",
     "@zxcvbn-ts/language-en": "^1.0.0-beta.0",
+    "basichtml": "^2.3.2",
     "cypress": "^7.0.1",
     "esbuild": "^0.14.11",
+    "jsonld": "^3.2.0",
+    "ldflex": "^2.11.1",
+    "n3": "^1.6.4",
     "quantize": "^1.0.2",
+    "rdf-dereference": "^1.6.0",
+    "rdf-parse": "^1.6.1",
+    "rdf-store-stream": "^1.0.1",
     "rollup": "2.15.0",
     "snowpack": "3",
+    "tinyduration": "^3.2.0",
     "ts-node": "*",
     "uhtml": "^2.6.2"
+  },
+  "dependencies": {
   }
 }

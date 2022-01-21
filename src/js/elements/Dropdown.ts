@@ -60,7 +60,7 @@ export class Dropdown extends ElementBase {
       const source = this.definition['form:optionsSourceType']?._ ? {
         value: this.definition['form:optionsSource']._, type: this.definition['form:optionsSourceType']._
       } : this.definition['form:optionsSource']._
-      this.options = await sparqlQueryToList(this.definition['form:optionsQuery']._, source, proxy)
+      this.options = await sparqlQueryToList(this.definition['form:optionsQuery']._, source.replace('http:', location.protocol), proxy)
     }
 
     const selectedValues = this.parentValues?.[this.mainBinding]?.map(option => option['@' + this.jsonldKey]) ?? []

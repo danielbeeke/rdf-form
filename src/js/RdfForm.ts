@@ -6,12 +6,15 @@ import { Language, LanguageService } from './core/Language'
 import { CoreComponent } from './types/CoreComponent'
 import { kebabize } from './helpers/kebabize'
 import { expandProxiesInConsole } from './core/Debug'
+export { JsonLdProxy } from './core/JsonLdProxy'
+export { languages } from './languages.js'
+export { ElementBase } from './elements/ElementBase'
 
 export class RdfForm extends HTMLElement implements CoreComponent {
   public formDefinition: FormDefinition
   public formData: RdfFormData
   public registry: Registry
-  private renderer: Renderer
+  public renderer: Renderer
   private language: LanguageService
   public ready: boolean = false
   public shadow: any
@@ -34,6 +37,7 @@ export class RdfForm extends HTMLElement implements CoreComponent {
       'Color',
       'Mail',
       'Url',
+      'UrlUppy',
       'Date',
       'Textarea',
       'Password',
@@ -45,7 +49,7 @@ export class RdfForm extends HTMLElement implements CoreComponent {
     const fieldsObject = {}
 
     for (const field of fields) {
-      const name = kebabize(field.replace(/[^a-zA-Z]+/g, ''))
+      const name = kebabize(field.replace(/[^a-zA-Z0-9]+/g, ''))
       fieldsObject[name] = '../elements/' + field
     }
 
