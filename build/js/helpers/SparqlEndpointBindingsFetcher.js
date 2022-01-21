@@ -13,7 +13,6 @@ export const SparqlEndpointBindingsFetcher = async (source, query) => {
   } else if (response.headers.get("Content-Type") === CONTENTTYPE_TURTLE) {
     const text = await response.text();
     const jsonLd = await ttl2jsonld(text);
-    console.log(jsonLd);
   } else {
     console.log(response.headers.get("Content-Type"));
     throw new Error("Response type is not yet supported");

@@ -17,6 +17,10 @@
       form.addEventListener('submit', (event) => {
         console.log(event.detail)
       })
+
+      form.addEventListener('file-deleted-uppy', (event) => {
+        console.log(event.detail)
+      })
       
       document.body.appendChild(form)
     </script>

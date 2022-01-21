@@ -98,7 +98,6 @@ var require_Details = __commonJS((exports) => {
           return this.parentValues[childBinding]?.$;
         }
       }).filter((item) => item);
-      console.log(this.wrapperAttributes.open);
       if (!("open" in this.wrapperAttributes) && (this.mainBinding && this.parentValues?.[this.mainBinding]?.length || !this.mainBinding && childValues.length)) {
         this.wrapperAttributes.open = true;
       }
@@ -635,9 +634,10 @@ var require_Url = __commonJS((exports) => {
 var require_UrlUppy = __commonJS((exports) => {
   __markAsModule(exports);
   __export(exports, {
-    Urls3: () => Urls3
+    UrlUppy: () => UrlUppy
   });
-  var Urls3 = class extends ElementBase {
+  var instances = new Map();
+  var UrlUppy = class extends ElementBase {
     constructor(...args) {
       super(...args);
       this.attributes.type = "url";
@@ -648,29 +648,38 @@ var require_UrlUppy = __commonJS((exports) => {
       if (isDisplayOnly)
         return super.wrapper(innerTemplates);
       const Uppy = await importGlobalScript("https://releases.transloadit.com/uppy/v2.4.1/uppy.js", "Uppy");
-      const values = this.parentValues?.[this.mainBinding];
+      const values = this.parentValues?.[this.mainBinding].$.filter((value) => value && !value["@language"] || value && value["@language"] === Language.l10nLanguage).map((item) => item?.["@value"] ?? item?.["@id"]).filter(onlyUnique);
       const template = html$1`
     <div onclick=${[(event2) => {
-        const element = event2.originalTarget.closest(".uppy-Dashboard-Item-action--remove");
+        const element = event2?.explicitOriginalTarget?.closest(".uppy-Dashboard-Item-action--remove");
         if (element) {
           const result = confirm(t2.direct(`Are you sure?`));
           if (!result)
             event2.stopPropagation();
         }
       }, {capture: true}]} ref=${(element) => {
-        if (!this.uppy) {
-          this.uppy = new Uppy.Core().use(Uppy.Dashboard, {
+        if (!instances.has(this.definition["form:binding"]?._)) {
+          this.uppy = new Uppy.Core().use(Uppy.ThumbnailGenerator, {
+            thumbnailWidth: 200,
+            waitForThumbnailsBeforeUpload: false
+          }).use(Uppy.Url, {
+            companionUrl: this.definition["form:uppyCompanion"]?._
+          }).use(Uppy.Dashboard, {
             inline: true,
             hideCancelButton: true,
             showRemoveButtonAfterComplete: true,
-            target: element
+            target: element,
+            plugins: ["Url"]
           }).use(Uppy.AwsS3Multipart, {
             limit: 4,
             companionUrl: this.definition["form:uppyCompanion"]?._
           });
           for (const value of values) {
             this.uppy.addFile({
-              name: lastPart(value?._),
+              name: value,
+              meta: {
+                relativePath: value
+              },
               data: "",
               isRemote: true
             });
@@ -687,9 +696,13 @@ var require_UrlUppy = __commonJS((exports) => {
               progress: {uploadComplete: true, uploadStarted: true}
             });
           });
+          instances.set(this.definition["form:binding"]?._, this.uppy);
         }
       }} class="drag-and-drop-area"></div>`;
       return super.wrapper([template]);
+    }
+    addButton() {
+      return null;
     }
   };
 });
@@ -52451,7 +52464,6 @@ var getUriMeta = async (uri, proxy = null) => {
     let text2;
     try {
       const response = await fetch(`${proxy ? proxy : ""}${uri.replace("http:", location.protocol)}`, {headers: {Accept: "application/ld+json"}});
-      console.log(response);
       text2 = await response.text();
     } catch (e5) {
       console.log(uri);

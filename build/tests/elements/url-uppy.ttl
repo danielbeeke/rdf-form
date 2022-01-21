@@ -4,4 +4,4 @@
 []
     a schema:Person ;
     schema:url "https://example.com/1.png" ;
-    schema:url "https://example.com/1.png" .
+    schema:url "https://example.com/2.png" .

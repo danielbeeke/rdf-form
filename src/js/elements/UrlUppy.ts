@@ -2,11 +2,12 @@ import { ElementBase } from './ElementBase'
 import { html } from 'uhtml/async'
 import { lastPart } from '../helpers/lastPart'
 import { importGlobalScript } from '../helpers/importGlobalScript'
-import { kebabize } from '../helpers/kebabize'
-import { attributesDiff } from '../helpers/attributesDiff'
 import { t, Language } from '../core/Language'
+import { onlyUnique } from '../helpers/onlyUnique'
 
-export class Urls3 extends ElementBase {
+const instances = new Map()
+
+export class UrlUppy extends ElementBase {
 
   private uppy: any
 
@@ -22,24 +23,35 @@ export class Urls3 extends ElementBase {
     if (isDisplayOnly) return super.wrapper(innerTemplates)
     const Uppy = await importGlobalScript('https://releases.transloadit.com/uppy/v2.4.1/uppy.js', 'Uppy')
 
-    const values = this.parentValues?.[this.mainBinding]
+    const values = this.parentValues?.[this.mainBinding].$
+    .filter(value => value && !value['@language'] || value && value['@language'] === Language.l10nLanguage)
+    .map(item => item?.['@value'] ?? item?.['@id'])
+    .filter(onlyUnique)
 
     const template = html`
     <div onclick=${[(event) => {
-      const element = event.originalTarget.closest('.uppy-Dashboard-Item-action--remove')
+      const element = event?.explicitOriginalTarget?.closest('.uppy-Dashboard-Item-action--remove')
       if (element) {
         const result = confirm(t.direct(`Are you sure?`))
         if (!result) event.stopPropagation()  
       }
     }, { capture: true }]} ref=${element => {
-      if (!this.uppy) {
+      if (!instances.has(this.definition['form:binding']?._)) {
 
         this.uppy = new Uppy.Core()
+        .use(Uppy.ThumbnailGenerator, {
+          thumbnailWidth: 200,
+          waitForThumbnailsBeforeUpload: false,
+        })
+        .use(Uppy.Url, {
+          companionUrl: this.definition['form:uppyCompanion']?._,
+        })
         .use(Uppy.Dashboard, {
           inline: true,
           hideCancelButton: true,
           showRemoveButtonAfterComplete: true,
-          target: element
+          target: element,
+          plugins: ['Url']
         })
         .use(Uppy.AwsS3Multipart, {
           limit: 4,
@@ -48,8 +60,11 @@ export class Urls3 extends ElementBase {
 
         for (const value of values) {
           this.uppy.addFile({
-            name: lastPart(value?._),
-            data: '', // file blob
+            name: value,
+            meta: {
+              relativePath: value
+            },
+            data: '',
             isRemote: true,
           })    
         }
@@ -67,10 +82,16 @@ export class Urls3 extends ElementBase {
             progress: { uploadComplete: true, uploadStarted: true } 
           })
         })
+
+        instances.set(this.definition['form:binding']?._, this.uppy)
       }
     }} class="drag-and-drop-area"></div>`
 
     return super.wrapper([template])
+  }
+
+  addButton () {
+    return null
   }
 
 }
