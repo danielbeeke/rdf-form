@@ -1,0 +1,7 @@
+@prefix schema: <http://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[]
+    a schema:Person ;
+    schema:url "https://example.com/1.png" ;
+    schema:url "https://images.unsplash.com/photo-1642076573338-9bc6a667fe57?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1740&q=80" .

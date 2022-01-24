@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/js/helpers/onlyUnique.ts"],
+  "sourcesContent": ["/**\n * May be used for filtering array's.\n * @param value \n * @param index \n * @param self \n */\n export function onlyUnique(value, index, self) {\n  return self.indexOf(value) === index && value;\n}"],
+  "mappings": ";AAMQ,oBAAoB,OAAO,OAAO,MAAM;AAC9C,SAAO,KAAK,QAAQ,WAAW,SAAS;AAAA;",
+  "names": []
+}

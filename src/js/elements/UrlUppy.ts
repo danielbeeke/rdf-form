@@ -1,6 +1,5 @@
 import { ElementBase } from './ElementBase'
 import { html } from 'uhtml/async'
-import { lastPart } from '../helpers/lastPart'
 import { importGlobalScript } from '../helpers/importGlobalScript'
 import { t, Language } from '../core/Language'
 import { onlyUnique } from '../helpers/onlyUnique'
@@ -59,8 +58,11 @@ export class UrlUppy extends ElementBase {
         })
 
         for (const value of values) {
+          const url = new URL(value)
+          const name = url.pathname.substr(1)
+
           this.uppy.addFile({
-            name: value,
+            name,
             meta: {
               relativePath: value
             },
@@ -71,13 +73,23 @@ export class UrlUppy extends ElementBase {
 
         this.uppy.on('file-removed', (file, reason) => {
           if (reason === 'removed-by-user') {
-            this.form.dispatchEvent(new CustomEvent('file-deleted-uppy', {
-              detail: file
+            this.form.dispatchEvent(new CustomEvent('file-deleted', {
+              detail: { file }
             }))
           }
         })
 
+        this.uppy.on('upload-success', (file, response) => {
+          this.form.dispatchEvent(new CustomEvent('file-added', {
+            detail: { file, response }
+          }))
+        })
+
         this.uppy.getFiles().forEach(file => {
+          const image = new Image()
+          image.onload = () => this.uppy.setFileState(file.id, { preview: file.meta.relativePath })  
+          image.src = file.meta.relativePath
+
           this.uppy.setFileState(file.id, { 
             progress: { uploadComplete: true, uploadStarted: true } 
           })

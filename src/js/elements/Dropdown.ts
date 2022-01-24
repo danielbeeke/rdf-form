@@ -1,10 +1,9 @@
 import { ElementBase } from './ElementBase'
 import { sparqlQueryToList } from '../helpers/sparqlQueryToList'
 import { html } from 'uhtml/async'
-import { Language, t } from '../core/Language'
+import { Language } from '../core/Language'
 import { attributesDiff } from '../helpers/attributesDiff'
 import { onlyUnique } from '../helpers/onlyUnique'
-import { RdfForm } from '../RdfForm'
 
 export class Dropdown extends ElementBase {
   
@@ -92,7 +91,7 @@ export class Dropdown extends ElementBase {
       ref=${attributesDiff(this.attributes)} 
       onchange=${(event) => this.on(event)}
     >
-        ${!this.value?._ && !this.definition['form:multiple']?._ ? html`<option disabled selected value>${t`- Select a value -`}</option>` : ''}
+        ${!this.value?._ && !this.definition['form:multiple']?._ ? html`<option disabled selected value>${this.t`- Select a value -`}</option>` : ''}
 
         ${this.options.map(option => {
           return html`

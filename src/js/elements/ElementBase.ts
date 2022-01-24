@@ -6,7 +6,6 @@ import { t, Language } from '../core/Language'
 import { lastPart } from '../helpers/lastPart'
 import { isFetchable } from '../helpers/isFetchable'
 import { fa } from '../helpers/fa'
-import { RdfForm } from '../RdfForm'
 import { debounce } from '../helpers/debounce';
 
 export class ElementBase extends EventTarget {
@@ -16,7 +15,7 @@ export class ElementBase extends EventTarget {
   protected value: any
   protected parentValues: any
   protected itemValues: any
-  public parent: ElementBase | RdfForm
+  public parent: ElementBase | any
   protected jsonldKey = 'value'
   protected mainBinding: string = null
   public render = () => null 
@@ -82,13 +81,19 @@ export class ElementBase extends EventTarget {
     return this.form?.proxy
   }
 
+  get t () {
+    return this.form.t
+  }
+
   get form () {
     let pointer = this
     while (pointer.parent) {
       /** @ts-ignore */
       pointer = pointer.parent
     }
-    return pointer instanceof RdfForm ? pointer : null
+
+    /** @ts-ignore */
+    return pointer.registry ? pointer : null
   }
 
   on (event) {
@@ -303,8 +308,8 @@ export class ElementBase extends EventTarget {
         ${this.definition['form:label']._}${isDisplayOnly ? ':' : ''}
         <small>&nbsp;<em>
         ${languageLabel && !isDisplayOnly ? html`${languageLabel}` : html``}
-        ${this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && languageLabel ? html`<span title=${t.direct('Disable translations for this field').toString()} class="icon-button disable-language" onclick=${disableLanguage}>${fa(faTimes)}</span>` : html``}
-        ${this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && !languageLabel ? html`<span title=${t.direct('Enable translations for this field').toString()} class="icon-button enable-language" onclick=${enableLanguage}>${fa(faLanguage)}</span>` : html``}
+        ${this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && languageLabel ? html`<span title=${this.t.direct('Disable translations for this field').toString()} class="icon-button disable-language" onclick=${disableLanguage}>${fa(faTimes)}</span>` : html``}
+        ${this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && !languageLabel ? html`<span title=${this.t.direct('Enable translations for this field').toString()} class="icon-button enable-language" onclick=${enableLanguage}>${fa(faLanguage)}</span>` : html``}
         </em></small>
       </label>
     ` : html``
@@ -318,11 +323,11 @@ export class ElementBase extends EventTarget {
 
     return html`
       <div class="reference-label">
-        ${meta?.label === false ? html`<span class="reference-loading">${t`Could not load data`}</span>` : html`
+        ${meta?.label === false ? html`<span class="reference-loading">${this.t`Could not load data`}</span>` : html`
           ${meta?.thumbnail ? html`<div class="image"><img src="${`//images.weserv.nl/?url=${meta?.thumbnail}&default=${meta?.thumbnail}&w=100&h=100`}"></div>` : ''}
           ${meta?.label ? (
             isFetchable(uri) ? html`<a href="${uri}" target="_blank">${meta?.label}</a>` : html`<span class="reference-text">${meta?.label}</span>`
-          ) : html`<span class="reference-loading">${t`Loading...`}</span>`}
+          ) : html`<span class="reference-loading">${this.t`Loading...`}</span>`}
         `}
       </div>
     `

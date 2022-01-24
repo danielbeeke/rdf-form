@@ -21,6 +21,7 @@
     "declaration": true
   },
   "exclude": [
+    "build.mjs",
     "build", 
     "cypress", 
     "snowpack.config.js", 

@@ -1,7 +1,7 @@
 {
   "scripts": {
     "test": "cypress open",
-    "start": "snowpack dev",
+    "start": "serve --ssl-key key.key --ssl-cert cert.crt -l 8070 build",
     "build": "snowpack build"
   },
   "version": "0.0.15",
@@ -30,6 +30,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.1",
     "@frogcat/ttl2jsonld": "^0.0.6",
     "@ldflex/comunica": "^3.4.2",
+    "@netlify/esbuild": "*",
     "@rdfjs/data-model": "^1.2.0",
     "@rdfjs/serializer-jsonld": "^1.2.2",
     "@rdfjs/serializer-jsonld-ext": "^2.0.0",
@@ -37,9 +38,11 @@
     "@zxcvbn-ts/core": "^1.0.0-beta.0",
     "@zxcvbn-ts/language-common": "^1.0.0-beta.0",
     "@zxcvbn-ts/language-en": "^1.0.0-beta.0",
+    "acorn": "^8.7.0",
     "basichtml": "^2.3.2",
+    "create-serve": "^1.0.1",
     "cypress": "^7.0.1",
-    "esbuild": "^0.14.11",
+    "esbuild-sass-plugin": "^2.0.3",
     "jsonld": "^3.2.0",
     "ldflex": "^2.11.1",
     "n3": "^1.6.4",
@@ -48,11 +51,10 @@
     "rdf-parse": "^1.6.1",
     "rdf-store-stream": "^1.0.1",
     "rollup": "2.15.0",
+    "serve": "^13.0.2",
     "snowpack": "3",
     "tinyduration": "^3.2.0",
     "ts-node": "*",
     "uhtml": "^2.6.2"
-  },
-  "dependencies": {
   }
 }

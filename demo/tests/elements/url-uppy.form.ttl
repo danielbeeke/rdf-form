@@ -1,0 +1,21 @@
+@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix form:       <http://localhost:8070/form.ttl#> .
+@prefix urls3Form: <http://localhost:8070//url-uppy.form#> .
+@prefix schema:     <http://schema.org/> .
+@prefix focalPoint:       <http://localhost:8070/focalPoint.ttl#> .
+
+<http://localhost:8070/url-uppy.form#>
+    form:binding schema:Person ;
+    a            form:Form .
+
+urls3Form:url
+    a                   form:Field ;
+    form:widget         "url-uppy" ;
+    form:uppyCompanion  "http://localhost:8080/companion/" ;
+    form:uppyDomains    "https://example.com" ;
+    form:label          "Download"@en ;
+    form:label          "Download"@nl ;
+    form:binding        schema:url ;
+    form:order          3 ;
+    form:multiple       true ;
+    form:translatable   true .

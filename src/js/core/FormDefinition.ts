@@ -6,7 +6,6 @@ import { expand } from '../helpers/expand'
 import { CoreComponent } from '../types/CoreComponent'
 import { JsonLdProxy } from './JsonLdProxy'
 import { Language } from './Language'
-import { RdfForm } from '../RdfForm'
 
 export const only = (...type) => {
   return (item: ExpandedJsonLdObject) => item['@type']?.some(rdfClass => type.includes(lastPart(rdfClass)))
@@ -23,9 +22,9 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   public chainReferences = new Map()
   private ontology: Array<object> = []
   protected roles: Array<string>
-  protected form: RdfForm
+  protected form: any
 
-  constructor (form: RdfForm) {
+  constructor (form: any) {
     super()
     this.form = form
     this.formUrl = this.form.getAttribute('form')
