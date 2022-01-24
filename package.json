@@ -4,17 +4,17 @@
     "start": "serve --ssl-key key.key --ssl-cert cert.crt -l 8070 build",
     "build": "snowpack build"
   },
-  "version": "0.0.15",
+  "version": "0.0.17",
   "type": "module",
-  "main": "./build/js/RdfForm.js",
-  "module": "./build/js/RdfForm.js",
+  "main": "./build/RdfForm.js",
+  "module": "./build/RdfForm.js",
   "exports": {
     ".": [
       {
-        "require": "./build/js/RdfForm.js",
-        "import": "./build/js/RdfForm.js"
+        "require": "./build/RdfForm.js",
+        "import": "./build/RdfForm.js"
       },
-      "./build/js/RdfForm.js"
+      "./build/RdfForm.js"
     ]
   },
   "name": "rdf-form",
