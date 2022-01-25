@@ -5,7 +5,7 @@ import { JsonLdProxy } from './JsonLdProxy'
 import { Language } from './Language'
 import { isFetchable } from '../helpers/isFetchable'
 import { FormDefinition } from './FormDefinition'
-import { RdfForm } from '../RdfForm'
+import { RdfForm } from '..'
 
 export class RdfFormData extends EventTarget implements CoreComponent {
 

@@ -15,18 +15,19 @@
     "emitDeclarationOnly": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {},
     "declarationMap": true,
     "declaration": true,
     "outDir": "ts"
   },
+  "files": ["src/index.ts"],
   "exclude": [
     "scripts",
     "build", 
     "cypress", 
     "snowpack.config.js", 
-    "esm/js/Translations",
-    "esm/js/languages.js"
+    "src/js/Translations",
+    "src/js/languages.js"
   ]
 }

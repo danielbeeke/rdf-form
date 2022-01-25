@@ -5,7 +5,7 @@ import scss from 'rollup-plugin-scss'
 import commonjs from 'rollup-plugin-commonjs';
 
 export default {
-  input: './esm/RdfForm.ts',
+  input: './src/index.ts',
   plugins: [
     typescript(),
     nodeResolve(),

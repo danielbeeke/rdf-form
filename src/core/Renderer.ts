@@ -7,9 +7,9 @@ import { lastPart } from '../helpers/lastPart'
 import { flatMapProxy } from '../helpers/flatMapProxy'
 import { containerProxy } from '../helpers/containerProxy'
 import { t, Language } from './Language'
-import { RdfForm } from '../RdfForm'
-import * as RdfFormCss from '../../scss/rdf-form.scss'
-import * as OnlyDisplay from '../../scss/display-only.scss'
+import { RdfForm } from '..'
+// import * as RdfFormCss from '../../scss/rdf-form.scss'
+// import * as OnlyDisplay from '../../scss/display-only.scss'
 
 export class Renderer extends EventTarget implements CoreComponent {
   public ready: boolean = false
@@ -40,6 +40,9 @@ export class Renderer extends EventTarget implements CoreComponent {
       } }))
     }
     const isDisplayOnly = this.form.getAttribute('display')
+
+    const RdfFormCss = ''
+    const OnlyDisplay = ''
 
     render(this.form.shadow, html`
       <style>:host { display: none; }</style>

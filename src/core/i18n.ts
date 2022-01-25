@@ -15,9 +15,12 @@ class TranslatedText extends Hole {
     const context = template
 
     this.text = text;
+    /** @ts-ignore */
     this.template = [text];
+    /** @ts-ignore */
     this.values = [];
     this.context = context;
+    /** @ts-ignore */
     this.type = 'html';
   }
 

@@ -2,31 +2,25 @@
   "scripts": {
     "test": "cypress open",
     "start": "serve --ssl-key key.key --ssl-cert cert.crt -l 8070 build",
-    "build": "npm run cjs && npm run rollup:es && npm run rollup:babel && npm run min && npm run size",
+    "build": "npm run cjs && npm run rollup:esm && npm run rollup:babel && npm run min && npm run size",
     "cjs": "ascjs esm cjs",
-    "rollup:es": "rollup --config rollup/es.config.js && sed -i.bck 's/^var /self./' es.js && rm -rf es.js.bck",
+    "rollup:esm": "rollup --config rollup/esm.config.js",
     "rollup:babel": "rollup --config rollup/babel.config.js && sed -i.bck 's/^var /self./' index.js && rm -rf index.js.bck",
     "min": "terser index.js --comments='/^!/' -c -m -o min.js",
     "coveralls": "c8 report --reporter=text-lcov | coveralls",
-    "size": "cat min.js | brotli | wc -c && cat es.js | brotli | wc -c"
+    "size": "cat min.js | brotli | wc -c && cat esm/index.js | brotli | wc -c"
   },
-  "version": "0.0.17",
+  "version": "0.0.18",
   "type": "module",
+  "module": "./es.js",
   "main": "./cjs/index.js",
-  "module": "./build/RdfForm.js",
   "exports": {
-    ".": [
-      {
-        "require": "./build/RdfForm.js",
-        "import": "./build/RdfForm.js"
-      },
-      "./build/RdfForm.js"
-    ],
-    "./plugins.all": {
-      "require": "./build/plugins.all.js",
-      "import": "./build/plugins.all.js"
+    ".": {
+      "import": "./esm/index.js",
+      "default": "./cjs/index.js"
     }
   },
+  "unpkg": "min.js",
   "name": "rdf-form",
   "engines": {
     "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
@@ -62,6 +56,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "sass": "^1.49.0",
     "terser": "^5.7.1",
-    "ts-node": "*"
+    "ts-node": "*",
+    "typescript": "^4.5.5"
   }
 }

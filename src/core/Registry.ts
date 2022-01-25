@@ -1,6 +1,6 @@
 import { CoreComponent } from '../types/CoreComponent'
 import { ElementInstance } from '../types/ElementInstance'
-import { RdfForm } from '../RdfForm'
+import { RdfForm } from '..'
 
 export class Registry extends EventTarget implements CoreComponent {
 
