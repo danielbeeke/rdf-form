@@ -2,7 +2,7 @@
  * This file fetches the translations.
  */
 
-import { Hole } from 'uhtml/esm'
+import { Hole } from 'uhtml'
 
 class TranslatedText extends Hole {
 
@@ -10,6 +10,7 @@ class TranslatedText extends Hole {
   public context: Array<any> | string
 
   constructor(type, template = [], values = []) {
+    /** @ts-ignore */
     super(type, template, values);
     const text = type
     const context = template
