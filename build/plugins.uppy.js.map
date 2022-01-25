@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/js/plugins.uppy.ts"],
-  "sourcesContent": ["\n  import { UrlUppy } from './elements/UrlUppy'\n  \n  export default {\n  'url-uppy': UrlUppy\n  }\n  "],
-  "mappings": ";;;;;;;AAGE,IAAO,uBAAQ;AAAA,EACf,YAAY;AAAA;",
-  "names": []
-}

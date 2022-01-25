@@ -8,14 +8,36 @@
     form:binding schema:Person ;
     a            form:Form .
 
-urls3Form:url
-    a                   form:Field ;
-    form:widget         "url-uppy" ;
+# urls3Form:url
+#     a                   form:Field ;
+#     form:widget         "url-uppy" ;
+#     form:uppyCompanion  "http://localhost:8080/companion/" ;
+#     form:uppyDomains    "https://example.com" ;
+#     form:label          "Download"@en ;
+#     form:label          "Download"@nl ;
+#     form:binding        schema:url ;
+#     form:order          3 ;
+#     form:multiple       true ;
+#     form:translatable   true .
+
+urls3Form:imageWrapper
+    a                   form:Container ;
+    form:widget         "container" ;
+    form:order       7 ;
+    form:binding        schema:image .
+
+urls3Form:image
+    a                form:Field ;
+    form:widget      "url-uppy" ;
+    form:label       "Image"@en ;
     form:uppyCompanion  "http://localhost:8080/companion/" ;
     form:uppyDomains    "https://example.com" ;
-    form:label          "Download"@en ;
-    form:label          "Download"@nl ;
+    form:label          "Afbeelding"@nl ;
+    form:type           schema:ImageObject ;
+    form:container      "imageWrapper" ;
     form:binding        schema:url ;
-    form:order          3 ;
-    form:multiple       true ;
-    form:translatable   true .
+    form:saveColor      true ;
+    form:focalPoint     focalPoint:x1, focalPoint:y1, focalPoint:x2, focalPoint:y2 ;
+    form:dimensions     schema:width, schema:height ;
+    form:order       7 ;
+    form:multiple true .

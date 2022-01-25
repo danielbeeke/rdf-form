@@ -18,14 +18,15 @@
     "baseUrl": ".",
     "paths": {},
     "declarationMap": true,
-    "declaration": true
+    "declaration": true,
+    "outDir": "ts"
   },
   "exclude": [
-    "build.mjs",
+    "scripts",
     "build", 
     "cypress", 
     "snowpack.config.js", 
-    "src/js/Translations",
-    "src/js/languages.js"
+    "esm/js/Translations",
+    "esm/js/languages.js"
   ]
 }
