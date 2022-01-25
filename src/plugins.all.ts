@@ -28,7 +28,6 @@ import { Wrapper } from './elements/Wrapper'
 'date': Date,
 'details': Details,
 'dropdown': Dropdown,
-'element-base': ElementBase,
 'group': Group,
 'language-picker': LanguagePicker,
 'mail': Mail,
