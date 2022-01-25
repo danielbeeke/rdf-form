@@ -2,7 +2,7 @@ import { html } from 'uhtml/esm/async'
 import { faTimes, faPlus, faLanguage } from '../helpers/icons'
 import { kebabize } from '../helpers/kebabize'
 import { attributesDiff } from '../helpers/attributesDiff'
-import { t, Language } from '../core/Language'
+import { Language } from '../core/Language'
 import { lastPart } from '../helpers/lastPart'
 import { isFetchable } from '../helpers/isFetchable'
 import { fa } from '../helpers/fa'
@@ -17,13 +17,23 @@ export class ElementBase extends EventTarget {
   protected itemValues: any
   public parent: ElementBase | any
   protected jsonldKey = 'value'
-  protected mainBinding: string = null
+  protected mainBinding: string
   public render = () => null 
   protected suggestions: Array<any> = []
-  protected index: number = null
+  protected index: number
   protected debouncedRender: any
   protected children = []
-  protected attributes = {
+  protected attributes: {
+    type: string,
+    class: [],
+    disabled: null | boolean,
+    readonly: null | boolean,
+    placeholder: null | boolean,
+    required: null | boolean,
+    multiple: null | boolean,
+    rows: null | boolean | number,
+    open: null | boolean,
+  } = {
     type: 'input',
     class: [],
     disabled: null,
@@ -82,7 +92,7 @@ export class ElementBase extends EventTarget {
   }
 
   get t () {
-    return this.form.t
+    return this.form?.t
   }
 
   get form () {
@@ -137,9 +147,12 @@ export class ElementBase extends EventTarget {
       const firstItem = this.parentValues[this.mainBinding]?.[0]?.$
       const clone = JSON.parse(JSON.stringify(firstItem))
   
-      for (const [field, values] of Object.entries(clone)) {
+      for (const [_field, values] of Object.entries(clone)) {
+        /** @ts-ignore */
         if (values?.[0]['@id']) values[0]['@id'] = null
+        /** @ts-ignore */
         if (values?.[0]['@value']) values[0]['@value'] = ''
+        /** @ts-ignore */
         if (values?.[0]['@language']) values[0]['@value'] = Language.l10nLanguage
       }
   
@@ -148,7 +161,7 @@ export class ElementBase extends EventTarget {
     }
     else {
       const value = { [`@${this.jsonldKey}`]: null }
-      const fieldLanguages = this.parentValues?.[this.mainBinding] ? Language.extractUsedLanguages(this.parentValues) : []
+      /** @ts-ignore */
       if (this.languages.length || this.definition['form:translatable']?._ === 'always') value['@language'] = Language.l10nLanguage
       if (!this.parentValues?.[this.mainBinding]) this.parentValues[this.mainBinding] = []
       this.parentValues?.[this.mainBinding].push(value)
@@ -277,7 +290,8 @@ export class ElementBase extends EventTarget {
   async label () {
     let languageLabel = ''
 
-    const isDisplayOnly = this.form.getAttribute('display')
+    /** @ts-ignore */
+    const isDisplayOnly = this.form?.getAttribute('display')
 
     if (this.definition['form:translatable']?._) {
       const applicableValues = this.parentValues?.[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()]

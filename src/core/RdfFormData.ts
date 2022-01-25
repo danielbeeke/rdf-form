@@ -10,7 +10,7 @@ import { RdfForm } from '..'
 export class RdfFormData extends EventTarget implements CoreComponent {
 
   public ready: boolean = false
-  private dataAsTextOrUrl: string
+  private dataAsTextOrUrl: string | null
   private sourceData: any
   public get: () => any
   public proxy = { $: null }

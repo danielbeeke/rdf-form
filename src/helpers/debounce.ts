@@ -1,6 +1,6 @@
 export function debounce(func, wait, immediate = false) {
   var timeout;
-  return function() {
+  return function(this: any) {
     var context = this, args = arguments;
     var later = function() {
       timeout = null;

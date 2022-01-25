@@ -47,7 +47,8 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     await this.resolveSubForms(this.sourceDefinitionExpanded)
     if (!this.info) throw new Error('The form definition did not define a form itself.')
 
-    const ontologyCompacted = await fetch(proxy + this.context.form.replace('http:', location.protocol)).then(async response => ttl2jsonld(await response.text()))
+    /** @ts-ignore */
+    const ontologyCompacted = await fetch(proxy + (this.context.form as string).replace('http:', location.protocol)).then(async response => ttl2jsonld(await response.text()))
     Object.assign(this.context, ontologyCompacted['@context'])
     this.ontology = JsonLdProxy(await jsonld.expand(ontologyCompacted), this.context)
     this.chain = this.createChain()
@@ -138,6 +139,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
         let children = []
         if (field['form:widget']?._ === 'group' || lastPart(field['@type'][0]) === 'Container') {
           const nestingType = field['form:widget']?._ === 'group' ? 'group' : 'container'
+          /** @ts-ignore */
           children = this.applyFieldAccessRoles(this.elements.filter(innerField => innerField?.[`form:${nestingType}`]?._ === lastPart(field['@id'])))
         }
 

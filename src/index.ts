@@ -9,25 +9,25 @@ export { JsonLdProxy } from './core/JsonLdProxy'
 export { languages } from './languages.js'
 export { ElementBase } from './elements/ElementBase'
 
-let fields
-export const init = (givenFields: { [key: string]: any } = null) => {
+let fields: any
+export const init = (givenFields: { [key: string]: any } | null = null) => {
   fields = givenFields
 }
 
 export class RdfForm extends HTMLElement implements CoreComponent {
+  public language: LanguageService
   public formDefinition: FormDefinition
   public formData: RdfFormData
   public registry: Registry
   public renderer: Renderer
-  private language: LanguageService
+  public proxy: string | null
   public ready: boolean = false
   public shadow: any
   public t: any
-  public proxy: string = null
   
   constructor () {
     super()
-    this.addEventListener('register-elements', (event: CustomEvent) => event.detail.fields = fields)
+    this.addEventListener('register-elements', (event: Event) => (event as CustomEvent).detail.fields = fields)
   }
 
   async connectedCallback () {
@@ -40,8 +40,8 @@ export class RdfForm extends HTMLElement implements CoreComponent {
     this.language = Language
     await this.language.init(this)
     this.t = t
-    this.language.addEventListener('l10n-change', (event: CustomEvent) => this.dispatchEvent(new CustomEvent('l10n-change', {
-      detail: event.detail
+    this.language.addEventListener('l10n-change', (event: Event) => this.dispatchEvent(new CustomEvent('l10n-change', {
+      detail: (event as CustomEvent).detail
     })))
     this.proxy = this.getAttribute('proxy')
 

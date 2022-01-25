@@ -22,7 +22,7 @@ export class Registry extends EventTarget implements CoreComponent {
     this.dispatchEvent(new CustomEvent('ready'))
   }
 
-  async setupElement (definition, bindings: Array<string>, value = null, itemValues = {}, parentValues = null, render = () => null, parent, index = null, children = []): Promise<ElementInstance> {
+  async setupElement (definition, bindings: Array<string>, value = null, itemValues = {}, parentValues = null, render: any = () => null, parent, index: number | null = null, children = []): Promise<ElementInstance> {
     const widget = definition['form:widget']?._ && this.registeredFieldClasses[definition['form:widget']?._] ? definition['form:widget']._ : 'unknown'
     let elementClass = this.registeredFieldClasses[widget]
     

@@ -1,6 +1,6 @@
 import { lastPart } from '../helpers/lastPart'
 
-export const JsonLdProxy = (data, context, extraCommands: { [key: string]: (value) => any} = {}, defaultAlias: string = null) => {
+export const JsonLdProxy = (data, context, extraCommands: { [key: string]: (value) => any} = {}, defaultAlias: string | null = null) => {
   if (typeof data !== 'object') return data
 
   const convertProp = (prop) => {

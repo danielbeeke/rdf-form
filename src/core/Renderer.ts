@@ -66,7 +66,7 @@ export class Renderer extends EventTarget implements CoreComponent {
   }
 
   async nest (formDefinition: Map<any, any>, registry: Registry, formData: any, parent: any) {
-    const templates = []
+    const templates: Array<any> = []
 
     const isDisplayOnly = this.form.getAttribute('display')
 
@@ -79,14 +79,14 @@ export class Renderer extends EventTarget implements CoreComponent {
       let wrapperFieldInstance = isUiComponent || isContainer ? this.fieldInstances.get(field.$) : false
 
       if (!wrapperFieldInstance) wrapperFieldInstance = await registry.setupElement(
-        field, bindings, null, null, formData, () => this.render(), parent, null, children
+        field, bindings, null, {}, formData, () => this.render(), parent, null, children
       )
 
       if (!wrapperFieldInstance) continue;
 
       if (!this.fieldInstances.has(field.$)) this.fieldInstances.set(field.$, wrapperFieldInstance)
 
-      const innerTemplates = []
+      const innerTemplates: Array<any> = []
 
       if (mainBinding && !isContainer) {
 
