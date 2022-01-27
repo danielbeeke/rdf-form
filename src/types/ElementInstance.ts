@@ -1,4 +1,4 @@
-import { render, html } from 'uhtml/esm/async';
+import { render, html } from 'uhtml/async';
 
 export interface ElementInstance {
   label: () => typeof html,

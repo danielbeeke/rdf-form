@@ -1,5 +1,5 @@
 import { ElementBase } from './ElementBase'
-import { html, render } from 'uhtml/esm/async'
+import { html, render } from 'uhtml/async'
 import { kebabize } from '../helpers/kebabize'
 import { attributesDiff } from '../helpers/attributesDiff'
 
@@ -8,7 +8,7 @@ export class Details extends ElementBase {
   constructor (...args: any[]) {
     super(...args)
 
-    const childValues = [...this.children.values()].flatMap(([fieldDefinition]) => {
+    const childValues = [...this.children.values()].flatMap(([fieldDefinition]: [any]) => {
       const childBinding = fieldDefinition['form:binding']?._
       if (childBinding && this.parentValues[childBinding]?._) {
         return this.parentValues[childBinding]?.$
@@ -19,6 +19,7 @@ export class Details extends ElementBase {
       this.mainBinding && this.parentValues?.[this.mainBinding]?.length || 
       !this.mainBinding && childValues.length
     )) {
+      /** @ts-ignore */
       this.wrapperAttributes.open = true
     }
 

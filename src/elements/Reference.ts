@@ -1,5 +1,5 @@
 import { ElementBase } from './ElementBase'
-import { html } from 'uhtml/esm/async'
+import { html } from 'uhtml/async'
 import { fa } from '../helpers/fa'
 import { faPencilAlt, faCheck, faReply } from '../helpers/icons'
 import { searchSuggestionsSparqlQuery } from '../helpers/searchSuggestionsSparqlQuery'
@@ -56,11 +56,12 @@ export class Reference extends ElementBase {
     const {
       query,
       source
+      /** @ts-ignore */
     } = querySetting || sourceSetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, this.searchTerm) : dbpediaSuggestions(this.searchTerm)
 
     if (query && source) {
       const proxy = this.form.getAttribute('proxy') ?? ''
-      sparqlQueryToList(query, source.replace('http:', location.protocol), proxy).then(searchSuggestions => {
+      sparqlQueryToList(query, source, proxy).then(searchSuggestions => {
         searchSuggestions.push({
           label: t`Add <strong>${{searchTerm: this.searchTerm}}</strong> as text without reference.`,
           value: this.searchTerm

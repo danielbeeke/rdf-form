@@ -1,4 +1,4 @@
-import { html } from 'uhtml/esm/async'
+import { html } from 'uhtml/async'
 import { ElementBase } from './ElementBase'
 import { Language, t } from '../core/Language'
 import { langCodesToObject, filterLanguages } from '../core/Language'
@@ -12,7 +12,7 @@ export class LanguagePicker extends ElementBase {
   protected initiated = false
 
   protected isDragging = false
-  protected dragX = null
+  protected dragX: null | number = null
   protected newestItem = null
 
   itemDisplay () {
@@ -101,12 +101,12 @@ export class LanguagePicker extends ElementBase {
     if (tabsWrapper.initiated) return
     tabsWrapper.initiated = true
     
-    tabsWrapper.addEventListener('mousedown', (event) => {
+    tabsWrapper.addEventListener('mousedown', () => {
       this.isDragging = true
       this.dragX = null
     })
 
-    tabsWrapper.addEventListener('scroll', (event) => {
+    tabsWrapper.addEventListener('scroll', () => {
       this.setScrollClasses(select)
     })
 
@@ -117,9 +117,8 @@ export class LanguagePicker extends ElementBase {
 
     tabsWrapper.addEventListener('mousemove', (event) => {
       if (this.isDragging) {
-        const delta = this.dragX - event.clientX
         if (this.dragX !== null) {
-
+          const delta = this.dragX ? this.dragX - event.clientX : 0
           tabsWrapper.scrollTo({
             top: 0,
             left: tabsWrapper.scrollLeft + delta

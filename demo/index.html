@@ -6,10 +6,9 @@
     <title>RDF Form</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <script type="module">
-      import { init } from '/js/RdfForm.js'
-      import fields from '/js/plugins.small.js'
+      import { init } from '/js/rdf-form.esm.js'
 
-      init(fields)
+      init()
 
       const fieldType = location.hash.substr(1) ? location.hash.substr(1) : 'unknown'
 

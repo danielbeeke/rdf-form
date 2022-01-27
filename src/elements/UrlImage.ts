@@ -1,15 +1,14 @@
 import { ElementBase } from './ElementBase'
 import { getImageDimensionsByUrl } from '../helpers/getImageDimensionsByUrl'
 import { getImageColor } from '../helpers/getImageColor'
-import { html } from 'uhtml/esm/async'
+import { html } from 'uhtml/async'
 import { attributesDiff } from '../helpers/attributesDiff'
-import { lastPart } from '../helpers/lastPart'
 
 export class UrlImage extends ElementBase {
 
   protected focalPoint: { x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number }
   protected isDragging = false
-  protected focalPointDiv: HTMLDivElement = null
+  protected focalPointDiv: HTMLDivElement
 
   constructor (...args) {
     super(...args)
@@ -155,6 +154,7 @@ export class UrlImage extends ElementBase {
   }
 
   reset () {
+    /** @ts-ignore */
     this.focalPoint = { x1: null, y1: null, x2: null, y2: null, x3: null, y3: null, x4: null, y4: null }
   }
 

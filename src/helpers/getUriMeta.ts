@@ -4,7 +4,7 @@ import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js'
 import { lastPart } from './lastPart'
 import { Language } from '../core/Language'
 
-export const getUriMeta = async (uri: string, proxy: string = null) => {
+export const getUriMeta = async (uri: string, proxy: string | null = null) => {
   if (!metas.get(uri + Language.uiLanguage)) {
     let text
     try {
@@ -38,10 +38,11 @@ export const getUriMeta = async (uri: string, proxy: string = null) => {
         if (!meta.label && labelLastPart === lastPart(predicate)) {
           const valueInPreferredLanguage = (value as Array<any>).find(item => item['@language'] === Language.uiLanguage)
           const valueInUndeterminedLanguage = (value as Array<any>).find(item => item['@language'] === 'und')
+          /** @ts-ignore */
           meta.label = valueInPreferredLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@value'] ?? value?.[0]?.['@value']
         }
   
-        if (meta.label?.substr(0, 2) === '_:') meta.label = null
+        if ((meta.label ?? '').substr(0, 2) === '_:') meta.label = null
       }  
     }
 
@@ -52,18 +53,24 @@ export const getUriMeta = async (uri: string, proxy: string = null) => {
           const valueInUndeterminedLanguage = (value as Array<any>).find(item => item['@language'] === 'und')
           meta.thumbnail = valueInPreferredLanguage?.['@value'] ?? valueInPreferredLanguage?.['@id'] ?? 
           valueInUndeterminedLanguage?.['@value'] ?? valueInUndeterminedLanguage?.['@id'] ?? 
+          /** @ts-ignore */
           value?.[0]?.['@value'] ?? value?.[0]?.['@id']
   
+          /** @ts-ignore */
           if (meta.thumbnail?.substr(0, 2) === '_:') meta.thumbnail = false
   
+          /** @ts-ignore */
           if (!meta.thumbnail && value?.[0]?.['https://schema.org/url']?.[0]?.['@value']) {
+            /** @ts-ignore */
             meta.thumbnail = value[0]['https://schema.org/url'][0]['@value']
           }
         }
       }  
     }
 
+    /** @ts-ignore */
     if (!meta.label) meta.label = false
+    /** @ts-ignore */
     if (!meta.thumbnail) meta.thumbnail = false
 
     metas.set(uri + Language.uiLanguage, meta)

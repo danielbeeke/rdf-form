@@ -6,7 +6,7 @@ import { Language } from '../core/Language'
  * @param source
  * @param searchTerm
  */
- export function searchSuggestionsSparqlQuery (query = '', source = null, searchTerm: string = '') {
+ export function searchSuggestionsSparqlQuery (query = '', source: string | any = null, searchTerm: string = '') {
   if (searchTerm === '' || (searchTerm.length < 4)) return {}
   let querySearchTerm = searchTerm.trim()
 
@@ -31,8 +31,8 @@ import { Language } from '../core/Language'
   }
 
   if (typeof source === 'string') {
-    source = source.replace(/LANGUAGE/g, Language.uiLanguage)
-    source = source.replace(/SEARCH_TERM/g, querySearchTerm)
+    source = (source as string).replace(/LANGUAGE/g, Language.uiLanguage)
+    source = (source as string).replace(/SEARCH_TERM/g, querySearchTerm)
   }
 
   query = query.replace(/LANGUAGE/g, Language.uiLanguage)

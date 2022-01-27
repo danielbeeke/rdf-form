@@ -1,4 +1,4 @@
-import { render, html } from 'uhtml/esm/async'
+import { render, html } from 'uhtml/async'
 
 import { CoreComponent } from '../types/CoreComponent'
 import { ElementInstance } from '../types/ElementInstance'

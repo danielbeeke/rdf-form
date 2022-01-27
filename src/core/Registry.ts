@@ -1,6 +1,7 @@
 import { CoreComponent } from '../types/CoreComponent'
 import { ElementInstance } from '../types/ElementInstance'
 import { RdfForm } from '..'
+import BaseFields from '../plugins'
 
 export class Registry extends EventTarget implements CoreComponent {
 
@@ -17,7 +18,7 @@ export class Registry extends EventTarget implements CoreComponent {
   async init () {
     const event = new CustomEvent('register-elements', { detail: { fields: [] } })
     this.form.dispatchEvent(event)
-    Object.assign(this.registeredFieldClasses, event.detail.fields)
+    Object.assign(this.registeredFieldClasses, BaseFields, event.detail.fields)
     this.ready = true
     this.dispatchEvent(new CustomEvent('ready'))
   }

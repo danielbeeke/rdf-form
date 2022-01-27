@@ -1,5 +1,5 @@
 import { ElementBase } from './ElementBase'
-import { html } from 'uhtml/esm/async'
+import { html } from 'uhtml/async'
 import { attributesDiff } from '../helpers/attributesDiff'
 
 export class Textarea extends ElementBase {

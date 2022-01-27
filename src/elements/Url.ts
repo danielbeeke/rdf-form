@@ -1,5 +1,5 @@
 import { ElementBase } from './ElementBase'
-import { html } from 'uhtml/esm/async'
+import { html } from 'uhtml/async'
 import { lastPart } from '../helpers/lastPart'
 
 export class Url extends ElementBase {

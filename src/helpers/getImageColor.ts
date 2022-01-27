@@ -8,6 +8,7 @@ export const getImageColor = async (imageUrl) => {
 
   const canvas = document.createElement('canvas') as HTMLCanvasElement
   const context = canvas.getContext('2d')
+  if (!context) throw new Error('Could not get context')
   context.drawImage(image, 0, 0);
 
   const pixels = context.getImageData(0, 0, image.width, image.height)

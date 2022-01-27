@@ -1,9 +1,7 @@
 import { ElementBase } from './ElementBase'
-import { html } from 'uhtml/esm/async'
+import { html } from 'uhtml/async'
 import { importGlobalScript } from '../helpers/importGlobalScript'
-import { t, Language } from '../core/Language'
-import { onlyUnique } from '../helpers/onlyUnique'
-import { lastPart } from '../helpers/lastPart'
+import { t } from '../core/Language'
 
 const instances = new Map()
 
@@ -122,11 +120,6 @@ export class UrlUppy extends ElementBase {
     }} class="drag-and-drop-area"></div>`
 
     return super.wrapper([template])
-  }
-
-
-  item (childTemplates: Array<typeof html> = []) {
-    // console.log(this)
   }
 
   addButton () {

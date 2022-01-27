@@ -1,4 +1,4 @@
-import { html } from 'uhtml/esm/async'
+import { html } from 'uhtml/async'
 import { faTimes, faPlus, faLanguage } from '../helpers/icons'
 import { kebabize } from '../helpers/kebabize'
 import { attributesDiff } from '../helpers/attributesDiff'
@@ -10,7 +10,7 @@ import { debounce } from '../helpers/debounce';
 
 export class ElementBase extends EventTarget {
 
-  public definition: object
+  public definition: any
   protected bindings: Array<string>
   protected value: any
   protected parentValues: any
@@ -45,12 +45,17 @@ export class ElementBase extends EventTarget {
     open: null,
   }
 
-  protected wrapperAttributes = {
+  public wrapperAttributes: {
+    open: boolean,
+    class: Array<string>
+  } = {
     open: false,
     class: ['form-element']
   }
 
-  protected labelAttributes = {
+  protected labelAttributes: {
+    class: Array<string>
+  } = {
     class: ['label']
   }
 
@@ -88,14 +93,14 @@ export class ElementBase extends EventTarget {
   }
 
   get proxy () {
-    return this.form?.proxy
+    return this.form?.proxy ?? ''
   }
 
   get t () {
     return this.form?.t
   }
 
-  get form () {
+  get form (): HTMLElement & { t: any, proxy: string, formDefinition: any, renderer: any } {
     let pointer = this
     while (pointer.parent) {
       /** @ts-ignore */

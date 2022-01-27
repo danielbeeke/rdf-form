@@ -1,6 +1,6 @@
 import { ElementBase } from './ElementBase'
 import { sparqlQueryToList } from '../helpers/sparqlQueryToList'
-import { html } from 'uhtml/esm/async'
+import { html } from 'uhtml/async'
 import { Language } from '../core/Language'
 import { attributesDiff } from '../helpers/attributesDiff'
 import { onlyUnique } from '../helpers/onlyUnique'

@@ -1,5 +1,5 @@
 import { ElementBase } from './ElementBase'
-import { html } from 'uhtml/esm/async'
+import { html } from 'uhtml/async'
 import { zxcvbn, ZxcvbnOptions } from '@zxcvbn-ts/core';
 import zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import zxcvbnPackage from '@zxcvbn-ts/language-en'
@@ -26,7 +26,7 @@ export class Password extends ElementBase {
     ZxcvbnOptions.setOptions(options)
   }
 
-  on (event, fieldName = null) {
+  on (event, fieldName: string | null = null) {
     if (fieldName) this[fieldName] = event.target.value
     if (['keyup', 'change'].includes(event.type)) {
       if (!this.value) this.addItem()
@@ -88,7 +88,9 @@ export class Password extends ElementBase {
     }
     
     const zxcvbn = this.password ? this.getScore(this.password) : null
+    /** @ts-ignore */
     this.score = zxcvbn?.score ?? 0
+    /** @ts-ignore */
     this.suggestions = zxcvbn?.feedback?.suggestions ?? []
     this.debouncedRender()
   }

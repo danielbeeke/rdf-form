@@ -32,6 +32,12 @@
     "noEmit": true,
 
     "target": "es6",
-    "noImplicitAny": false
+    "noImplicitAny": false,
+
+    "removeComments": true,
+    // "emitDeclarationOnly": true,
+    // "allowSyntheticDefaultImports": true,
+    // "allowJs": true,
+    // "declarationMap": true,
   }
 }

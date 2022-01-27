@@ -1,4 +1,4 @@
-import { Hole } from 'uhtml/esm/async'
+import { Hole } from 'uhtml/async'
 import { icon } from '../vendor/fontawesome-svg-core.js'
 
 class FaIcon extends Hole {

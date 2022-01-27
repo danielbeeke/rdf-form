@@ -83,7 +83,7 @@ export class LanguageService extends EventTarget implements CoreComponent {
     rdfForm.formData.ready ? continueInit() : rdfForm.formData.addEventListener('ready', continueInit, { once: true})
   }
 
-  get requiredL10nLanguages () {
+  get requiredL10nLanguages (): Array<string> {
     return requiredL10nLanguages
   }
 

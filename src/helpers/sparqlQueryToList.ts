@@ -6,7 +6,7 @@ import { ProxyHandlerStatic } from '../vendor/ProxyHandlerStatic-browser'
  * @param source
  * @param comunica
  */
- export async function sparqlQueryToList (query, source, proxy = null) {
+ export async function sparqlQueryToList (query, source, proxy: string | undefined = undefined) {
   // TODO maybe use tokens that will less likely collide.
   query = query.toString().replace(/LANGUAGE/g, Language.uiLanguage)
   if (typeof source === 'object' && source instanceof String) source = source.toString()

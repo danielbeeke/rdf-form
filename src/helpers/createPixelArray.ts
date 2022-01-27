@@ -11,6 +11,7 @@ export function createPixelArray(pixels, quality = 0) {
       // If pixel is mostly opaque and not white
       if (typeof a === 'undefined' || a >= 125) {
           if (!(r > 250 && g > 250 && b > 250)) {
+              /** @ts-ignore */
               pixelArray.push([r, g, b]);
           }
       }

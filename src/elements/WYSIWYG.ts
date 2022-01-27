@@ -1,6 +1,6 @@
 import { ElementBase } from './ElementBase'
 import { init } from "../vendor/pell";
-import { html } from 'uhtml/esm/async'
+import { html } from 'uhtml/async'
 
 export class WYSIWYG extends ElementBase {
 
