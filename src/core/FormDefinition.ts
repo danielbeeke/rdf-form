@@ -6,6 +6,7 @@ import { expand } from '../helpers/expand'
 import { CoreComponent } from '../types/CoreComponent'
 import { JsonLdProxy } from './JsonLdProxy'
 import { Language } from './Language'
+import { applyProxy } from '../helpers/applyProxy'
 
 export const only = (...type) => {
   return (item: ExpandedJsonLdObject) => item['@type']?.some(rdfClass => type.includes(lastPart(rdfClass)))
@@ -35,7 +36,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   async init () {
     const proxy = this.form.getAttribute('proxy') ?? ''
     this.roles = this.form.getAttribute('roles') ? this.form.getAttribute('roles').split(',') : []
-    const definitionResponse = await fetch(proxy + this.formUrl.replace('http:', location.protocol))
+    const definitionResponse = await fetch(applyProxy(this.formUrl, proxy))
     const definitionTurtle = await definitionResponse.text()
     this.sourceDefinitionCompacted = ttl2jsonld(definitionTurtle)
     Object.assign(this.context, this.sourceDefinitionCompacted['@context'])
@@ -48,7 +49,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     if (!this.info) throw new Error('The form definition did not define a form itself.')
 
     /** @ts-ignore */
-    const ontologyCompacted = await fetch(proxy + (this.context.form as string).replace('http:', location.protocol)).then(async response => ttl2jsonld(await response.text()))
+    const ontologyCompacted = await fetch(applyProxy(this.context.form, proxy)).then(async response => ttl2jsonld(await response.text()))
     Object.assign(this.context, ontologyCompacted['@context'])
     this.ontology = JsonLdProxy(await jsonld.expand(ontologyCompacted), this.context)
     this.chain = this.createChain()
@@ -89,7 +90,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
       if (subformUrl?.length > 1) throw new Error('Multiple sub forms were found for one field.')
       
       if (subformUrl) {
-        const subformResponse = await fetch(proxy + subformUrl._.replace('http:', location.protocol))
+        const subformResponse = await fetch(applyProxy(subformUrl._, proxy))
         const subformTurtle = await subformResponse.text()
         const subformDefinitionCompacted = ttl2jsonld(subformTurtle)
         const subformDefinitionExpanded = JsonLdProxy(await jsonld.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context'], {

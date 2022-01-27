@@ -14,11 +14,11 @@
   },
   "scripts": {
     "demo": "node serve.mjs",
-    "start": "tsdx watch",
-    "build": "tsdx build",
+    "start": "tsdx watch --format esm",
+    "build": "NODE_ENV=production tsdx build --format cjs,esm,umd",
     "test": "tsdx test",
     "lint": "tsdx lint",
-    "prepare": "tsdx build",
+    "prepare": "tsdx build --format cjs,esm,umd",
     "size": "size-limit",
     "analyze": "size-limit --why"
   },
@@ -63,8 +63,9 @@
   "devDependencies": {
     "@rollup/plugin-multi-entry": "^4.1.0",
     "@size-limit/preset-small-lib": "^7.0.5",
-    "express": "^4.17.2",
     "husky": "^7.0.4",
+    "rollup-plugin-scss": "^3.0.0",
+    "sass": "^1.49.0",
     "size-limit": "^7.0.5",
     "tsdx": "^0.14.1",
     "tslib": "^2.3.1",

@@ -31,7 +31,7 @@
     // `tsdx build` ignores this option, but it is commonly used when type-checking separately with `tsc`
     "noEmit": true,
 
-    "target": "es6",
+    "target": "esnext",
     "noImplicitAny": false,
 
     "removeComments": true,

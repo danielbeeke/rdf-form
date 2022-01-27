@@ -3,12 +3,13 @@ import { ttl2jsonld } from '../vendor/ttl2jsonld'
 import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js'
 import { lastPart } from './lastPart'
 import { Language } from '../core/Language'
+import { applyProxy } from './applyProxy'
 
 export const getUriMeta = async (uri: string, proxy: string | null = null) => {
   if (!metas.get(uri + Language.uiLanguage)) {
     let text
     try {
-      const response = await fetch(`${proxy ? proxy : ''}${uri.replace('http:', location.protocol)}`, { headers: { 'Accept': 'application/ld+json' }})
+      const response = await fetch(applyProxy(uri, proxy), { headers: { 'Accept': 'application/ld+json' }})
       text = await response.text()        
     }
     catch(e) {

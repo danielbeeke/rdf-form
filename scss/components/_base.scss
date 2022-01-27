@@ -1,4 +1,4 @@
-input, textarea, select {
+input:not(.uppy-Url-input), textarea, select {
   flex: 1 1 auto;
   padding: 8px;
   border: 1px solid var(--color-gray);

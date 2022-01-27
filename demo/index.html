@@ -5,25 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>RDF Form</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-    <script type="module">
-      import { init } from '/js/rdf-form.esm.js'
-
-      init()
-
-      const fieldType = location.hash.substr(1) ? location.hash.substr(1) : 'unknown'
-
-      const form = document.createElement('rdf-form')
-      form.setAttribute('form', `/tests/example.form.ttl`)
-      form.setAttribute('debug', null)
-      // form.setAttribute('display', null)
-      form.setAttribute('ui-languages', JSON.stringify({"en": "English", "nl": "Nederlands"}))
-      form.setAttribute('data', `/tests/example.ttl`)
-
-      form.addEventListener('submit', (event) => {
-        console.log(event.detail)
-      })
-      
-      document.body.appendChild(form)
+    <script type="module" src="/index.js">
     </script>
 </head>
 <body>

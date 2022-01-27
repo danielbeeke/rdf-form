@@ -1,6 +1,8 @@
 .actions {
   display: flex;
   gap : 10px;
+  position: relative;
+  z-index: 4;
 
   &.top {
     > .language-switcher {

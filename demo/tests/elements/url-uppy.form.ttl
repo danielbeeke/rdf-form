@@ -8,17 +8,17 @@
     form:binding schema:Person ;
     a            form:Form .
 
-# urls3Form:url
-#     a                   form:Field ;
-#     form:widget         "url-uppy" ;
-#     form:uppyCompanion  "http://localhost:8080/companion/" ;
-#     form:uppyDomains    "https://example.com" ;
-#     form:label          "Download"@en ;
-#     form:label          "Download"@nl ;
-#     form:binding        schema:url ;
-#     form:order          3 ;
-#     form:multiple       true ;
-#     form:translatable   true .
+urls3Form:url
+    a                   form:Field ;
+    form:widget         "url-uppy" ;
+    form:uppyCompanion  "http://localhost:8080/companion/" ;
+    form:uppyDomain     "https://example.com/test" ;
+    form:label          "Download"@en ;
+    form:label          "Download"@nl ;
+    form:binding        schema:url ;
+    form:order          3 ;
+    form:multiple       true ;
+    form:translatable   true .
 
 urls3Form:imageWrapper
     a                   form:Container ;
@@ -31,7 +31,7 @@ urls3Form:image
     form:widget      "url-uppy" ;
     form:label       "Image"@en ;
     form:uppyCompanion  "http://localhost:8080/companion/" ;
-    form:uppyDomains    "https://example.com" ;
+    form:uppyDomain    "https://example.com" ;
     form:label          "Afbeelding"@nl ;
     form:type           schema:ImageObject ;
     form:container      "imageWrapper" ;

@@ -6,6 +6,7 @@ import { Language } from './Language'
 import { isFetchable } from '../helpers/isFetchable'
 import { FormDefinition } from './FormDefinition'
 import { RdfForm } from '..'
+import { applyProxy } from '../helpers/applyProxy'
 
 export class RdfFormData extends EventTarget implements CoreComponent {
 
@@ -28,11 +29,13 @@ export class RdfFormData extends EventTarget implements CoreComponent {
   }
 
   async init () {
+    const proxy = this.form.getAttribute('proxy') ?? ''
     let dataText
     if (!this.dataAsTextOrUrl) this.sourceData = []
 
     if (this.dataAsTextOrUrl && isFetchable(this.dataAsTextOrUrl)) {
-      const dataResponse = await fetch(this.dataAsTextOrUrl)
+      
+      const dataResponse = await fetch(applyProxy(this.dataAsTextOrUrl, proxy))
       dataText = await dataResponse.text()
     }
     else {
