@@ -1,5 +1,5 @@
 {
-  "version": "0.1.5",
+  "version": "0.1.7",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -13,7 +13,7 @@
     "node": ">=10"
   },
   "scripts": {
-    "demo": "node serve.mjs",
+    "demo": "cd demo && npm run start",
     "start": "tsdx watch --format esm",
     "build": "NODE_ENV=production tsdx build --format cjs,esm,umd",
     "test": "tsdx test",
@@ -62,6 +62,7 @@
   ],
   "devDependencies": {
     "@size-limit/preset-small-lib": "^7.0.5",
+    "fast-glob": "^3.2.11",
     "husky": "^7.0.4",
     "rollup-plugin-scss": "^3.0.0",
     "sass": "^1.49.0",

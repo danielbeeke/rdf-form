@@ -327,8 +327,8 @@ export class ElementBase extends EventTarget {
         ${this.definition['form:label']._}${isDisplayOnly ? ':' : ''}
         <small>&nbsp;<em>
         ${languageLabel && !isDisplayOnly ? html`${languageLabel}` : html``}
-        ${this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && languageLabel ? html`<span title=${this.t.direct('Disable translations for this field').toString()} class="icon-button disable-language" onclick=${disableLanguage}>${fa(faTimes)}</span>` : html``}
-        ${this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && !languageLabel ? html`<span title=${this.t.direct('Enable translations for this field').toString()} class="icon-button enable-language" onclick=${enableLanguage}>${fa(faLanguage)}</span>` : html``}
+        ${this.languages.length && this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && languageLabel ? html`<span title=${this.t.direct('Disable translations for this field').toString()} class="icon-button disable-language" onclick=${disableLanguage}>${fa(faTimes)}</span>` : html``}
+        ${this.languages.length && this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && !languageLabel ? html`<span title=${this.t.direct('Enable translations for this field').toString()} class="icon-button enable-language" onclick=${enableLanguage}>${fa(faLanguage)}</span>` : html``}
         </em></small>
       </label>
     ` : html``

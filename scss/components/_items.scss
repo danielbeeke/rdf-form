@@ -27,7 +27,7 @@
     height: calc(100% - 10px);
     pointer-events: none;
   }
-
+  
   &[loading="true"] {
     &:after {
       background: linear-gradient(
@@ -46,7 +46,7 @@
     }
   }
 
-  .button {
+  > .button {
     height: 35px;
     width: 35px;
     display: flex;

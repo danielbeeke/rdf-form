@@ -1,7 +1,7 @@
 import { ElementBase } from './ElementBase'
 import { html } from 'uhtml/async'
 import { importGlobalScript } from '../helpers/importGlobalScript'
-import { t } from '../core/Language'
+import { Language, t } from '../core/Language'
 
 function assertServerError (res) {
   if (res && res.error) {
@@ -12,7 +12,9 @@ function assertServerError (res) {
   return res
 }
 
-const instances = new Map()
+const uppys = new Map()
+const instances = new Set()
+const failedPreviews = new Set()
 
 export class UrlUppy extends ElementBase {
 
@@ -36,19 +38,23 @@ export class UrlUppy extends ElementBase {
   }
 
   async getUppy (id) {
-    if (instances.has(id)) return await instances.get(id)
+    if (uppys.has(id)) return await uppys.get(id)
     const promise = this.createUppy()
-    instances.set(id, promise)
+    uppys.set(id, promise)
     return promise
   }
-
+  
   async createUppy () {
     const Uppy = await importGlobalScript('https://releases.transloadit.com/uppy/v2.4.1/uppy.js', 'Uppy')
     const element = document.createElement('div')
 
     const definition = this.definition
 
-    const uppy = new Uppy.Core({ id: this.definition['@id'] })
+  
+    const uppy = new Uppy.Core({ 
+      id: location.pathname + this.definition['@id'],
+      allowedFileTypes: []
+    })
     .use(Uppy.ThumbnailGenerator, {
       thumbnailWidth: 200,
       waitForThumbnailsBeforeUpload: false,
@@ -59,13 +65,14 @@ export class UrlUppy extends ElementBase {
       hideCancelButton: true,
       showRemoveButtonAfterComplete: true,
       target: element,
+      proudlyDisplayPoweredByUppy: false,
       plugins: ['Url']
     })
     .use(Uppy.AwsS3Multipart, {
       limit: 4,
       createMultipartUpload: function (file) {
         this.assertHost('createMultipartUpload')
-
+        
         const metadata = {}
     
         Object.keys(file.meta).forEach(key => {
@@ -88,7 +95,10 @@ export class UrlUppy extends ElementBase {
 
     uppy.on('file-removed', (file, reason) => {
       if (reason === 'removed-by-user') {
-        this.parentValues[this.mainBinding].splice(file.meta.index, 1)
+
+        const parentIsGroup = this.parent.constructor.name === 'Container' && this.parent.definition['form:type']
+        const values = parentIsGroup ? this.parent.parentValues[this.parent.mainBinding] : this.parentValues[this.mainBinding]
+        values?.splice(file.meta.index, 1)
 
         this.form.dispatchEvent(new CustomEvent('file-deleted', {
           detail: { file }
@@ -102,7 +112,7 @@ export class UrlUppy extends ElementBase {
       }
 
       const uppyDomain = this.definition['form:uppyDomain']._
-      
+     
       if (file.meta?.relativePath && !file.meta.relativePath.includes(uppyDomain)) {
         if (!('index' in file.meta)) {
           await this.addFileToJsonLd(file)
@@ -126,22 +136,48 @@ export class UrlUppy extends ElementBase {
   }
 
   async addFileToJsonLd (file) {
-    const uppy = await this.getUppy(this.definition['@id'])
+    const uppy = await this.getUppy(this.definition['@id'] + Language.l10nLanguage)
 
     uppy.setFileState(file.id, { 
       progress: { uploadComplete: true, uploadStarted: true } 
     })
 
-    file.meta.index = this.parentValues[this.mainBinding].length
+    const parentIsGroup = this.parent.constructor.name === 'Container' && this.parent.definition['form:type']
+    const values = parentIsGroup ? this.parent.parentValues[this.parent.mainBinding] : this.parentValues[this.mainBinding]
+
+    file.meta.index = values.length
     await this.addItem()
-    this.parentValues[this.mainBinding][file.meta.index]['@' + this.jsonldKey] = file.meta.relativePath  
+    values[file.meta.index]['@' + this.jsonldKey] = file.meta.relativePath  
   }
 
   async wrapper (innerTemplates: Array<typeof html> = [], isDisplayOnly = false) {
     if (isDisplayOnly) return super.wrapper(innerTemplates)
-    const uppy = await this.getUppy(this.definition['@id'])
+
+    const uppy = await this.getUppy(this.definition['@id'] + Language.l10nLanguage)
+
     const template = html`
-    <div onclick=${[this.removeFile.bind(this), { capture: true }]} class="drag-and-drop-area">${uppy.rdfFormElement}</div>`
+    <div ref=${() => {
+      const inner = uppy.rdfFormElement.querySelector('.uppy-Dashboard-inner')
+      if (inner) {
+        inner.style.width = 'auto'
+        inner.style.height = 'auto'
+
+        const addMore = inner.querySelector('.uppy-DashboardContent-addMore')
+
+        addMore?.classList.add('button')
+        addMore?.classList.add('primary')
+        addMore?.classList.remove('uppy-DashboardContent-addMore')
+
+        const plusIcon = addMore?.querySelector('.uppy-c-icon')
+        plusIcon?.classList.add('icon')
+        plusIcon?.classList.remove('uppy-c-icon')
+
+        const back = inner.querySelector('.uppy-DashboardContent-back')
+        back?.classList.remove('.uppy-DashboardContent-back')
+        back?.classList.add('button')
+        back?.classList.add('primary')
+      }
+    }} onclick=${[this.removeFile.bind(this), { capture: true }]}>${uppy.rdfFormElement}</div>`
     return super.wrapper([template])
   }
 
@@ -150,9 +186,9 @@ export class UrlUppy extends ElementBase {
   }
 
   async item () {
-    const uppy = await this.getUppy(this.definition['@id'])
+    const uppy = await this.getUppy(this.definition['@id'] + Language.l10nLanguage)
 
-    if (this.value._) {
+    if (!instances.has(this) && this.value?._) {
       const url = new URL(this.value._)
       const name = url.pathname.substr(1)
 
@@ -169,6 +205,8 @@ export class UrlUppy extends ElementBase {
       uppy.setFileState(fileId, { 
         progress: { uploadComplete: true, uploadStarted: true } 
       })
+
+      instances.add(this)
     }
 
     await this.refreshPreviews()
@@ -177,12 +215,16 @@ export class UrlUppy extends ElementBase {
   }
 
   async refreshPreviews () {
-    const uppy = await this.getUppy(this.definition['@id'])
+    const uppy = await this.getUppy(this.definition['@id'] + Language.l10nLanguage
+    )
 
     uppy.getFiles().forEach(file => {
-      const image = new Image()
-      image.onload = () => uppy.setFileState(file.id, { preview: file.meta.relativePath })  
-      image.src = file.meta.relativePath
+      if (!failedPreviews.has(file.meta.relativePath)) {
+        const image = new Image()
+        image.onload = () => uppy.setFileState(file.id, { preview: file.meta.relativePath })  
+        image.onerror = () => failedPreviews.add(file.meta.relativePath)
+        image.src = file.meta.relativePath  
+      }
     })
   }
 

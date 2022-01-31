@@ -8,6 +8,16 @@
     form:binding schema:Person ;
     a            form:Form .
 
+    
+urls3Form:language
+    a                 form:UiComponent ;
+    form:widget       "language-picker" ;
+    form:order        1 .
+    
+#  urls3Form:languageTabs
+#      a                 form:UiComponent ;
+#      form:widget       "language-tabs" .
+
 urls3Form:url
     a                   form:Field ;
     form:widget         "url-uppy" ;
@@ -39,5 +49,23 @@ urls3Form:image
     form:saveColor      true ;
     form:focalPoint     focalPoint:x1, focalPoint:y1, focalPoint:x2, focalPoint:y2 ;
     form:dimensions     schema:width, schema:height ;
+    form:order       7 ;
+    form:multiple true .
+
+urls3Form:imageWrapper2
+    a                   form:Container ;
+    form:widget         "container" ;
+    form:order       7 .
+
+urls3Form:image2
+    a                form:Field ;
+    form:widget      "url-uppy" ;
+    form:label       "Image2"@en ;
+    form:uppyCompanion  "http://localhost:8080/companion/" ;
+    form:uppyDomain    "https://example.com" ;
+    form:label          "Afbeelding"@nl ;
+    form:container      "imageWrapper2" ;
+    form:binding        schema:url2 ;
+    form:saveColor      true ;
     form:order       7 ;
     form:multiple true .

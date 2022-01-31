@@ -1,0 +1,35 @@
+.uppy-Dashboard-inner {
+  width: auto !important;
+  border: none !important;
+  background-color: transparent !important;
+  min-height: 280px;
+}
+
+.uppy-Dashboard-files {
+  scrollbar-width: none;
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  > div {
+    min-height : 220px !important;
+  }
+}
+
+.uppy-DashboardContent-bar {
+  background-color: transparent !important;
+}
+
+.uppy-DashboardContent-bar {
+  border: none !important;
+}
+
+.uppy-Root, .uppy-Root > * {
+  font-family: inherit !important;
+}
+
+.uppy-Dashboard-AddFilesPanel {
+  background: var(--background-color) !important;
+  background-color: var(--background-color) !important;
+}

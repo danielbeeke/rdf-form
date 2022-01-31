@@ -1,6 +1,7 @@
 .form-element[type="language-picker"] {
   background: none;
   border: 0;
+  z-index: 9;
 
   .items, .item {
     padding: 0;
