@@ -14,6 +14,10 @@ fieldsForm:ingredient
     form:widget       "reference" ;
     form:label             "Ingredient"@en ;
     form:label             "Ingrediënt"@nl ;
+    form:option            ([
+      form:value           "*" ;
+      form:label           "Magic Ingredient"@en ;
+    ]) ; 
     form:binding           recipe:ingredient ;
     form:placeholder       "Search for an ingredient."@en ;
     form:placeholder       "Zoek naar een ingredient."@nl ;

@@ -58,6 +58,8 @@ export class ElementBase extends EventTarget {
   } = {
     class: ['label']
   }
+  
+  protected options: Array<any> = []
 
   constructor (...args: any[]) {
     super()
@@ -90,6 +92,18 @@ export class ElementBase extends EventTarget {
     if (this.definition['form:rows']?._ !== undefined) this.attributes.rows = parseInt(this.definition['form:rows']._)
     if (this.definition['form:cssClass']?._) this.wrapperAttributes.class.push(this.definition['form:cssClass']._)
     if (!this.definition['form:label']?._) this.wrapperAttributes.class.push('no-label')
+
+    if (this.definition['form:option']) {
+      this.options.push(...this.definition['form:option'].map(option => {
+        return {
+          label: option['form:label']?._,
+          image: option['form:image']?._,
+          uri: option['form:value']?._,
+          jsonldKey: (Object.keys(option['form:value'][0])[0]).substr(1),
+        }
+      }))
+    }
+
   }
 
   get proxy () {
@@ -342,7 +356,7 @@ export class ElementBase extends EventTarget {
 
     return html`
       <div class="reference-label">
-        ${meta?.label === false ? html`<span class="reference-loading">${this.t`Could not load data`}</span>` : html`
+        ${meta?.label === false ? html`<span class="reference-loading" title=${this.t.direct(`Could not load data`).toString()}>${this.value?._}</span>` : html`
           ${meta?.thumbnail ? html`<div class="image"><img src="${`//images.weserv.nl/?url=${meta?.thumbnail}&default=${meta?.thumbnail}&w=100&h=100`}"></div>` : ''}
           ${meta?.label ? (
             isFetchable(uri) ? html`<a href="${uri}" target="_blank">${meta?.label}</a>` : html`<span class="reference-text">${meta?.label}</span>`

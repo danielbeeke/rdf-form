@@ -17,13 +17,15 @@ export class Reference extends ElementBase {
 
   protected jsonldKey = 'id'
   protected expanded = false
-  protected searchTerm = null
+  protected searchTerm: string | null = null
   protected previousValue = null
   protected inputElement
 
   constructor (...args) {
     super(...args)
     this.autocomplete = debounce(this.autocomplete.bind(this), 400)
+
+    console.log(this.options)
   }
 
   async on (event) {
@@ -59,14 +61,15 @@ export class Reference extends ElementBase {
       /** @ts-ignore */
     } = querySetting || sourceSetting ? searchSuggestionsSparqlQuery(querySetting, sourceSetting, this.searchTerm) : dbpediaSuggestions(this.searchTerm)
 
+    const textSuggestion = {
+      label: t`Add <strong>${{searchTerm: this.searchTerm}}</strong> as text without reference.`,
+      value: this.searchTerm
+    }
+
     if (query && source) {
       const proxy = this.form.getAttribute('proxy') ?? ''
       sparqlQueryToList(query, source, proxy).then(searchSuggestions => {
-        searchSuggestions.push({
-          label: t`Add <strong>${{searchTerm: this.searchTerm}}</strong> as text without reference.`,
-          value: this.searchTerm
-        })
-
+        searchSuggestions.push(textSuggestion)
         this.suggestions = searchSuggestions
         this.render()
       }).catch(exception => {
@@ -75,6 +78,10 @@ export class Reference extends ElementBase {
         this.suggestions = []
         this.render()
       })
+    }
+    else {
+      this.suggestions = [textSuggestion]
+      this.render()
     }
   }
 
@@ -145,6 +152,19 @@ export class Reference extends ElementBase {
       }
 
       ${this.searchTerm ? this.searchSuggestions() : ''}
+
+      ${!isCollapsed && this.options.length ? html`
+        <div class="standard-options">
+        ${this.options.map(option => {
+          return html`
+          <span class="standard-option" onclick=${() => {
+            console.log(option)
+          }}>
+            ${option?.label?.[Language.uiLanguage] ?? option?.label ?? ''}
+          </span>
+        `})}
+        </div>
+      ` : null}
 
       ${childTemplates}
     </div>`

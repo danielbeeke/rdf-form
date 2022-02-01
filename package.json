@@ -1,5 +1,5 @@
 {
-  "version": "0.1.7",
+  "version": "0.1.8",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -14,7 +14,7 @@
   },
   "scripts": {
     "demo": "cd demo && npm run start",
-    "start": "tsdx watch --format esm",
+    "start": "tsdx watch --format esm --noClean",
     "build": "NODE_ENV=production tsdx build --format cjs,esm,umd",
     "test": "tsdx test",
     "lint": "tsdx lint",

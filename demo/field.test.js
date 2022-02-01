@@ -7,6 +7,7 @@ const form = document.createElement('rdf-form')
 form.setAttribute('form', `/tests/elements/${fieldType}.form.ttl`)
 // form.setAttribute('debug', null)
 form.setAttribute('data', `/tests/elements/${fieldType}.ttl`)
+// form.setAttribute('proxy', 'https://thingproxy.freeboard.io/fetch/')
 
 form.addEventListener('submit', (event) => {
   console.log(event.detail)

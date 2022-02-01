@@ -5,7 +5,4 @@
 
 []
 a schema:Thing ;
-recipe:ingredient      <http://dbpedia.org/resource/Tomato> ;
-recipe:ingredient      <http://dbpedia.org/resource/Tomato_sauce> ;
-recipe:ingredient      <http://dbpedia.org/resource/Oregano> ;
-recipe:ingredient      <http://dbpedia.org/resource/Garlic> .
+recipe:ingredient      <https://danielbeeke.nl/> .

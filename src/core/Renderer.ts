@@ -8,8 +8,8 @@ import { flatMapProxy } from '../helpers/flatMapProxy'
 import { containerProxy } from '../helpers/containerProxy'
 import { t, Language } from './Language'
 import { RdfForm } from '..'
-import RdfFormCss from '../../scss/rdf-form.scss'
-import OnlyDisplay from '../../scss/display-only.scss'
+import RdfFormCss from '../scss/rdf-form.scss'
+import OnlyDisplay from '../scss/display-only.scss'
 
 export class Renderer extends EventTarget implements CoreComponent {
   public ready: boolean = false

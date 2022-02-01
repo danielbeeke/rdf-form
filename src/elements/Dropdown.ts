@@ -6,21 +6,9 @@ import { attributesDiff } from '../helpers/attributesDiff'
 import { onlyUnique } from '../helpers/onlyUnique'
 
 export class Dropdown extends ElementBase {
-  
-  protected options: Array<any> = []
 
   constructor (...args) {
     super(...args)
-
-    if (this.definition['form:option']) {
-      this.options.push(...this.definition['form:option'].map(option => {
-        return {
-          label: option['form:label']?._,
-          image: option['form:image']?._,
-          uri: option['form:value']?._
-        }
-      }))
-    }
 
     if (!this.options.length) {
       if (!this.definition['form:optionsQuery']?._ || !this.definition['form:optionsSource']?._) {

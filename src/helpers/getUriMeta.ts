@@ -1,30 +1,21 @@
 const metas = new Map()
-import { ttl2jsonld } from '../vendor/ttl2jsonld'
-import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js'
 import { lastPart } from './lastPart'
 import { Language } from '../core/Language'
 import { applyProxy } from './applyProxy'
+import { engine } from '../core/Comunica'
+import { streamToString } from './streamToString'
 
 export const getUriMeta = async (uri: string, proxy: string | null = null) => {
   if (!metas.get(uri + Language.uiLanguage)) {
-    let text
-    try {
-      const response = await fetch(applyProxy(uri, proxy), { headers: { 'Accept': 'application/ld+json' }})
-      text = await response.text()        
-    }
-    catch(e) {
-      console.log(uri)
-    }
-    let json = {}
-    try { json = JSON.parse(text) }
-    catch (e) {
-      json = ttl2jsonld(text)
-    }
+    const response = await engine.query(`DESCRIBE <${uri}>`, {
+      sources: [ applyProxy(uri, proxy) ]
+    })
+    
+    const { data } = await engine.resultToString(response, 'application/ld+json');
+    const resultString = await streamToString(data);
+    let [ json ] = JSON.parse(resultString)
 
-    if (json) {
-      json = await JsonLdProcessor.expand(json)
-      if (Array.isArray(json) && json[0]) json = json[0]  
-    }
+    if (!json) json = {}
 
     const meta = {
       label: null,
