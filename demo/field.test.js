@@ -21,4 +21,17 @@ form.addEventListener('file-added', (event) => {
   console.log('file-added', event.detail)
 })
 
+form.addEventListener('dropdown-options', (event) => {
+  const options = event.detail.options
+
+  options.push({
+    value: 'Lorem',
+    label: 'Test',
+    jsonldKey: 'value'
+  })
+
+  console.log(options)
+})
+
+
 document.body.appendChild(form)

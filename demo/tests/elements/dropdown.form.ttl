@@ -1,0 +1,32 @@
+@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix form:       <http://localhost:8070/form.ttl#> .
+@prefix fieldsForm: <http://localhost:8070/fields.form.ttl#> .
+@prefix schema:     <http://schema.org/> .
+@prefix recipe:     <http://rdf.danielbeeke.nl/recipe/recipe-dev.ttl#> .
+
+<http://localhost:8070/fields.form#fieldsForm>
+    form:binding schema:Thing ;
+    a            form:Form .
+
+
+
+fieldsForm:options2
+    a                 form:Field ;
+    form:widget       "dropdown" ;
+    form:option        ([
+        form:value    "test" ;
+        form:label    "Test"@en ;
+    ] [
+        form:value    "test1" ;
+        form:label    "Test 1"@en ;
+    ]) ;
+    form:label             "Static code dropdown"@en ;
+    form:binding           recipe:confirm1 ;
+    form:order             2 .
+
+fieldsForm:options
+    a                 form:Field ;
+    form:widget       "dropdown" ;
+    form:label             "Dynamic code dropdown"@en ;
+    form:binding           recipe:confirm ;
+    form:order             2 .

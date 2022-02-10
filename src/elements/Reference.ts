@@ -24,8 +24,6 @@ export class Reference extends ElementBase {
   constructor (...args) {
     super(...args)
     this.autocomplete = debounce(this.autocomplete.bind(this), 400)
-
-    console.log(this.options)
   }
 
   async on (event) {
@@ -153,12 +151,20 @@ export class Reference extends ElementBase {
 
       ${this.searchTerm ? this.searchSuggestions() : ''}
 
-      ${!isCollapsed && this.options.length ? html`
+      ${!isCollapsed && this.options.length && !this.suggestions.length ? html`
         <div class="standard-options">
         ${this.options.map(option => {
           return html`
           <span class="standard-option" onclick=${() => {
-            console.log(option)
+            if (!this.value) this.addItem()
+            this.value['@' + option.jsonldKey] = option.uri
+            const oppositeSymbol = option.jsonldKey === 'value' ? 'id' : 'value'
+            delete this.value['@' + oppositeSymbol]
+            this.expanded = false
+            this.searchTerm = null
+            this.suggestions = []
+    
+            this.render()
           }}>
             ${option?.label?.[Language.uiLanguage] ?? option?.label ?? ''}
           </span>

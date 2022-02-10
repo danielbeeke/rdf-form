@@ -10,6 +10,13 @@ export class Dropdown extends ElementBase {
   constructor (...args) {
     super(...args)
 
+    this.form.dispatchEvent(new CustomEvent('dropdown-options', {
+      detail: {
+        options: this.options,
+        element: this
+      }
+    }))
+
     if (!this.options.length) {
       if (!this.definition['form:optionsQuery']?._ || !this.definition['form:optionsSource']?._) {
         throw new Error('optionsQuery and optionsSource are needed for the field dropdown. Please improve the form definition.')
