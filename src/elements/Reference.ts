@@ -31,6 +31,7 @@ export class Reference extends ElementBase {
       if (!this.value) await this.addItem()
       if (event.target.value.substr(0, 4) === 'http') {
         this.value[`@${this.jsonldKey}`] = event.target.value
+        this.dispatchChange()
       }
       else {
         this.searchTerm = event.target.value
@@ -113,6 +114,7 @@ export class Reference extends ElementBase {
       this.expanded = false
       if (this.value?.['@value'] && this.value['@value'].substr(0, 4) !== 'http' && this.searchTerm) {
         this.value['@value'] = this.searchTerm
+        this.dispatchChange()
       }
       this.searchTerm = null
       this.suggestions = []
@@ -128,6 +130,7 @@ export class Reference extends ElementBase {
       this.suggestions = []
       if (this.previousValue) this.value[`@${this.jsonldKey}`] = this.previousValue
       this.render()
+      this.dispatchChange()
     }}">
       ${fa(faReply)}
     </button>`
@@ -160,6 +163,7 @@ export class Reference extends ElementBase {
             this.value['@' + option.jsonldKey] = option.uri
             const oppositeSymbol = option.jsonldKey === 'value' ? 'id' : 'value'
             delete this.value['@' + oppositeSymbol]
+            this.dispatchChange()
             this.expanded = false
             this.searchTerm = null
             this.suggestions = []

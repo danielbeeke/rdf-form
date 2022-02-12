@@ -60,7 +60,12 @@ export class RdfForm extends HTMLElement implements CoreComponent {
         if (components.every(component => component.ready) && !this.ready) {
           this.ready = true
           this.renderer.render()
-          this.dispatchEvent(new CustomEvent('ready'))
+          this.dispatchEvent(new CustomEvent('ready', {
+            detail: {
+              proxy: this.formData.proxy,
+              expanded: this.formData.proxy.$,
+            }
+          }))
         }
       })
     }

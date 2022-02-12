@@ -45,6 +45,7 @@ export class Dropdown extends ElementBase {
       if (!this.parentValues[this.mainBinding]) this.parentValues[this.mainBinding] = []
       this.parentValues[this.mainBinding].splice(0)
       this.parentValues[this.mainBinding].push(...selectedValues)
+      this.dispatchChange()
     }
   }
 

@@ -1,7 +1,7 @@
-import { ElementBase } from './ElementBase'
 import { html } from 'uhtml/async'
 import { importGlobalScript } from '../helpers/importGlobalScript'
 import { Language, t } from '../core/Language'
+import { UrlImage } from './UrlImage'
 
 function assertServerError (res) {
   if (res && res.error) {
@@ -16,7 +16,7 @@ const uppys = new Map()
 const instances = new Set()
 const failedPreviews = new Set()
 
-export class UrlUppy extends ElementBase {
+export class UrlUppy extends UrlImage {
 
   public uppy: any
 
@@ -28,10 +28,10 @@ export class UrlUppy extends ElementBase {
     this.form.renderer.extraStylesheets.add(url)
   }
 
-  removeFile (event: MouseEvent) {
+  clickEvents (event: MouseEvent) {
     /** @ts-ignore */
-    const element = event?.target?.closest('.uppy-Dashboard-Item-action--remove')
-    if (element) {
+    const removeButton = event?.target?.closest('.uppy-Dashboard-Item-action--remove')
+    if (removeButton) {
       const result = confirm(t.direct(`Are you sure?`))
       if (!result) event.stopPropagation()  
     }
@@ -54,10 +54,6 @@ export class UrlUppy extends ElementBase {
     const uppy = new Uppy.Core({ 
       id: location.pathname + this.definition['@id'],
       allowedFileTypes: []
-    })
-    .use(Uppy.ThumbnailGenerator, {
-      thumbnailWidth: 200,
-      waitForThumbnailsBeforeUpload: false,
     })
     .use(Uppy.Url, { companionUrl: this.definition['form:uppyCompanion']?._ })
     .use(Uppy.Dashboard, {
@@ -93,12 +89,14 @@ export class UrlUppy extends ElementBase {
       companionUrl: this.definition['form:uppyCompanion']?._,
     })
 
-    uppy.on('file-removed', (file, reason) => {
+    uppy.on('file-removed', async (file, reason) => {
       if (reason === 'removed-by-user') {
 
-        const parentIsGroup = this.parent.constructor.name === 'Container' && this.parent.definition['form:type']
+        const parentIsGroup = this.parent.constructor.name === 'Container' && this.definition['form:type']
         const values = parentIsGroup ? this.parent.parentValues[this.parent.mainBinding] : this.parentValues[this.mainBinding]
         values?.splice(file.meta.index, 1)
+
+        await this.form.renderer.render()
 
         this.form.dispatchEvent(new CustomEvent('file-deleted', {
           detail: { file }
@@ -126,6 +124,7 @@ export class UrlUppy extends ElementBase {
       const uppyDomain = this.definition['form:uppyDomain']._
       file.meta.relativePath = uppyDomain + response.body.location
       await this.addFileToJsonLd(file)
+      await this.form.renderer.render()
       this.form.dispatchEvent(new CustomEvent('file-added', {
         detail: { file, response }
       }))
@@ -176,9 +175,10 @@ export class UrlUppy extends ElementBase {
         back?.classList.remove('.uppy-DashboardContent-back')
         back?.classList.add('button')
         back?.classList.add('primary')
+
       }
-    }} onclick=${[this.removeFile.bind(this), { capture: true }]}>${uppy.rdfFormElement}</div>`
-    return super.wrapper([template])
+    }} onclick=${[this.clickEvents.bind(this), { capture: true }]}>${uppy.rdfFormElement}</div>`
+    return super.wrapper([template, ...innerTemplates])
   }
 
   addButton () {
@@ -187,6 +187,7 @@ export class UrlUppy extends ElementBase {
 
   async item () {
     const uppy = await this.getUppy(this.definition['@id'] + Language.l10nLanguage)
+    const focalPointEnabled = this.definition['form:focalPoint']?.length > 0
 
     if (!instances.has(this) && this.value?._) {
       const url = new URL(this.value._)
@@ -210,13 +211,20 @@ export class UrlUppy extends ElementBase {
     }
 
     await this.refreshPreviews()
+    return html`<div ref=${() => {
 
-    return null
+      if (focalPointEnabled) {
+        setTimeout(() => {
+          const images = [...uppy.rdfFormElement.querySelectorAll('.uppy-Dashboard-Item-previewImg')]
+          this.attachImageEvents(images[this.index])  
+        }, 300)
+      }
+
+    }}></div>`
   }
 
   async refreshPreviews () {
-    const uppy = await this.getUppy(this.definition['@id'] + Language.l10nLanguage
-    )
+    const uppy = await this.getUppy(this.definition['@id'] + Language.l10nLanguage)
 
     uppy.getFiles().forEach(file => {
       if (!failedPreviews.has(file.meta.relativePath)) {

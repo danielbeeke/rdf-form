@@ -31,6 +31,7 @@ export class Password extends ElementBase {
     if (['keyup', 'change'].includes(event.type)) {
       if (!this.value) this.addItem()
       if (this.value) this.value[`@${this.jsonldKey}`] = this.password
+      this.dispatchChange()
     }
 
     this.validate()

@@ -7,6 +7,7 @@ export class Checkbox extends ElementBase {
     if (['click'].includes(event.type)) {
       if (!this.value) await this.addItem()
       this.value[`@${this.jsonldKey}`] = this.definition['form:translatable']?._ ? event.target.checked.toString() : event.target.checked
+      this.dispatchChange()
     }
   }
 

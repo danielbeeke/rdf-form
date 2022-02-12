@@ -14,6 +14,10 @@
 
   > div {
     min-height : 220px !important;
+
+    > div {
+      position: relative !important;
+    }
   }
 }
 
@@ -32,4 +36,19 @@
 .uppy-Dashboard-AddFilesPanel {
   background: var(--background-color) !important;
   background-color: var(--background-color) !important;
+}
+
+.uppy-Dashboard-Item,
+.uppy-Dashboard-Item-preview {
+  height: auto !important;
+  user-drag: none;
+  user-select: none;
+}
+
+.uppy-Dashboard-Item-previewIconWrap {
+  margin: 20px;
+}
+
+.uppy-Dashboard-Item-previewInnerWrap {
+  background-color: black !important;
 }

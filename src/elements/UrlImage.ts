@@ -50,10 +50,7 @@ export class UrlImage extends ElementBase {
     this.render()
   }
 
-  input () {
-    let image
-    const focalPointEnabled = this.definition['form:focalPoint']?.length > 0
-    
+  attachImageEvents (image: HTMLImageElement) {
     const onmousedown = (event: MouseEvent) => {      
       event.preventDefault()
       this.reset()
@@ -90,7 +87,30 @@ export class UrlImage extends ElementBase {
         this.itemValues[`${focalPointPrefix}x2`] = [{ '@value': this.focalPoint.x2 }]
         this.itemValues[`${focalPointPrefix}y2`] = [{ '@value': this.focalPoint.y2 }]
       }
+
     }
+
+    image.parentElement?.querySelector('.focal-point')?.remove()
+
+    this.focalPointDiv = document.createElement('div')
+    this.focalPointDiv.classList.add('focal-point')
+    this.setStyle()
+    image.before(this.focalPointDiv)
+
+    const imageBackground = document.createElement('img')
+    imageBackground.classList.add('image-background')
+    imageBackground.src = image.src
+    image.before(imageBackground)
+
+    image.parentElement?.addEventListener('mousedown', onmousedown)
+    image.parentElement?.addEventListener('mousemove', onmousemove)
+    image.parentElement?.addEventListener('mouseup', onmouseup)
+
+    this.setStyle()
+  }
+
+  input () {
+    const focalPointEnabled = this.definition['form:focalPoint']?.length > 0
 
     return html`
       <div class="top">
@@ -107,14 +127,9 @@ export class UrlImage extends ElementBase {
         focalPointEnabled ? 
         html`
         <div class="image-wrapper">
-          <div ref="${element => { this.focalPointDiv = element; this.setStyle() }}" class="focal-point"></div>
           <img 
             src=${this.value?._} 
-            onclick="${onclick}" 
-            onmousedown="${onmousedown}" 
-            onmousemove="${onmousemove}" 
-            onmouseup="${onmouseup}" 
-            ref="${element => image = element}"
+            ref="${element => this.attachImageEvents(element)}"
           />
         </div>` : 
         html`<img src=${this.value?._} />`
@@ -136,6 +151,16 @@ export class UrlImage extends ElementBase {
     this.focalPointDiv.style.top = this.focalPoint.y1 + '%'
     this.focalPointDiv.style.width = (this.focalPoint.x2 - this.focalPoint.x1) + '%'
     this.focalPointDiv.style.height = (this.focalPoint.y2 - this.focalPoint.y1) + '%'
+
+    const image = this.focalPointDiv.parentElement?.querySelector('.uppy-Dashboard-Item-previewImg') as HTMLImageElement
+    if (!image) return
+
+    image.style.clipPath = `inset(
+      ${this.focalPoint.y1}% 
+      ${100 - this.focalPoint.x2}% 
+      ${100 - this.focalPoint.y2}%
+      ${this.focalPoint.x1}%  
+    )`
   }
 
   reCalc = () => {
@@ -156,6 +181,10 @@ export class UrlImage extends ElementBase {
   reset () {
     /** @ts-ignore */
     this.focalPoint = { x1: null, y1: null, x2: null, y2: null, x3: null, y3: null, x4: null, y4: null }
+    const image = this.focalPointDiv.parentElement?.querySelector('.uppy-Dashboard-Item-previewImg') as HTMLImageElement    
+    if (!image) return
+
+    image.removeAttribute('style')
   }
 
   valueDisplay () {

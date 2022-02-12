@@ -21,6 +21,15 @@ export class Renderer extends EventTarget implements CoreComponent {
     super()
     this.init()
     this.form = rdfForm
+
+    if (this.form.getAttribute('extra-stylesheets')) {
+      const urls = this.form.getAttribute('extra-stylesheets')?.split(',')
+      if (urls) {
+        for (const url of urls) {
+          this.extraStylesheets.add(url)
+        }  
+      }
+    }
   }
 
   async init () {

@@ -128,8 +128,24 @@ export class ElementBase extends EventTarget {
   on (event) {
     if (['keyup', 'change'].includes(event.type)) {
       if (!this.value) this.addItem()
-      if (this.value) this.value[`@${this.jsonldKey}`] = event.target.value
+      if (this.value) {
+        this.value[`@${this.jsonldKey}`] = event.target.value
+        this.dispatchChange()
+      }
     }
+  }
+
+  dispatchChange () {
+    this.form.dispatchEvent(new CustomEvent('fieldchange', {
+      detail: {
+        value: this.value,
+        field: this,
+        /** @ts-ignore */
+        proxy: this.form.formData.proxy,
+        /** @ts-ignore */
+        expanded: this.form.formData.proxy.$,
+      }
+    }))
   }
 
   get removable () {
