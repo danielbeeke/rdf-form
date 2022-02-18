@@ -18,17 +18,17 @@ urls3Form:language
 #      a                 form:UiComponent ;
 #      form:widget       "language-tabs" .
 
-urls3Form:url
-    a                   form:Field ;
-    form:widget         "url-uppy" ;
-    form:uppyCompanion  "http://localhost:8080/companion/" ;
-    form:uppyDomain     "https://example.com/test" ;
-    form:label          "Download"@en ;
-    form:label          "Download"@nl ;
-    form:binding        schema:url ;
-    form:order          3 ;
-    form:multiple       true ;
-    form:translatable   true .
+# urls3Form:url
+#     a                   form:Field ;
+#     form:widget         "url-uppy" ;
+#     form:uppyCompanion  "http://localhost:8080/companion/" ;
+#     form:uppyDomain     "https://example.com/test" ;
+#     form:label          "Download"@en ;
+#     form:label          "Download"@nl ;
+#     form:binding        schema:url ;
+#     form:order          3 ;
+#     form:multiple       true ;
+#     form:translatable   true .
 
 urls3Form:imageWrapper
     a                   form:Container ;
@@ -52,20 +52,20 @@ urls3Form:image
     form:order       7 ;
     form:multiple true .
 
-urls3Form:imageWrapper2
-    a                   form:Container ;
-    form:widget         "container" ;
-    form:order       7 .
+# urls3Form:imageWrapper2
+#     a                   form:Container ;
+#     form:widget         "container" ;
+#     form:order       7 .
 
-urls3Form:image2
-    a                form:Field ;
-    form:widget      "url-uppy" ;
-    form:label       "Image2"@en ;
-    form:uppyCompanion  "http://localhost:8080/companion/" ;
-    form:uppyDomain    "https://example.com" ;
-    form:label          "Afbeelding"@nl ;
-    form:container      "imageWrapper2" ;
-    form:binding        schema:url2 ;
-    form:saveColor      true ;
-    form:order       7 ;
-    form:multiple true .
+# urls3Form:image2
+#     a                form:Field ;
+#     form:widget      "url-uppy" ;
+#     form:label       "Image2"@en ;
+#     form:uppyCompanion  "http://localhost:8080/companion/" ;
+#     form:uppyDomain    "https://example.com" ;
+#     form:label          "Afbeelding"@nl ;
+#     form:container      "imageWrapper2" ;
+#     form:binding        schema:url2 ;
+#     form:saveColor      true ;
+#     form:order       7 ;
+#     form:multiple true .

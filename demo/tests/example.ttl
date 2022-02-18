@@ -6,15 +6,15 @@
     a schema:Thing ;
     schema:name "Soup recipe"@en ;
     schema:name "Soep recept"@nl ;
-    recipe:ingredients ( [ recipe:ingredient      <http://dbpedia.org/resource/Tomato> ;
+    recipe:ingredients ( [ recipe:ingredient      <https://dbpedia.org/resource/Tomato> ;
                          recipe:measurementUnit <https://www.wikidata.org/wiki/Q11582> ;
                          recipe:quantity        1 ; ] 
-                        [ recipe:ingredient      <http://dbpedia.org/resource/Tomato_sauce> ;
+                        [ recipe:ingredient      <https://dbpedia.org/resource/Tomato_sauce> ;
                          recipe:measurementUnit <https://www.wikidata.org/wiki/Q11582> ;
                          recipe:quantity        350 ; ]
-                        [ recipe:ingredient      <http://dbpedia.org/resource/Oregano> ;
+                        [ recipe:ingredient      <https://dbpedia.org/resource/Oregano> ;
                          recipe:measurementUnit <https://www.wikidata.org/wiki/Q2332346>  ;
                          recipe:quantity        2 ; ] 
-                        [ recipe:ingredient      <http://dbpedia.org/resource/Garlic> ;
+                        [ recipe:ingredient      <https://dbpedia.org/resource/Garlic> ;
                          recipe:measurementUnit <https://www.wikidata.org/wiki/Q2332346>  ;
                          recipe:quantity        2 ; ] ) .

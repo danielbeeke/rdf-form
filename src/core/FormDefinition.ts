@@ -1,5 +1,5 @@
 import { ttl2jsonld } from '../vendor/ttl2jsonld'
-import { jsonld } from '../vendor/jsonld.js'
+import { expand as JsonLdExpand } from 'jsonld'
 import { ExpandedJsonLdObject } from '../types/ExpandedJsonLdObject'
 import { lastPart } from '../helpers/lastPart'
 import { expand } from '../helpers/expand'
@@ -42,7 +42,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     Object.assign(this.context, this.sourceDefinitionCompacted['@context'])
     if (!this.context.form) throw new Error('The prefix form was not found in the form definition.')
     if (!this.sourceDefinitionCompacted['@graph']) throw new Error('Missing fields inside form definition')
-    this.sourceDefinitionExpanded = JsonLdProxy(await jsonld.expand(this.sourceDefinitionCompacted), this.context, {
+    this.sourceDefinitionExpanded = JsonLdProxy(await JsonLdExpand(this.sourceDefinitionCompacted), this.context, {
       '_': (value) => Language.multilingualValue(value, 'ui')
     })
     await this.resolveSubForms(this.sourceDefinitionExpanded)
@@ -51,7 +51,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     /** @ts-ignore */
     const ontologyCompacted = await fetch(applyProxy(this.context.form, proxy)).then(async response => ttl2jsonld(await response.text()))
     Object.assign(this.context, ontologyCompacted['@context'])
-    this.ontology = JsonLdProxy(await jsonld.expand(ontologyCompacted), this.context)
+    this.ontology = JsonLdProxy(await JsonLdExpand(ontologyCompacted), this.context)
     this.chain = this.createChain()
     this.ready = true
     this.dispatchEvent(new CustomEvent('ready'))
@@ -93,7 +93,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
         const subformResponse = await fetch(applyProxy(subformUrl._, proxy))
         const subformTurtle = await subformResponse.text()
         const subformDefinitionCompacted = ttl2jsonld(subformTurtle)
-        const subformDefinitionExpanded = JsonLdProxy(await jsonld.expand(subformDefinitionCompacted), subformDefinitionCompacted['@context'], {
+        const subformDefinitionExpanded = JsonLdProxy(await JsonLdExpand(subformDefinitionCompacted), subformDefinitionCompacted['@context'], {
           '_': (value) => Language.multilingualValue(value, 'ui')
         });
 

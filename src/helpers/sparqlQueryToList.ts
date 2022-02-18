@@ -1,5 +1,5 @@
 import { Language } from '../core/Language'
-import { engine } from '../core/Comunica'
+import { newEngine } from '../core/Comunica'
 import { ProxyHandlerStatic } from '../vendor/ProxyHandlerStatic-browser'
 /**
  * @param query
@@ -10,8 +10,12 @@ import { ProxyHandlerStatic } from '../vendor/ProxyHandlerStatic-browser'
   // TODO maybe use tokens that will less likely collide.
   query = query.toString().replace(/LANGUAGE/g, Language.uiLanguage)
   if (typeof source === 'object' && source instanceof String) source = source.toString()
-  const options = { sources: [source], httpProxyHandler: null }
+
+  if (typeof source === 'string') source.replace('http:', location.protocol)
+
+  const options : { sources: any, httpProxyHandler: any } = { sources: [source], httpProxyHandler: null }
   if (proxy) options.httpProxyHandler = new ProxyHandlerStatic(proxy)
+  const engine = newEngine()
   const result = await engine.query(query, options);
 
   /** @ts-ignore */

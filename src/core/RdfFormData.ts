@@ -1,6 +1,6 @@
 import { CoreComponent } from '../types/CoreComponent'
 import { ttl2jsonld } from '../vendor/ttl2jsonld'
-import { jsonld as JsonLdProcessor } from '../vendor/jsonld.js'
+import { expand as JsonLdExpand } from 'jsonld'
 import { JsonLdProxy } from './JsonLdProxy'
 import { Language } from './Language'
 import { isFetchable } from '../helpers/isFetchable'
@@ -25,7 +25,7 @@ export class RdfFormData extends EventTarget implements CoreComponent {
     this.formDefinition = this.form.formDefinition
     this.dataAsTextOrUrl = this.form.getAttribute('data')
 
-    this.formDefinition.addEventListener('ready', () => this.init())
+    this.formDefinition.addEventListener('ready', () => this.init(), { once: true })
   }
 
   async init () {
@@ -49,7 +49,7 @@ export class RdfFormData extends EventTarget implements CoreComponent {
       this.sourceDataCompacted = ttl2jsonld(dataText)
     }
 
-    this.sourceData = await JsonLdProcessor.expand(this.sourceDataCompacted);
+    this.sourceData = await JsonLdExpand(this.sourceDataCompacted);
 
     if (Array.isArray(this.sourceData)) this.sourceData = this.sourceData.pop()
 

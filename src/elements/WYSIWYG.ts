@@ -19,6 +19,7 @@ export class WYSIWYG extends ElementBase {
         onChange: async html => {
           if (!this.value) await this.addItem()
           this.value['@value'] = html
+          this.dispatchChange()
         },
       })
 

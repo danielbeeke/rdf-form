@@ -52,7 +52,7 @@ export class UrlUppy extends UrlImage {
 
   
     const uppy = new Uppy.Core({ 
-      id: location.pathname + this.definition['@id'],
+      id: location.pathname + this.definition['@id'] + Language.l10nLanguage,
       allowedFileTypes: []
     })
     .use(Uppy.Url, { companionUrl: this.definition['form:uppyCompanion']?._ })
@@ -216,7 +216,9 @@ export class UrlUppy extends UrlImage {
       if (focalPointEnabled) {
         setTimeout(() => {
           const images = [...uppy.rdfFormElement.querySelectorAll('.uppy-Dashboard-Item-previewImg')]
-          this.attachImageEvents(images[this.index])  
+          if (images[this.index]) {
+            this.attachImageEvents(images[this.index])  
+          }
         }, 300)
       }
 

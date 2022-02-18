@@ -5,7 +5,6 @@
 module.exports = {
   mount: {
     '.': '/',
-    '../dist': '/js'
   },
   plugins: [
     /* ... */
@@ -20,4 +19,5 @@ module.exports = {
   buildOptions: {
     /* ... */
   },
+  workspaceRoot: '../'
 };

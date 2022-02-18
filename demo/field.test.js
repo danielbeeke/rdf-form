@@ -1,5 +1,4 @@
-import { init } from '../dist/rdf-form.esm'
-init()
+import 'rdf-form'
 
 const fieldType = location.hash.substr(1) ? location.hash.substr(1) : 'unknown'
 

@@ -109,8 +109,20 @@ export class Renderer extends EventTarget implements CoreComponent {
 
         if (applicableValues.length) {
           for (const [index, value] of applicableValues.entries()) {
+            let itemValues = formData?.[index]
+
+            if (formData && Array.isArray(formData.$)) {
+              const item = flatMapProxy(formData, mainBinding).find(itemValue => itemValue.$ === value.$)
+
+              for (const [innerIndex, formDataItem] of formData.$.entries()) {
+                if (formDataItem[mainBinding][0] === item.$) {
+                  itemValues = formData[innerIndex]
+                }
+              }
+            }
+
             const fieldInstance = this.fieldInstances.get(value.$) ?? await registry.setupElement(
-              field, bindings, value, formData?.[index], formData, () => this.render(), parent, index, children
+              field, bindings, value, itemValues, formData, () => this.render(), parent, index, children
             )
             if (!this.fieldInstances.has(value.$)) this.fieldInstances.set(value.$, fieldInstance)
 

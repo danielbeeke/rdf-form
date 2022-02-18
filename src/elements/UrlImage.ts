@@ -4,6 +4,8 @@ import { getImageColor } from '../helpers/getImageColor'
 import { html } from 'uhtml/async'
 import { attributesDiff } from '../helpers/attributesDiff'
 
+const imagesCache = new Map()
+
 export class UrlImage extends ElementBase {
 
   protected focalPoint: { x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number }
@@ -50,6 +52,12 @@ export class UrlImage extends ElementBase {
     this.render()
   }
 
+  async destroy () {
+    for (const imageDestroyer of imagesCache.values()) {
+      imageDestroyer()
+    }
+  }
+
   attachImageEvents (image: HTMLImageElement) {
     const onmousedown = (event: MouseEvent) => {      
       event.preventDefault()
@@ -87,10 +95,10 @@ export class UrlImage extends ElementBase {
         this.itemValues[`${focalPointPrefix}x2`] = [{ '@value': this.focalPoint.x2 }]
         this.itemValues[`${focalPointPrefix}y2`] = [{ '@value': this.focalPoint.y2 }]
       }
-
     }
 
     image.parentElement?.querySelector('.focal-point')?.remove()
+    image.parentElement?.querySelector('.image-background')?.remove()
 
     this.focalPointDiv = document.createElement('div')
     this.focalPointDiv.classList.add('focal-point')
@@ -105,6 +113,12 @@ export class UrlImage extends ElementBase {
     image.parentElement?.addEventListener('mousedown', onmousedown)
     image.parentElement?.addEventListener('mousemove', onmousemove)
     image.parentElement?.addEventListener('mouseup', onmouseup)
+
+    imagesCache.set(image, () => {
+      image.parentElement?.removeEventListener('mousedown', onmousedown)
+      image.parentElement?.removeEventListener('mousemove', onmousemove)
+      image.parentElement?.removeEventListener('mouseup', onmouseup)        
+    })
 
     this.setStyle()
   }

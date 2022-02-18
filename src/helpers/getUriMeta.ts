@@ -2,18 +2,30 @@ const metas = new Map()
 import { lastPart } from './lastPart'
 import { Language } from '../core/Language'
 import { applyProxy } from './applyProxy'
-import { engine } from '../core/Comunica'
+import { newEngine } from '../core/Comunica'
 import { streamToString } from './streamToString'
 
 export const getUriMeta = async (uri: string, proxy: string | null = null) => {
   if (!metas.get(uri + Language.uiLanguage)) {
-    const response = await engine.query(`DESCRIBE <${uri}>`, {
-      sources: [ applyProxy(uri, proxy) ]
+
+    // DBPedia is broken.
+    let improvedFetchUri
+    let improvedCanonicalUri
+    if (uri.includes('://dbpedia.org/resource/')) {
+      improvedFetchUri = uri.replace('://dbpedia.org/resource/', '://dbpedia.org/data/') + '.jsonld'
+      improvedCanonicalUri = uri.replace('https://', 'http://')
+    }
+
+    const engine = await newEngine()
+   
+    const response = await engine.query(`DESCRIBE <${improvedCanonicalUri ?? uri}>`, {
+      sources: [ applyProxy(improvedFetchUri ?? uri, proxy) ]
     })
-    
+
     const { data } = await engine.resultToString(response, 'application/ld+json');
     const resultString = await streamToString(data);
-    let [ json ] = JSON.parse(resultString)
+
+    let [json] = JSON.parse(resultString)
 
     if (!json) json = {}
 

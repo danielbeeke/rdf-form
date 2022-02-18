@@ -27,7 +27,11 @@ export class RdfForm extends HTMLElement implements CoreComponent {
   
   constructor () {
     super()
-    this.addEventListener('register-elements', (event: Event) => (event as CustomEvent).detail.fields = fields)
+    this.addEventListener('register-elements', (event: Event) => (event as CustomEvent).detail.fields = fields, { once: true })
+  }
+
+  async disconnectedCallback () {
+    this.dispatchEvent(new CustomEvent('destroy'))
   }
 
   async connectedCallback () {
@@ -45,6 +49,7 @@ export class RdfForm extends HTMLElement implements CoreComponent {
     })))
     this.proxy = this.getAttribute('proxy')
 
+  
     if (this.getAttribute('debug') !== null) expandProxiesInConsole()
 
     const components = [
@@ -67,7 +72,7 @@ export class RdfForm extends HTMLElement implements CoreComponent {
             }
           }))
         }
-      })
+      }, { once: true })
     }
   }
 }

@@ -2,8 +2,8 @@
   // see https://www.typescriptlang.org/tsconfig to better understand tsconfigs
   "include": ["src", "types"],
   "compilerOptions": {
-    "module": "esnext",
-    "lib": ["dom", "esnext"],
+    "module": "ESNext",
+    "lib": ["dom", "ESNext"],
     "importHelpers": true,
     // output .d.ts declaration files for consumers
     "declaration": true,
@@ -31,13 +31,14 @@
     // `tsdx build` ignores this option, but it is commonly used when type-checking separately with `tsc`
     "noEmit": true,
 
-    "target": "esnext",
+    "target": "ESNext",
     "noImplicitAny": false,
-
+    "allowJs": true,
+    "checkJs": false,
     "removeComments": true,
     // "emitDeclarationOnly": true,
     // "allowSyntheticDefaultImports": true,
-    // "allowJs": true,
+
     // "declarationMap": true,
   }
 }

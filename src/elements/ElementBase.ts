@@ -104,7 +104,12 @@ export class ElementBase extends EventTarget {
       }))
     }
 
+    this.addEventListener('destroy', () => {
+      this.destroy()
+    }, { once: true })
   }
+
+  async destroy () {}
 
   get proxy () {
     return this.form?.proxy ?? ''
