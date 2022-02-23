@@ -52,3 +52,9 @@
 .uppy-Dashboard-Item-previewInnerWrap {
   background-color: black !important;
 }
+
+.uppy-Dashboard-Item-preview img.uppy-Dashboard-Item-previewImg {
+  height: auto;
+  object-fit: none;
+  width: auto;
+}

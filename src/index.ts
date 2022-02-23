@@ -8,11 +8,7 @@ import { expandProxiesInConsole } from './core/Debug'
 export { JsonLdProxy } from './core/JsonLdProxy'
 export { languages } from './languages.js'
 export { ElementBase } from './elements/ElementBase'
-
-let fields: any
-export const init = (givenFields: { [key: string]: any } | null = null) => {
-  fields = givenFields
-}
+export { t } from './core/Language'
 
 export class RdfForm extends HTMLElement implements CoreComponent {
   public language: LanguageService
@@ -27,7 +23,6 @@ export class RdfForm extends HTMLElement implements CoreComponent {
   
   constructor () {
     super()
-    this.addEventListener('register-elements', (event: Event) => (event as CustomEvent).detail.fields = fields, { once: true })
   }
 
   async disconnectedCallback () {

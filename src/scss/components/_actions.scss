@@ -2,7 +2,7 @@
   display: flex;
   gap : 10px;
   position: relative;
-  z-index: 4;
+  z-index: 10000;
 
   &.top {
     > .language-switcher {

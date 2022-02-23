@@ -9,7 +9,7 @@
         schema:url "https://danielbeeke.nl/images/daniel.jpg"@en ;
         schema:width 100 ;
         schema:height 100 ;
-    ] [
+    ][
         schema:url "https://images.unsplash.com/photo-1643575102128-0d6b42fbdda1?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2064&q=80"@nl ;
         schema:width 100 ;
         schema:height 100 ;

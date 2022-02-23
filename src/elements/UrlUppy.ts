@@ -81,7 +81,7 @@ export class UrlUppy extends UrlImage {
         const uppyDomainUrl = new URL(uppyDomain)
 
         return this.client.post('s3/multipart', {
-          filename: uppyDomainUrl.pathname.substr(1) + '/' + file.name,
+          filename: uppyDomainUrl.pathname.substr(1) + file.name,
           type: file.type,
           metadata,
         }).then(assertServerError)
@@ -141,7 +141,7 @@ export class UrlUppy extends UrlImage {
       progress: { uploadComplete: true, uploadStarted: true } 
     })
 
-    const parentIsGroup = this.parent.constructor.name === 'Container' && this.parent.definition['form:type']
+    const parentIsGroup = this.parent.constructor.name === 'Container' && this.definition['form:type']?._
     const values = parentIsGroup ? this.parent.parentValues[this.parent.mainBinding] : this.parentValues[this.mainBinding]
 
     file.meta.index = values.length
@@ -187,54 +187,55 @@ export class UrlUppy extends UrlImage {
 
   async item () {
     const uppy = await this.getUppy(this.definition['@id'] + Language.l10nLanguage)
-    const focalPointEnabled = this.definition['form:focalPoint']?.length > 0
 
     if (!instances.has(this) && this.value?._) {
       const url = new URL(this.value._)
       const name = url.pathname.substr(1)
 
-      const fileId = uppy.addFile({
-        name,
-        meta: {
-          relativePath: this.value._,
-          index: this.index
-        },
-        data: '',
-        isRemote: true,
-      })
-
-      uppy.setFileState(fileId, { 
-        progress: { uploadComplete: true, uploadStarted: true } 
-      })
-
-      instances.add(this)
+      try {
+        const fileId = uppy.addFile({
+          name,
+          meta: {
+            relativePath: this.value._,
+            index: this.index
+          },
+          data: '',
+          isRemote: true,
+        })
+  
+        uppy.setFileState(fileId, { 
+          progress: { uploadComplete: true, uploadStarted: true } 
+        })
+  
+        instances.add(this)  
+      }
+      catch (exception) {
+        console.log(exception)
+      }
     }
 
     await this.refreshPreviews()
-    return html`<div ref=${() => {
-
-      if (focalPointEnabled) {
-        setTimeout(() => {
-          const images = [...uppy.rdfFormElement.querySelectorAll('.uppy-Dashboard-Item-previewImg')]
-          if (images[this.index]) {
-            this.attachImageEvents(images[this.index])  
-          }
-        }, 300)
-      }
-
-    }}></div>`
+    return html``
   }
 
   async refreshPreviews () {
+    // const focalPointEnabled = this.definition['form:focalPoint']?.length > 0
+
     const uppy = await this.getUppy(this.definition['@id'] + Language.l10nLanguage)
 
-    uppy.getFiles().forEach(file => {
+    uppy.getFiles().forEach((file) => {
       if (!failedPreviews.has(file.meta.relativePath)) {
         const image = new Image()
         image.onload = () => uppy.setFileState(file.id, { preview: file.meta.relativePath })  
         image.onerror = () => failedPreviews.add(file.meta.relativePath)
         image.src = file.meta.relativePath  
       }
+
+      setTimeout(() => {
+        const images = [...uppy.rdfFormElement.querySelectorAll('.uppy-Dashboard-Item-previewImg')]
+        for (const image of images) this.attachImageEvents(image)
+      }, 800)
+
     })
   }
 
