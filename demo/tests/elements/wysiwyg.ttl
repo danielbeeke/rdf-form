@@ -4,6 +4,6 @@
 @prefix focalPoint:       <http://localhost:8070/focalPoint.ttl#> .
 
 []
-a schema:Thing ;
-recipe:text      """<h1>Lorem ipsum</h1>""" .
+a schema:Thing .
+# recipe:text      """<h1>Lorem ipsum</h1>""" .
 
