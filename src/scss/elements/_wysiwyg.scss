@@ -1,3 +1,9 @@
 .wysiwyg-wrapper {
   width: 100%;
 }
+
+.form-element[type="wysiwyg"] {
+  .switch-editor {
+    margin: 6px;
+  }
+}

@@ -8,17 +8,35 @@
     form:binding schema:Thing ;
     a            form:Form .
 
-fieldsForm:accept
-    a                 form:Field ;
-    form:widget       "checkbox" ;
-    form:label             "Accept"@en ;
-    form:binding           recipe:accept ;
-    form:order             1 .
+fieldsForm:language
+    a                 form:UiComponent ;
+    form:widget       "language-picker" ;
+    form:order        1 .
+    
+
+# fieldsForm:accept
+#     a                 form:Field ;
+#     form:widget       "checkbox" ;
+#     form:label             "Accept"@en ;
+#     form:binding           recipe:accept ;
+#     form:translatable   "always" ;
+#     form:order             1 .
 
 
-fieldsForm:confirm
+# fieldsForm:confirm
+#     a                 form:Field ;
+#     form:widget       "checkbox" ;
+#     form:label             "Confirm"@en ;
+#     form:binding           recipe:confirm ;
+#     form:translatable   "always" ;
+
+#     form:order             2 .
+
+fieldsForm:confirm2
     a                 form:Field ;
     form:widget       "checkbox" ;
     form:label             "Confirm"@en ;
-    form:binding           recipe:confirm ;
+    form:binding           recipe:confirm2 ;
+    form:translatable   "always" ;
+
     form:order             2 .

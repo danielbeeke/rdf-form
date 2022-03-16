@@ -1,5 +1,5 @@
 {
-  "version": "0.1.18",
+  "version": "0.1.20",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -28,6 +28,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.1",
     "@frogcat/ttl2jsonld": "^0.0.6",
     "cypress": "^7.0.1",
+    "jsonld": "^5.2.0",
     "n3": "^1.6.4",
     "quantize": "^1.0.2",
     "tinyduration": "^3.2.0",

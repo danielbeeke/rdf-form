@@ -320,7 +320,10 @@ export class ElementBase extends EventTarget {
     if (!this.parentValues[this.mainBinding]) this.parentValues[this.mainBinding] = this.parentValues[this.mainBinding] = []
     const values = this.parentValues[this.mainBinding]
     if (values.length) {
-      values[0]['@language'] = Language.l10nLanguage
+      for (const value of values) {
+        value['@language'] = Language.l10nLanguage
+        if (value['@value']) value['@value'] = value['@value'].toString()  
+      }
     }
     else {
       values.push({ '@language': Language.l10nLanguage })
@@ -337,7 +340,9 @@ export class ElementBase extends EventTarget {
       const applicableValues = this.parentValues?.[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()]
       .filter((value) => !value['@language'] || value['@language'] === Language.l10nLanguage) : []
 
-      const language = applicableValues.map((value) => value['@language'])[0]
+      const hasLanguageValues = this.parentValues?.[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()].filter(item => item['@language']) : []
+
+      const language = hasLanguageValues.length ? Language.l10nLanguage : ''
 
       if (language) {
         languageLabel = `(${Language.l10nLanguages[language]})`
@@ -363,7 +368,7 @@ export class ElementBase extends EventTarget {
         <small>&nbsp;<em>
         ${languageLabel && !isDisplayOnly ? html`${languageLabel}` : html``}
         ${this.languages.length && this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && languageLabel ? html`<span title=${this.t.direct('Disable translations for this field').toString()} class="icon-button disable-language" onclick=${disableLanguage}>${fa(faTimes)}</span>` : html``}
-        ${this.languages.length && this.definition['form:translatable']?._ && this.definition['form:translatable']?._ !== 'always' && !languageLabel ? html`<span title=${this.t.direct('Enable translations for this field').toString()} class="icon-button enable-language" onclick=${enableLanguage}>${fa(faLanguage)}</span>` : html``}
+        ${this.definition['form:translatable']?._ && this.definition['form:translatable']?._ && !languageLabel ? html`<span title=${this.t.direct('Enable translations for this field').toString()} class="icon-button enable-language" onclick=${enableLanguage}>${fa(faLanguage)}</span>` : html``}
         </em></small>
       </label>
     ` : html``

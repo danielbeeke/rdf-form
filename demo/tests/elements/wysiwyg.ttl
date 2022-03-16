@@ -5,7 +5,5 @@
 
 []
 a schema:Thing ;
-recipe:accept     "true"@en,
-"true"@fr ;
-recipe:confirm2      true .
+recipe:text      """<h1>Lorem ipsum</h1>""" .
 

@@ -1,12 +1,14 @@
-import { ElementBase } from './ElementBase'
+import { Textarea } from './Textarea'
 import { init } from "../vendor/pell";
 import { html } from 'uhtml/async'
 
-export class WYSIWYG extends ElementBase {
+export class WYSIWYG extends Textarea {
 
   protected editor
+  protected state = 'wysiwyg'
 
   item () {
+    
     let textValue = this.value?.['@value'] ?? ''
     if (typeof textValue === 'string') textValue.trim()
 
@@ -15,6 +17,24 @@ export class WYSIWYG extends ElementBase {
       element.classList.add('wysiwyg-wrapper')
       this.editor = init({
         element: element,
+        actions: [
+          'bold',
+          'italic',
+          'ulist',
+          'heading1',
+          'heading2',
+          'paragraph',
+          'link',
+          {
+            icon: '&#9998;',
+            title: 'Switch to HTML',
+            result: () => {
+              this.state = 'html'
+              this.render()
+            }
+          },
+
+        ],
         defaultParagraphSeparator: 'p',
         onChange: async html => {
           if (!this.value) await this.addItem()
@@ -27,7 +47,14 @@ export class WYSIWYG extends ElementBase {
       element.content.innerHTML = textValue
     }
 
-    return this.editor
+    return this.state === 'wysiwyg' ? this.editor : html`
+      <button class="button primary switch-editor" onclick=${async () => {
+        this.state = 'wysiwyg'
+        await this.render()
+        this.editor.content.innerHTML = this.value?._
+      }}>${this.t`Switch to editor`}</button>
+      ${super.item()}
+    `
   }
 
   valueDisplay () {

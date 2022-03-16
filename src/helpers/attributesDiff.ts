@@ -7,10 +7,10 @@ export const attributesDiff = (attributes, callback: null | Function = null) => 
     else {
       node.removeAttribute(key)
     }
+  }
 
-    if (callback) {
-      callback(node)
-      callback = null
-    }
+  if (callback) {
+    callback(node)
+    callback = null
   }
 };
