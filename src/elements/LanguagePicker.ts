@@ -6,6 +6,7 @@ import { SlimSelect } from '../vendor/slimselect.js'
 import { faGlobe, faTimes } from '../helpers/icons'
 import { fa } from '../helpers/fa'
 import { icon } from '../vendor/fontawesome-svg-core.js'
+import { languages } from '../languages'
 
 export class LanguagePicker extends ElementBase {
 
@@ -22,7 +23,6 @@ export class LanguagePicker extends ElementBase {
   item () {
     const onChange = async (event) => {
       if (!this.initiated) return
-
       const selectedLanguages = event.currentTarget.slim.selected()
       Language.l10nLanguages = await langCodesToObject(selectedLanguages)
       this.render()
@@ -46,6 +46,30 @@ export class LanguagePicker extends ElementBase {
     const slimSelect = new SlimSelect({
       select: select,
       deselectLabel: deleteIcon,
+      addable: function (value) {
+        const label = prompt(t`Language label`.toString(), value) ?? ''
+        const key = prompt(t`BCP 47`.toString(), value) ?? ''
+
+        const languageFound = languages.find(item => item[0] === key)
+
+        if (key && label && !languageFound) {
+          const newItem = {
+            text: label,
+            value: key,
+            mandatory: Language.requiredL10nLanguages.includes(key)
+          }  
+
+          if (!languages.find(item => item.join('-') === [key, label].join('-'))) {
+            languages.push([key, label])
+          }
+
+          return newItem
+        }
+
+        if (languageFound) alert(t`The language key ${{key}} is already used.`.toString())
+
+        return false
+      },
       beforeOnChange: (values) => {
         const newItem = values.map(value => value.value).find(item => !Object.keys(Language.l10nLanguages).includes(item))
         Language.l10nLanguage = newItem

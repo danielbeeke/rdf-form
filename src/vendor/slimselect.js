@@ -572,6 +572,7 @@ export const SlimSelect = (function webpackUniversalModuleDefinition(root, facto
           this.addable = null;
           this.beforeOnChange = null;
           this.onChange = null;
+          this.addedData = [];
           this.beforeOpen = null;
           this.afterOpen = null;
           this.beforeClose = null;
@@ -759,6 +760,7 @@ export const SlimSelect = (function webpackUniversalModuleDefinition(root, facto
           this.data.setSelectedFromSelect();
         };
         SlimSelect.prototype.addData = function (data) {
+          this.addedData.push(data)
           var isValid = data_1.validateData([data]);
           if (!isValid) {
             console.error('Validation problem on: #' + this.select.element.id);
@@ -943,7 +945,15 @@ export const SlimSelect = (function webpackUniversalModuleDefinition(root, facto
                 master_1.config.isSearching = false;
                 if (Array.isArray(info)) {
                   info.unshift({ text: '', placeholder: true });
+
+                  for (const newItem of master_1.addedData) {
+                    if (!info.includes(newItem)) {
+                      info.push(newItem)
+                    }
+                  }
+
                   master_1.setData(info);
+                  
                   master_1.data.search(value);
                   master_1.render();
                 }
