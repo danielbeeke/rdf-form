@@ -9,15 +9,41 @@ import { languages } from '../languages'
  */
 
 export const getLanguageLabel = async (langCode) => {
-  const [realLangCode, script] = langCode.split('-')
+  const langCodeParts = langCode.split('-')
+
+  const testParts: Array<string> = []
+  const testers: Array<string> = []
+
+  for (const langCodePart of langCodeParts) {
+    testParts.push(langCodePart)
+    testers.push(testParts.join('-'))
+  }
+
+  testers.reverse()
+
+  let languageLabel = ''
+  for (const tester of testers) {
+    if (!languageLabel) {
+      languageLabel = languages.find(language => language[0].startsWith(tester))?.[1] ?? ''
+    }
+  }
 
   const scriptMapping = {
     'latn': t.direct('Latin').toString(),
     'cyrl': t.direct('Cyrillic').toString()
   }
 
-  const language = languages.find(language => language[0] === realLangCode)
-  return language?.[1] ? `${language[1]}${script ? ` (${scriptMapping?.[script.toLowerCase()] ?? script})` : ''}` : langCode
+  let hasScript = ''
+  for (const script of Object.keys(scriptMapping)) {
+    if (langCodeParts.some(item => item.toLowerCase() === script)) {
+      hasScript = `${scriptMapping[script.toLowerCase()]}`
+    }
+  }
+
+  return `${languageLabel} ${hasScript}`.trim()
+
+  // const language = languages.find(language => language[0] === realLangCode)
+  // return language?.[1] ? `${language[1]}${script ? ` (${scriptMapping?.[script.toLowerCase()] ?? script})` : ''}` : langCode
 }
 
 export const filterLanguages = async (search) => {
@@ -56,6 +82,9 @@ export class LanguageService extends EventTarget implements CoreComponent {
 
   async init (rdfForm) {
     await this.setUiLanguage('en')
+  
+    this.dispatchEvent(new CustomEvent('indexing-languages', { detail: { languages }}))  
+
     const continueInit = async () => {
       const usedLanguages = await this.extractUsedLanguages(rdfForm.formData.proxy)
 
@@ -75,7 +104,7 @@ export class LanguageService extends EventTarget implements CoreComponent {
   
       this.uiLanguages = JSON.parse(rdfForm.getAttribute('ui-languages')) ?? {}
       await this.setUiLanguage(rdfForm.getAttribute('selected-language') ?? 'en')
-  
+
       this.ready = true
       this.dispatchEvent(new CustomEvent('ready'))  
     }
@@ -130,7 +159,7 @@ export class LanguageService extends EventTarget implements CoreComponent {
          detail: langCode
        }))
      }
- 
+
      l10nLanguages = languages
      if (!currentL10nLanguage) {
        currentL10nLanguage = Object.keys(l10nLanguages)[0]

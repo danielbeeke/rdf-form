@@ -34,7 +34,6 @@ export class RdfFormData extends EventTarget implements CoreComponent {
     if (!this.dataAsTextOrUrl) this.sourceData = []
 
     if (this.dataAsTextOrUrl && isFetchable(this.dataAsTextOrUrl)) {
-      
       const dataResponse = await fetch(applyProxy(this.dataAsTextOrUrl, proxy))
       dataText = await dataResponse.text()
     }
@@ -69,7 +68,7 @@ export class RdfFormData extends EventTarget implements CoreComponent {
 
   createProxy () {
     const context = this.context
-    this.proxy = JsonLdProxy(this.sourceData, context, {
+    this.proxy = JsonLdProxy(this.sourceData, context, {
       '_': (value) => Language.multilingualValue(value, 'l10n')
     })
   }

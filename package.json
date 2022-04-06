@@ -65,6 +65,7 @@
     "rollup-plugin-scss": "^3.0.0",
     "sass": "^1.49.0",
     "size-limit": "^7.0.5",
+    "snowpack": "^3.8.8",
     "tsdx": "^0.14.1",
     "tslib": "^2.3.1",
     "typescript": "^4.5.5"

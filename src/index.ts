@@ -37,11 +37,14 @@ export class RdfForm extends HTMLElement implements CoreComponent {
     this.registry = new Registry(this)
     this.renderer = new Renderer(this)
     this.language = Language
-    await this.language.init(this)
-    this.t = t
+    this.language.addEventListener('indexing-languages', (event: Event) => this.dispatchEvent(new CustomEvent('indexing-languages', {
+      detail: (event as CustomEvent).detail
+    })))
     this.language.addEventListener('l10n-change', (event: Event) => this.dispatchEvent(new CustomEvent('l10n-change', {
       detail: (event as CustomEvent).detail
     })))
+    await this.language.init(this)
+    this.t = t
     this.proxy = this.getAttribute('proxy')
 
   
