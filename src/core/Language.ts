@@ -41,9 +41,6 @@ export const getLanguageLabel = async (langCode) => {
   }
 
   return `${languageLabel} ${hasScript}`.trim()
-
-  // const language = languages.find(language => language[0] === realLangCode)
-  // return language?.[1] ? `${language[1]}${script ? ` (${scriptMapping?.[script.toLowerCase()] ?? script})` : ''}` : langCode
 }
 
 export const filterLanguages = async (search) => {

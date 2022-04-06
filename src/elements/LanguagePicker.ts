@@ -125,6 +125,10 @@ export class LanguagePicker extends ElementBase {
     if (tabsWrapper.initiated) return
     tabsWrapper.initiated = true
     
+    Language.addEventListener('l10n-change', () => {
+      for (const tab of tabs) tab.classList.remove('active')
+    })
+
     tabsWrapper.addEventListener('mousedown', () => {
       this.isDragging = true
       this.dragX = null

@@ -25,8 +25,23 @@ export class RdfForm extends HTMLElement implements CoreComponent {
     super()
   }
 
+  static get observedAttributes() { return [
+    'ui-languages',
+    'selected-l10n-language', 
+    'selected-language'
+  ]; }
+
   async disconnectedCallback () {
     this.dispatchEvent(new CustomEvent('destroy'))
+  }
+
+  attributeChangedCallback(name, _oldValue, newValue) {
+    if (!this.ready) return
+
+    if (name === 'selected-l10n-language') {
+      this.language.l10nLanguage = newValue
+      this.renderer.render()
+    }
   }
 
   async connectedCallback () {
