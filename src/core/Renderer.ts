@@ -58,7 +58,6 @@ export class Renderer extends EventTarget implements CoreComponent {
 
       ${isDisplayOnly ? html`<style>${OnlyDisplay}</style>` : null}
 
-
       ${!isDisplayOnly ? html`
       <form onsubmit=${formSubmit}>
         ${templates}

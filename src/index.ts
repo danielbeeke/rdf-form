@@ -35,13 +35,25 @@ export class RdfForm extends HTMLElement implements CoreComponent {
     this.dispatchEvent(new CustomEvent('destroy'))
   }
 
-  attributeChangedCallback(name, _oldValue, newValue) {
+  async attributeChangedCallback(name, _oldValue, newValue) {
     if (!this.ready) return
+
+    if (name === 'form' && newValue) {
+      this.formDefinition = new FormDefinition(this)
+      await this.formDefinition.init()  
+    }
+
+    if (name === 'data' && newValue) {
+      this.formData = new RdfFormData(this)
+      await this.formData.init()
+    }
 
     if (name === 'selected-l10n-language') {
       this.language.l10nLanguage = newValue
-      this.renderer.render()
+      await this.language.init(this)
     }
+
+    this.renderer.render()
   }
 
   async connectedCallback () {

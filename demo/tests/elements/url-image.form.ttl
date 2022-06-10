@@ -8,6 +8,11 @@
     form:binding schema:Person ;
     a            form:Form .
 
+personForm:language
+    a                 form:UiComponent ;
+    form:widget       "language-picker" ;
+    form:order        0 .
+
 personForm:imageWrapper
     a                   form:Container ;
     form:widget         "container" ;

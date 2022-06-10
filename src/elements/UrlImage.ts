@@ -30,7 +30,15 @@ export class UrlImage extends ElementBase {
   }
 
   async on(event: Event) {
-    super.on(event);
+    if (['keyup', 'change'].includes(event.type)) {
+      if (!this.value) this.addItem()
+      if (this.value) {
+        this.value[`@${this.jsonldKey}`] = (event.target as HTMLInputElement).value
+
+        this.dispatchChange()
+      }
+    }
+
     const dimensionsEnabled = this.definition['form:dimensions']?.length > 0
     const saveColor = this.definition['form:saveColor']?.length > 0
     const url = this.value?._

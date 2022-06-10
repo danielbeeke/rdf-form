@@ -42,3 +42,12 @@ fieldsForm:ingredient
 
     """ ;
     form:order             1 .
+
+
+fieldsForm:translationOfWork
+    a                form:Field ;
+    form:widget      "reference" ;
+    form:label       "Original work"@en ;
+    form:label       "Het orgineel"@nl ;
+    form:binding     schema:translationOfWork ;
+    form:order       4 .

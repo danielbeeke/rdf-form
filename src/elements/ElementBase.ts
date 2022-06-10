@@ -178,6 +178,14 @@ export class ElementBase extends EventTarget {
       this.parentValues.push(emptyObject)
       this.itemValues = emptyObject
       this.value = emptyObject[this.mainBinding][0]
+
+      if (this.parent?.definition['form:widget']?._ === 'container' && this.parent?.definition['form:binding']?._) {
+        const hasLanguageValues = this.parentValues.flatMap(parentValue => parentValue[this.definition['form:binding']?._].map(value => value['@language']))
+
+        if (hasLanguageValues.length) {
+          this.value['@language'] = Language.l10nLanguage
+        }
+      }
     } 
     else if (this.definition['form:widget']?._ === 'group') {
       if (!this.parentValues[this.mainBinding]) {
@@ -340,7 +348,11 @@ export class ElementBase extends EventTarget {
       const applicableValues = this.parentValues?.[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()]
       .filter((value) => !value['@language'] || value['@language'] === Language.l10nLanguage) : []
 
-      const hasLanguageValues = this.parentValues?.[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()].filter(item => item['@language']) : []
+      let hasLanguageValues = this.parentValues?.[this.mainBinding] ? [...this.parentValues[this.mainBinding].values()].filter(item => item['@language']) : []
+
+      if (this.parent?.definition['form:widget']?._ === 'container' && this.parent?.definition['form:binding']?._) {
+        hasLanguageValues = this.parentValues.flatMap(parentValue => parentValue[this.definition['form:binding']?._].map(value => value['@language']))
+      }
 
       const language = hasLanguageValues.length ? Language.l10nLanguage : ''
 

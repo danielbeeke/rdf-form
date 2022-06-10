@@ -26,6 +26,6 @@
         focalPoint:y2 90 ;
         schema:width 120 ;
         schema:height 120 ;
-        schema:url "https://images.unsplash.com/photo-1618249311687-ec9599381287?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=934&q=80"@en
+        schema:url "https://images.unsplash.com/photo-1654776017274-5ba5f3acac6b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=930&q=80"@fr
     ] ) ;
     schema:url <http://www.janedoe.com> .
