@@ -7,6 +7,7 @@ import { CoreComponent } from '../types/CoreComponent'
 import { JsonLdProxy } from './JsonLdProxy'
 import { Language } from './Language'
 import { applyProxy } from '../helpers/applyProxy'
+import { isFetchable } from '../helpers/isFetchable'
 
 export const only = (...type) => {
   return (item: ExpandedJsonLdObject) => item['@type']?.some(rdfClass => type.includes(lastPart(rdfClass)))
@@ -14,7 +15,7 @@ export const only = (...type) => {
 
 export class FormDefinition extends EventTarget implements CoreComponent {
 
-  private formUrl: string
+  private formAsTextOrUrl: string
   private sourceDefinitionCompacted: object = {}
   private sourceDefinitionExpanded: Array<any>
   public context = { form: null }
@@ -28,16 +29,29 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   constructor (form: any) {
     super()
     this.form = form
-    this.formUrl = this.form.getAttribute('form')
-    if (!this.formUrl) throw new Error('No data attribute "form" was found on the custom element.')
+    this.formAsTextOrUrl = this.form.getAttribute('form')
+    if (!this.formAsTextOrUrl) throw new Error('No data attribute "form" was found on the custom element.')
     this.init()
   }
 
   async init () {
     const proxy = this.form.getAttribute('proxy') ?? ''
     this.roles = this.form.getAttribute('roles') ? this.form.getAttribute('roles').split(',') : []
-    const definitionResponse = await fetch(applyProxy(this.formUrl, proxy))
-    const definitionTurtle = await definitionResponse.text()
+    let definitionTurtle
+
+    if (isFetchable(this.formAsTextOrUrl)) {
+        const definitionResponse = await fetch(applyProxy(this.formAsTextOrUrl, proxy), {
+            method: 'GET',
+            headers: {
+              'Accept' : 'text/turtle'
+            }
+        })
+        definitionTurtle = await definitionResponse.text() 
+    }
+    else {
+        definitionTurtle = this.formAsTextOrUrl
+    }
+    
     this.sourceDefinitionCompacted = ttl2jsonld(definitionTurtle)
     Object.assign(this.context, this.sourceDefinitionCompacted['@context'])
     if (!this.context.form) throw new Error('The prefix form was not found in the form definition.')
