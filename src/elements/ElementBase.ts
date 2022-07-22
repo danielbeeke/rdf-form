@@ -157,7 +157,7 @@ export class ElementBase extends EventTarget {
     if (this.definition?.['form:removable']?._ === false) return false
     const hasValue = this.value?._
     const parentIsGroup = this.parent instanceof ElementBase ? this.parent?.definition?.['form:widget']?._ === 'group' : false
-    const parentIsReadonly = this.parent instanceof ElementBase ? this.parent?.definition?.['form:readonly'] : false
+    const parentIsReadonly = this.parent instanceof ElementBase ? this.parent?.definition?.['form:readonly']?._ : false
     const isGroup = this.definition?.['form:widget']?._ === 'group'
     const isRequired = this.definition?.['form:required']?._
     const isReadonly = this.definition?.['form:readonly']?._
