@@ -34,7 +34,12 @@ export class RdfFormData extends EventTarget implements CoreComponent {
     if (!this.dataAsTextOrUrl) this.sourceData = []
 
     if (this.dataAsTextOrUrl && isFetchable(this.dataAsTextOrUrl)) {
-      const dataResponse = await fetch(applyProxy(this.dataAsTextOrUrl, proxy))
+      const dataResponse = await fetch(applyProxy(this.dataAsTextOrUrl, proxy), {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/ld+json'
+          }
+      })
       dataText = await dataResponse.text()
     }
     else {
