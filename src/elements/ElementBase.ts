@@ -252,7 +252,7 @@ export class ElementBase extends EventTarget {
   async wrapper (innerTemplates: Array<typeof html> = [], isDisplayOnly = false) {
     const type = kebabize(this.constructor.name)
     const shouldShowEmpty = this.definition['form:translatable']?._ === 'always' && !Language.l10nLanguage
-    const isReadOnly = this.definition['form:readonly'] ?? false;
+    const isReadOnly = this.definition['form:readonly']?._ ?? false
     return html`
     ${!shouldShowEmpty && (!isDisplayOnly || innerTemplates.length > 0) ? html`
     <div ref=${attributesDiff(this.wrapperAttributes)} name=${kebabize(lastPart(this.definition['@id']))} type="${type}">
