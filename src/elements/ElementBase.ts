@@ -157,10 +157,12 @@ export class ElementBase extends EventTarget {
     if (this.definition?.['form:removable']?._ === false) return false
     const hasValue = this.value?._
     const parentIsGroup = this.parent instanceof ElementBase ? this.parent?.definition?.['form:widget']?._ === 'group' : false
+    const parentIsReadonly = this.parent instanceof ElementBase ? this.parent?.definition?.['form:readonly'] : false
     const isGroup = this.definition?.['form:widget']?._ === 'group'
     const isRequired = this.definition?.['form:required']?._
-    
-    return !isRequired && hasValue && !parentIsGroup || isGroup
+    const isReadonly = this.definition?.['form:readonly']?._
+   
+    return !isRequired && hasValue && !parentIsGroup && !parentIsReadonly || ( isGroup && !isReadonly)
   }
 
   get languages () {
@@ -250,7 +252,7 @@ export class ElementBase extends EventTarget {
   async wrapper (innerTemplates: Array<typeof html> = [], isDisplayOnly = false) {
     const type = kebabize(this.constructor.name)
     const shouldShowEmpty = this.definition['form:translatable']?._ === 'always' && !Language.l10nLanguage
-
+    const isReadOnly = this.definition['form:readonly'] ?? false;
     return html`
     ${!shouldShowEmpty && (!isDisplayOnly || innerTemplates.length > 0) ? html`
     <div ref=${attributesDiff(this.wrapperAttributes)} name=${kebabize(lastPart(this.definition['@id']))} type="${type}">
@@ -261,7 +263,7 @@ export class ElementBase extends EventTarget {
         ${innerTemplates}
       </div>
     ` : ''}
-      ${this.definition['form:multiple']?._ && !isDisplayOnly ? html`<div>${this.addButton()}</div>` : html``}
+      ${this.definition['form:multiple']?._ && !isReadOnly && !isDisplayOnly ? html`<div>${this.addButton()}</div>` : html``}
     </div>
     ` : html``}`
   }
