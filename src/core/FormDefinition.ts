@@ -18,7 +18,7 @@ export class FormDefinition extends EventTarget implements CoreComponent {
   private formAsTextOrUrl: string
   private sourceDefinitionCompacted: object = {}
   private sourceDefinitionExpanded: Array<any>
-  public context = { form: null }
+  public context = { form: '' }
   public ready: boolean = false
   public chain = new Map()
   public chainReferences = new Map()
@@ -54,7 +54,9 @@ export class FormDefinition extends EventTarget implements CoreComponent {
     
     this.sourceDefinitionCompacted = ttl2jsonld(definitionTurtle)
     Object.assign(this.context, this.sourceDefinitionCompacted['@context'])
-    if (!this.context.form) throw new Error('The prefix form was not found in the form definition.')
+    if (!this.context.form) {
+      this.context.form = 'http://rdf.danielbeeke.nl/form/form-dev.ttl#';
+    }
     if (!this.sourceDefinitionCompacted['@graph']) throw new Error('Missing fields inside form definition')
     this.sourceDefinitionExpanded = JsonLdProxy(await JsonLdExpand(this.sourceDefinitionCompacted), this.context, {
       '_': (value) => Language.multilingualValue(value, 'ui')
